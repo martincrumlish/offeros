@@ -116,10 +116,13 @@ Required result:
 - 6+ PDF visuals/treatments, with 4+ not reused from the sales page
 - 12+ VSL visuals/treatments, with 8+ not reused from the sales page
 - 3+ ad-specific imagegen creatives
+- agent dispatch plan for visual workers when the user allowed agents
 - `quality.images.hasArtifactSpecificPlan = true`
 - `quality.images.visualReusePolicy = "artifact-specific-v1"`
 
 Register `visual-asset-plan`.
+
+If the user has allowed agents, load `references/agent-dispatch.md` and dispatch imagegen visual workers immediately after registering the plan. Use separate workers for sales-page visuals, PDF visuals, VSL visuals, and ad images. Keep integration and QA in the main agent.
 
 ## 8. Sales Copy
 

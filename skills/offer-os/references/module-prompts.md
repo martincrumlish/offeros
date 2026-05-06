@@ -52,7 +52,8 @@ Output:
 5. Ad visuals: 3+ ad-specific imagegen creatives.
 6. Dashboard visuals: previews/thumbnails for core assets.
 7. Reuse rules: what can be reused, where, and why.
-8. `quality.images` metadata.
+8. Agent dispatch plan: whether imagegen visual workers should be dispatched, worker ownership, output folders, and references.
+9. `quality.images` metadata.
 
 Avoid treating the sales page as the master image pool. Artifact-specific visuals should be created from the artifact's job: PDF usability, VSL attention/narration, ad interruption, dashboard browsing.
 

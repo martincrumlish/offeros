@@ -47,6 +47,8 @@ SOURCE_CHECKS = [
             "artifact-specific-v1",
             "If the PDF visuals are only sales-page images",
             "If the VSL visuals are only sales-page images",
+            "dispatch imagegen visual workers",
+            "agentDispatchUsed",
         ],
     },
     {
@@ -180,6 +182,20 @@ SOURCE_CHECKS = [
             "VSL repeats one layout too often",
             "QA notes contain stale PDF page-count claims",
             "QA notes record browser horizontal overflow",
+        ],
+    },
+    {
+        "id": "agent_dispatch_supports_imagegen_workers",
+        "path": "references/agent-dispatch.md",
+        "needles": [
+            "### Imagegen Visual Workers",
+            "after the initial offer architecture, `design.md`, selected logo concept, `assets/logo.png`, and `visual-asset-plan.md` exist",
+            "Page visual worker",
+            "PDF visual worker",
+            "VSL visual worker",
+            "Ad visual worker",
+            "use the `imagegen` skill/tool",
+            "The main agent owns integration",
         ],
     },
 ]

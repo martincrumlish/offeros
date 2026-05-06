@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0
+
+- Adds explicit imagegen visual worker dispatch after offer architecture, design, logo, product outline, and `visual-asset-plan.md` exist.
+- Defines bounded worker ownership for page visuals, PDF visuals, VSL visuals, and ad creatives with shared style references and disjoint output folders.
+- Updates visual planning metadata to record whether visual agent dispatch was used or why it was skipped.
+
 ## 0.5.0
 
 - Adds a required `visual-asset-plan.md` artifact before sales-page graphics, PDF, ads, VSL, and dashboard production.

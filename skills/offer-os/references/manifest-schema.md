@@ -210,6 +210,8 @@ For deep mode, include module-level quality metadata when applicable:
       "hasArtifactSpecificPlan": true,
       "visualPlanPath": "visual-asset-plan.md",
       "visualReusePolicy": "artifact-specific-v1",
+      "agentDispatchUsed": true,
+      "agentDispatchNotUsedReason": "",
       "imagegenCount": 5,
       "salesPageVisualCount": 4,
       "pdfVisualCount": 6,

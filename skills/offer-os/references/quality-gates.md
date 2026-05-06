@@ -92,10 +92,13 @@ Must include:
 - 3+ ad-specific imagegen creatives
 - dashboard preview/thumbnail choices
 - explicit reuse rules
+- visual worker dispatch plan when agents are authorized
 - `quality.images.hasArtifactSpecificPlan = true`
 - `quality.images.visualReusePolicy = "artifact-specific-v1"`
 
 Fails if the PDF or VSL visuals are only sales-page images, if ads are just crops/text-card variants of page art, or if the plan does not specify artifact-specific visual jobs and file paths.
+
+When the user explicitly allowed agents, the build should dispatch imagegen visual workers after logo/style references exist. If it does not, record `quality.images.agentDispatchUsed = false` and a concrete `agentDispatchNotUsedReason`.
 
 ## Logo Gate
 

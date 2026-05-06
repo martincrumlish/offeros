@@ -63,7 +63,7 @@ Build from these source patterns instead of inventing replacements:
 - Sales page: load `assets/templates/sales-page/section-map.md` and start from `assets/templates/sales-page/page-skeleton.html`. Fill every required `data-offeros-section`; preserve the direct-response hero and buy-box offer-stack contracts exactly, then add/remove only optional sub-blocks inside those sections.
 - Sales page type: load `references/sales-page-types.md` before sales copy and choose a page type. Use `direct-response-long-form-vsl` by default for complete low-ticket, cold-traffic, or internet-marketing offers. Record the selected type in `quality.salesPage.pageType`.
 - Logo: create a real logo direction before producing the final asset. In deep generated-design runs, use the `imagegen` skill/tool to create the brand mark, then save `assets/logo.png` as a complete logo lockup that includes the readable offer name. SVG may be a secondary export, but do not mark an icon-only mark, code-vector SVG, HTML/CSS render, or PIL-only raster as the complete primary logo.
-- Visual assets: create `visual-asset-plan.md` before sales-page graphics, PDF, ads, VSL, or dashboard production. Split visuals by artifact. PDF and VSL need their own supporting visuals/treatments; do not reuse only sales-page imagery as the visual pool.
+- Visual assets: create `visual-asset-plan.md` before sales-page graphics, PDF, ads, VSL, or dashboard production. Split visuals by artifact. PDF and VSL need their own supporting visuals/treatments; do not reuse only sales-page imagery as the visual pool. When agents are authorized, dispatch imagegen visual workers after logo/style references exist.
 - PDF product: follow the PDF Product Recipe. For $30-$99 paid offers, extracted PDF text below 4,000 words or a product that is mostly repeated explanation/blank lines is a failed product, not a warning.
 - Emails: follow the Email Sequence Recipe. Every launch email must include send timing, subject, preview text, campaign role, body copy, and CTA. Repeated boilerplate paragraphs across emails are a failure.
 - Dashboard: generate `delivery-dashboard.html` with `scripts/generate_delivery_dashboard.py`. After generation, edit theme variables, logo, imagery, and copy only. Preserve `data-offeros-dashboard="v2-modal"`, modal markup, iframe/image preview behavior, and artifact `data-path`/`data-preview` cards.
@@ -176,6 +176,8 @@ If a URL or screenshot is used, extract a practical design guide before building
 ## Agent Use
 
 Use subagents only when the user explicitly allows delegation or asks to dispatch agents. Delegate concrete, bounded work that can run in parallel. Keep final integration and QA in the main agent.
+
+For full OfferOS runs with agent authorization, load `references/agent-dispatch.md`. After `offer-architecture.md`, `design.md`, the primary logo lockup, the product outline, and `visual-asset-plan.md` exist, dispatch parallel imagegen visual workers for page visuals, PDF visuals, VSL visuals, and ad creatives. Give each worker disjoint output ownership and the same style references so the assets share one visual system. Do not dispatch image workers before the initial logo/style direction exists.
 
 ## Completion Standard
 

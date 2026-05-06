@@ -66,6 +66,15 @@ Minimum deep-mode budgets:
 
 Register `visual-asset-plan` and set `quality.images.hasArtifactSpecificPlan = true`. Record whether each visual is shared or artifact-specific.
 
+When agents are authorized, dispatch imagegen visual workers immediately after the plan exists and before artifact production. Give each worker disjoint ownership:
+
+- page visuals: `assets/page/`
+- PDF visuals: `output/pdf/assets/`
+- VSL visuals: `output/presentation/assets/`
+- ad visuals: `assets/ads/`
+
+Use the same `design.md`, logo lockup, brand mark, and visual plan as references for every worker.
+
 ## Dependencies
 
 ### Offer Direction

@@ -113,19 +113,23 @@ Use this recipe for every deep generated-design run after the logo and product o
    - VSL deck: 12+ unique visual assets or distinct diagram treatments, with 8+ not reused from the sales page. Include pattern interrupt, problem map, failed-alternatives comparison, mechanism diagram, product reveal, offer stack, price/value contrast, guarantee, objection, and final CTA visuals.
    - Ads: 3+ ad-specific imagegen creatives. Do not crop sales-page art and call it ad creative.
    - Dashboard: logo, product bundle/preview, and thumbnail/preview choices for the main assets.
-5. Register `visual-asset-plan` in `offer-os.json`:
+5. If agents are authorized, load `references/agent-dispatch.md` and dispatch imagegen visual workers after this plan exists. Use separate workers for page visuals, PDF visuals, VSL visuals, and ad visuals. Each worker gets `offer-architecture.md`, `design.md`, `visual-asset-plan.md`, `assets/logo.png`, `assets/logo-mark.png` if present, and its assigned output folder. The main agent keeps ownership of integration, manifest registration, and QA.
+6. If agents are not authorized or not available, create the visuals locally and set `quality.images.agentDispatchUsed` to `false` with a short `agentDispatchNotUsedReason`.
+7. Register `visual-asset-plan` in `offer-os.json`:
 
 ```powershell
 .\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\register_artifact.py --id visual-asset-plan --title "Visual Asset Plan" --type document --category Strategy --path visual-asset-plan.md --provenance manual --buyer-value 4 --usability 4 --trust 4
 ```
 
-6. Set `quality.images`:
+8. Set `quality.images`:
 
 ```json
 {
   "hasArtifactSpecificPlan": true,
   "visualPlanPath": "visual-asset-plan.md",
   "visualReusePolicy": "artifact-specific-v1",
+  "agentDispatchUsed": true,
+  "agentDispatchNotUsedReason": "",
   "salesPageVisualCount": 4,
   "pdfVisualCount": 6,
   "pdfSpecificVisualCount": 4,
@@ -141,6 +145,7 @@ Use this recipe for every deep generated-design run after the logo and product o
 Stop conditions:
 
 - If `visual-asset-plan.md` does not exist, stop before creating PDF, ads, or VSL.
+- If the user explicitly allowed agents and no imagegen visual workers were dispatched, record the reason in `quality.images.agentDispatchNotUsedReason`.
 - If the PDF visuals are only sales-page images, create PDF-specific visuals/treatments before building the PDF.
 - If the VSL visuals are only sales-page images or the same few bitmaps repeated, create slide-specific visuals/treatments before generating the PPTX.
 - If ad images are crops or text-card variants of sales-page visuals, create ad-specific imagegen creatives.
