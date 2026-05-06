@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{OFFER_NAME}}</title>
+</head>
+<body>
+  <header data-offeros-section="header">
+    <!-- Logo, simple navigation, primary CTA marked data-offeros-cta. -->
+  </header>
+
+  <main>
+    <section data-offeros-section="hero">
+      <!-- Required direct-response hero structure:
+        1. buyer filter pill
+        2. prehead
+        3. specific promise headline
+        4. benefit lead
+        5. VSL/video frame inside the hero marked data-offeros-hero-video
+        6. price strip inside the hero marked data-offeros-price-strip
+        7. primary CTA href="#buy" marked data-offeros-cta
+        8. trust row marked data-offeros-trust-row
+      -->
+      <p class="pill" data-offeros-buyer-filter>{{BUYER_FILTER}}</p>
+      <p class="prehead">{{PREHEAD}}</p>
+      <h1>{{HEADLINE}}</h1>
+      <p class="hero-copy">{{BENEFIT_LEAD}}</p>
+      <div class="video-frame" data-offeros-hero-video>
+        <!-- VSL thumbnail/image, play button, and short video promise. -->
+      </div>
+      <div class="price-strip" data-offeros-price-strip>
+        <!-- Price, total/normal value, brief stack summary, and primary CTA. -->
+        <a data-offeros-cta href="#buy">{{PRIMARY_CTA}}</a>
+      </div>
+      <ul class="trust-row" data-offeros-trust-row>
+        <!-- 3+ trust bullets such as guarantee, instant access, use case, support. -->
+      </ul>
+    </section>
+
+    <section data-offeros-section="vsl">
+      <!-- VSL thumbnail/preview, play CTA, short pitch promise. -->
+    </section>
+
+    <section data-offeros-section="problem">
+      <!-- Specific diagnosis, hidden cost, buyer current state. -->
+    </section>
+
+    <section data-offeros-section="failed-alternatives">
+      <!-- Common fixes, why each fails, what the buyer now distrusts. -->
+    </section>
+
+    <section data-offeros-section="mechanism">
+      <!-- Unique mechanism name, explanation, why it works. -->
+    </section>
+
+    <section data-offeros-section="before-after">
+      <!-- Current state versus desired state. -->
+    </section>
+
+    <section data-offeros-section="product">
+      <!-- Product reveal, product promise, modules, bundle mockup. -->
+    </section>
+
+    <section data-offeros-section="offer-stack" id="buy" data-offeros-buy-section>
+      <!-- Required direct-response buy-box stack:
+        1. "Upgrade/Get/Start today and you'll get" style headline
+        2. product bundle image marked data-offeros-product-bundle
+        3. big checklist marked data-offeros-offer-checklist with 8+ concrete deliverables
+        4. normally/today value row marked data-offeros-value-row
+        5. large access CTA marked data-offeros-cta and data-offeros-stack-cta
+        6. guarantee/instant-access reassurance marked data-offeros-access-copy
+      -->
+    </section>
+
+    <section data-offeros-section="proof">
+      <!-- Proof, proof substitute, credibility, examples, screenshots, demonstrations. -->
+    </section>
+
+    <section data-offeros-section="fit">
+      <!-- Who it is for, who it is not for, readiness filter. -->
+    </section>
+
+    <section data-offeros-section="pricing">
+      <!-- Price, included assets, payment note, what happens after purchase. -->
+    </section>
+
+    <section data-offeros-section="guarantee">
+      <!-- Risk reversal, guarantee terms, buyer responsibility. -->
+    </section>
+
+    <section data-offeros-section="faq">
+      <!-- 7+ objections around price, time, fit, trust, implementation. Mark each item data-offeros-faq-item. -->
+    </section>
+
+    <section data-offeros-section="final-cta">
+      <!-- Offer recap, price, CTA marked data-offeros-cta, guarantee reminder, final reassurance. -->
+    </section>
+  </main>
+
+  <footer data-offeros-section="footer">
+    <!-- Compliance, affiliation, contact/support notes. -->
+  </footer>
+</body>
+</html>

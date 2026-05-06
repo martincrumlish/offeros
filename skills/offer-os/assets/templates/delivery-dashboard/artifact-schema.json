@@ -1,0 +1,16 @@
+{
+  "title": "Sales Page",
+  "type": "page",
+  "category": "Sales",
+  "path": "index.html",
+  "preview": "index.html",
+  "description": "Long-form sales page for the offer.",
+  "status": "complete",
+  "provenance": "manual",
+  "quality": {
+    "buyerValue": 5,
+    "usability": 5,
+    "trust": 5,
+    "notes": "Replace with artifact-specific audit notes."
+  }
+}

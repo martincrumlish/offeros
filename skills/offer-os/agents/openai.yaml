@@ -1,0 +1,6 @@
+display_name: OfferOS
+short_description: Build commercially vetted offer systems
+default_prompt:
+  - Use OfferOS in deep mode to build a complete offer from this idea.
+  - Use OfferOS with this design reference URL and create all launch assets.
+  - Use OfferOS to create the PDF product, funnel, imagegen assets, ads, emails, VSL, dashboard, and QA audit.

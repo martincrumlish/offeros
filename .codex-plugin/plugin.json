@@ -1,0 +1,42 @@
+{
+  "name": "offer-os",
+  "version": "0.3.0",
+  "description": "Build deep commercial offer systems in Codex: offer architecture, design direction, logo/images, long-form copy, coded sales pages, customer-ready PDF products, ads, emails, VSL decks, delivery dashboards, and QA.",
+  "author": {
+    "name": "OfferOS",
+    "email": "martincrumlish@users.noreply.github.com",
+    "url": "https://github.com/martincrumlish/offeros"
+  },
+  "homepage": "https://github.com/martincrumlish/offeros",
+  "repository": "https://github.com/martincrumlish/offeros",
+  "license": "MIT",
+  "keywords": [
+    "offers",
+    "funnels",
+    "copywriting",
+    "sales-pages",
+    "pdf-products",
+    "ads",
+    "emails",
+    "vsl"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "OfferOS",
+    "shortDescription": "Build complete offer systems",
+    "longDescription": "OfferOS orchestrates Codex through a deep full offer build: strategy, design, logo and visuals, long-form sales copy, coded sales page, customer-ready PDF product, ad assets, email sequence, VSL deck, delivery dashboard, and QA gates.",
+    "developerName": "OfferOS",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/martincrumlish/offeros",
+    "defaultPrompt": [
+      "Use OfferOS in deep mode to build a complete $27 front-end offer from this idea",
+      "Use OfferOS with the existing design.md and create the full offer system",
+      "Use OfferOS to create the PDF product, sales page, ads, emails, VSL deck, and delivery dashboard"
+    ],
+    "brandColor": "#CFFF05"
+  }
+}

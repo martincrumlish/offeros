@@ -1,0 +1,229 @@
+import argparse
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+
+SKILL_ROOT = Path(__file__).resolve().parents[1]
+
+
+SOURCE_CHECKS = [
+    {
+        "id": "skill_loads_exact_recipes",
+        "path": "SKILL.md",
+        "needles": [
+            "references/exact-build-recipes.md",
+            "Start with the Build Controller Recipe",
+            "Generator-first",
+            "warnings are not shippable",
+            "preserve the direct-response hero and buy-box offer-stack contracts exactly",
+        ],
+    },
+    {
+        "id": "build_controller_recipe_is_explicit",
+        "path": "references/exact-build-recipes.md",
+        "needles": [
+            "## Build Controller Recipe",
+            "Do not hand-fix generated files after QA without also fixing the generator.",
+            "Treat validator warnings as build failures in deep mode.",
+            "VSL preview mobile",
+            "qa-notes.md",
+        ],
+    },
+    {
+        "id": "logo_recipe_requires_imagegen_png",
+        "path": "references/exact-build-recipes.md",
+        "needles": [
+            "## Logo Recipe",
+            "Call the `imagegen` skill/tool",
+            "Do not create the primary logo with SVG",
+            "assets/logo.png",
+            "--provenance imagegen",
+            "If the primary logo path is `.svg`, stop and rebuild the logo.",
+            "If provenance is not `imagegen`, stop and rebuild the logo.",
+        ],
+    },
+    {
+        "id": "runbook_requires_logo_recipe",
+        "path": "references/runbook.md",
+        "needles": [
+            "Follow the Logo Recipe in `references/exact-build-recipes.md`.",
+            "`assets/logo.png`",
+            "`brand.logo = \"assets/logo.png\"`",
+            "`quality.logo.generationTool = \"imagegen\"`",
+            "Do not create or register a primary SVG logo.",
+        ],
+    },
+    {
+        "id": "sales_page_recipe_is_explicit",
+        "path": "references/exact-build-recipes.md",
+        "needles": [
+            "## Sales Page Recipe",
+            "`quality.salesPage.pageType` to `direct-response-long-form-vsl`",
+            "`copy.md` must include these exact headings",
+            "Use the exact hero contract",
+            "Use the exact offer-stack buy-box contract",
+            "heroContract: \"direct-response-hero-v1\"",
+            "offerStackContract: \"direct-response-buy-box-v1\"",
+            "2,500 visible words",
+            "at least 7 FAQ objections",
+            "at least 4 CTA placements",
+            "data-offeros-faq-item",
+            "data-offeros-cta",
+            "Do not map a repeated sentence over multiple cards.",
+        ],
+    },
+    {
+        "id": "vsl_recipe_is_explicit",
+        "path": "references/exact-build-recipes.md",
+        "needles": [
+            "## VSL Deck Recipe",
+            "Create `output/presentation/[slug]-vsl.pptx` as the primary deck. Do not create HTML first.",
+            "No layout family may be used on more than 35% of slides.",
+            "Visible slide copy must be buyer-facing.",
+            "Speaker notes must be recording notes of at least 25 words per slide.",
+            "HTML/contact-sheet only after the PPTX exists",
+            "Every bitmap image added to the PPTX must preserve aspect ratio.",
+            "sizing: { type: fit, w, h }",
+            "never to the `.pptx` itself",
+            "Browser-test `output/presentation/vsl-preview.html`",
+            "quality.vsl.layoutAudit",
+        ],
+    },
+    {
+        "id": "pdf_and_email_recipes_are_explicit",
+        "path": "references/exact-build-recipes.md",
+        "needles": [
+            "## PDF Product Recipe",
+            "4,000 extracted words",
+            "If extracted text is below the price-point target, revise before QA.",
+            "## Email Sequence Recipe",
+            "send timing",
+            "preview text",
+            "campaign role",
+            "If two or more body blocks repeat verbatim, revise before QA.",
+        ],
+    },
+    {
+        "id": "init_defaults_generated_design",
+        "path": "scripts/init_offer_project.py",
+        "needles": [
+            "default=\"generated\"",
+        ],
+    },
+    {
+        "id": "validator_blocks_known_regressions",
+        "path": "scripts/validate_offer_outputs.py",
+        "needles": [
+            "Deep generated-design runs must not use SVG as the primary logo",
+            "Deep generated-design runs must register the primary logo with provenance: imagegen.",
+            "Sales page contains repeated boilerplate copy",
+            "data-offeros-faq-item",
+            "data-offeros-cta",
+            "Direct-response hero must include a VSL/video frame marked data-offeros-hero-video",
+            "Direct-response offer stack must include a deliverable checklist marked data-offeros-offer-checklist",
+            "Facebook ads contain repeated boilerplate copy",
+            "Email sequence contains repeated boilerplate copy",
+            "PDF extracted text is light for a paid product",
+            "VSL deck exposes internal stage labels",
+            "VSL deck preview must be browser-safe HTML or image",
+            "VSL speaker notes are too thin",
+            "VSL speaker notes mention prices that differ from manifest.price",
+            "VSL PPTX image aspect ratio distortion detected",
+            "Cannot validate VSL PPTX image aspect ratios because Pillow is unavailable",
+            "layoutAudit",
+            "VSL repeats one layout too often",
+            "QA notes contain stale PDF page-count claims",
+            "QA notes record browser horizontal overflow",
+        ],
+    },
+]
+
+
+EXPECTED_BAD_WORKSPACE_ISSUES = [
+    "must not use SVG as the primary logo",
+    "provenance: imagegen",
+    "valid pageType",
+    "Sales page contains repeated boilerplate copy",
+    "Facebook ads contain repeated boilerplate copy",
+    "VSL deck exposes internal stage labels",
+]
+
+
+def source_check() -> list[dict]:
+    results = []
+    for check in SOURCE_CHECKS:
+        path = SKILL_ROOT / check["path"]
+        if not path.exists():
+            results.append({"id": check["id"], "ok": False, "missingFile": check["path"]})
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        missing = [needle for needle in check["needles"] if needle not in text]
+        results.append({"id": check["id"], "ok": not missing, "missing": missing})
+    return results
+
+
+def run_validator(workspace: Path) -> dict:
+    validator = SKILL_ROOT / "scripts" / "validate_offer_outputs.py"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(validator),
+            "--workspace",
+            str(workspace),
+            "--manifest",
+            "offer-os.json",
+            "--strict",
+            "--no-write",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        payload = {"parseError": True, "stdout": completed.stdout, "stderr": completed.stderr}
+    payload["returncode"] = completed.returncode
+    return payload
+
+
+def bad_workspace_check(workspace: Path) -> dict:
+    payload = run_validator(workspace)
+    issue_text = "\n".join(payload.get("issues", []))
+    missing = [expected for expected in EXPECTED_BAD_WORKSPACE_ISSUES if expected not in issue_text]
+    return {
+        "workspace": str(workspace),
+        "ok": payload.get("returncode") != 0 and not missing,
+        "validatorOk": payload.get("ok"),
+        "issueCount": payload.get("issueCount"),
+        "missingExpectedIssues": missing,
+        "issues": payload.get("issues", []),
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Self-test OfferOS skill source and known regression workspaces.")
+    parser.add_argument("--bad-workspace", action="append", default=[], help="Known-bad generated output that must fail validator checks.")
+    args = parser.parse_args()
+
+    source_results = source_check()
+    bad_results = [bad_workspace_check(Path(item).resolve()) for item in args.bad_workspace]
+    ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results)
+
+    print(
+        json.dumps(
+            {
+                "ok": ok,
+                "sourceChecks": source_results,
+                "badWorkspaceChecks": bad_results,
+            },
+            indent=2,
+        )
+    )
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,99 @@
+# Copy Frameworks
+
+Choose one primary sales framework, then use section-level frameworks where useful.
+
+This file chooses persuasion logic. It does not choose the page archetype. Before writing `copy.md`, also choose a sales page type from `references/sales-page-types.md`.
+
+## PASTOR
+
+Use for coaching, consulting, courses, workshops, expert-led offers, and transformation products.
+
+Best when trust matters and the buyer needs empathy before proof.
+
+Structure:
+
+- Problem
+- Amplify
+- Story/Solution
+- Transformation
+- Offer
+- Response
+
+## PAS
+
+Use for direct-response sections, short pages, advertorial openings, and problem-aware audiences.
+
+Structure:
+
+- Problem
+- Agitate
+- Solution
+
+## AIDA
+
+Use for broad-market, cold traffic, productized services, and simple offers where clarity matters most.
+
+Structure:
+
+- Attention
+- Interest
+- Desire
+- Action
+
+## Problem-Mechanism-Proof-Offer
+
+Use for sophisticated or skeptical markets where buyers have tried alternatives.
+
+Structure:
+
+- specific problem diagnosis
+- failed common approaches
+- unique mechanism
+- proof
+- offer
+- risk reversal
+- CTA
+
+For complete paid front-end OfferOS sales pages, this is the required internet-marketing/direct-response page spine unless the user explicitly requested a different page type. PAS, AIDA, BAB, QUEST, PASTOR, and 4P can shape sections, but they cannot reduce deep-mode page depth or remove the required section contract from `assets/templates/sales-page/section-map.md`.
+
+## Before-After-Bridge
+
+Use for concise offer pages, hero sections, product summaries, and simple transformation messaging.
+
+## 4P
+
+Use for above-the-fold copy, offer summaries, checkout sections, and conversion blocks.
+
+Structure:
+
+- Promise
+- Picture
+- Proof
+- Push
+
+## QUEST
+
+Use for educational sales pages, webinars, challenge funnels, and offers that require a belief shift.
+
+Structure:
+
+- Qualify
+- Understand
+- Educate
+- Stimulate
+- Transition
+
+## Section-Level Tools
+
+- FAB for feature/module descriptions
+- So What Test for every feature or claim
+- Objection Reversal for FAQ, guarantee, price, and final CTA
+- Star-Story-Solution for founder story or case studies
+- One Belief for VSL and new-category offers
+
+## Default Choice
+
+- Expert-led transformation: PASTOR
+- Skeptical/high-sophistication market: Problem-Mechanism-Proof-Offer
+- Simple productized offer: AIDA
+- Short page or sharp section: PAS

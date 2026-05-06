@@ -1,0 +1,93 @@
+# Asset Sequence
+
+Generate assets in dependency order. Earlier assets define constraints for later ones.
+
+## Core Sequence
+
+1. Offer/page direction
+2. Design guide
+3. Logo or wordmark
+4. Sales page structure
+5. Sales page graphics
+6. Product bundle
+7. PDF product visuals
+8. VSL frames
+9. Ads and social creative
+10. Delivery dashboard
+11. Secondary exports and variants
+
+## Provenance Requirements
+
+Record provenance for every visual artifact in `offer-os.json`.
+
+- Use `imagegen` for bitmap hero, product, and ad imagery when the user asks for generated images, a generated design direction, or ad images.
+- Use `code-vector` for hand-coded SVG diagrams only when a vector diagram is the right artifact.
+- Use `html-css`, `pil-generated`, or `screenshot` only when that is the honest source.
+- Do not describe SVGs, PIL text cards, CSS panels, or screenshots as "generated images." They can be useful fallbacks, but they must be labeled as such.
+
+Deep mode should include at least:
+
+- one brand/logo asset with clear production status
+- one hero or product image that sells the offer visually
+- three ad images with actual creative direction
+- product/PDF preview imagery
+- deck or VSL preview imagery
+
+## Dependencies
+
+### Offer Direction
+
+Required before:
+
+- design guide
+- logo
+- sales page
+- product visuals
+- VSL
+- ads
+
+Defines audience, promise, mechanism, category, price point, tone, and conversion goal.
+
+### Design Guide
+
+Required before page design, logo refinement, graphics, bundle visuals, dashboard, and VSL style frames.
+
+### Logo
+
+Required before sales page graphics, product bundle, badges, VSL title cards, ad creatives, and dashboard branding.
+
+Minimum logo prerequisites:
+
+- offer name
+- audience
+- core promise
+- market category
+- desired tone
+- 3 concept directions
+- selected concept rationale
+- small-size and one-color checks
+- bitmap preview/export for QA
+
+In deep generated-design runs, the primary logo artifact should be an `imagegen` `.png` or `.webp`. A code-vector SVG can be registered only as a secondary export or draft unless the user explicitly requested vector-only delivery. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
+
+### Sales Page Structure
+
+Required before page-specific graphics, VSL visuals, ad angles, and checkout graphics.
+
+### Product Bundle
+
+Required before dashboard, product mockups, VSL product reveal, offer stack graphics, and ads that show the deliverable.
+
+The product bundle should show the buyer what they get. If it is a coded diagram, call it a diagram. If it is a generated bitmap mockup, save the prompt/provenance in the manifest.
+
+## Fast Path
+
+If speed matters, still preserve:
+
+1. offer direction
+2. lightweight design guide
+3. primary `assets/logo.png`/`.webp` imagegen logo or brand-mark asset
+4. page/product graphics
+5. ads/VSL/dashboard variants
+
+Do not skip the design guide entirely.

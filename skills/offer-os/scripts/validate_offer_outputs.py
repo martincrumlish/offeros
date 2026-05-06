@@ -1,0 +1,1155 @@
+import argparse
+from datetime import datetime, timezone
+from html import unescape
+from io import BytesIO
+import json
+import math
+import posixpath
+from pathlib import Path
+import re
+import zipfile
+
+
+TEXT_EXTS = {".html", ".md", ".txt", ".json", ".css", ".js"}
+IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+BITMAP_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
+BAD_TOKENS = [
+    "lorem ipsum",
+    "[placeholder]",
+    "replace this",
+    "todo:",
+    "tbd",
+    "your text here",
+    "image placeholder",
+]
+
+DEEP_REQUIRED_IDS = [
+    "offer-architecture",
+    "design-guide",
+    "logo",
+    "sales-copy",
+    "sales-page",
+    "pdf-product-source",
+    "pdf-product",
+    "facebook-ads",
+    "facebook-ad-image-1",
+    "facebook-ad-image-2",
+    "facebook-ad-image-3",
+    "email-sequence",
+    "vsl-deck",
+    "vsl-preview",
+    "delivery-dashboard",
+    "qa-notes",
+]
+
+ALLOWED_PROVENANCE = {
+    "imagegen",
+    "provided",
+    "licensed",
+    "screenshot",
+    "code-vector",
+    "html-css",
+    "pil-generated",
+    "manual",
+    "generated-by-code",
+}
+
+MAJOR_ARTIFACTS = [
+    "sales-page",
+    "pdf-product",
+    "facebook-ads",
+    "email-sequence",
+    "vsl-deck",
+    "delivery-dashboard",
+]
+
+REQUIRED_SALES_PAGE_SECTIONS = [
+    "header",
+    "hero",
+    "vsl",
+    "problem",
+    "failed-alternatives",
+    "mechanism",
+    "before-after",
+    "proof",
+    "product",
+    "offer-stack",
+    "fit",
+    "pricing",
+    "guarantee",
+    "faq",
+    "final-cta",
+]
+
+ALLOWED_SALES_PAGE_TYPES = {
+    "direct-response-long-form-vsl",
+    "mechanism-led-product-page",
+    "proof-led-case-study-page",
+    "webinar-workshop-registration",
+    "sales-letter-checkout",
+}
+
+BANNED_VISIBLE_VSL_STAGE_LABELS = {
+    "hook",
+    "problem",
+    "agitate",
+    "market",
+    "mechanism",
+    "proof",
+    "offer",
+    "cta",
+    "objection",
+    "close",
+}
+
+
+def load_json(path: Path) -> dict:
+    if not path.exists():
+        raise SystemExit(f"Manifest not found: {path}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def scan_text(path: Path) -> list[str]:
+    text = path.read_text(encoding="utf-8", errors="ignore").lower()
+    return [token for token in BAD_TOKENS if token in text]
+
+
+def text_for(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def numeric_price(value) -> float:
+    text = str(value or "")
+    match = re.search(r"\d+(?:\.\d+)?", text.replace(",", ""))
+    return float(match.group(0)) if match else 0.0
+
+
+def pdf_targets(price: float) -> tuple[int, int, int]:
+    if price and price <= 29:
+        return 18, 5, 2500
+    if price and price <= 99:
+        return 25, 8, 4000
+    return 35, 10, 6000
+
+
+def artifact_map(artifacts: list[dict]) -> dict[str, dict]:
+    return {item.get("id", ""): item for item in artifacts if isinstance(item, dict)}
+
+
+def artifact_path(root: Path, artifact: dict | None) -> Path | None:
+    if not artifact or not artifact.get("path"):
+        return None
+    return root / artifact["path"]
+
+
+def count_pdf(path: Path) -> tuple[int | None, int | None]:
+    try:
+        from pypdf import PdfReader
+    except Exception:
+        return None, None
+    reader = PdfReader(str(path))
+    words = 0
+    for page in reader.pages:
+        try:
+            words += len((page.extract_text() or "").split())
+        except Exception:
+            pass
+    return len(reader.pages), words
+
+
+def count_pptx_slides(path: Path) -> int | None:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            return len([name for name in archive.namelist() if re.match(r"ppt/slides/slide\d+\.xml$", name)])
+    except Exception:
+        return None
+
+
+def count_html_slides(text: str) -> int:
+    patterns = [
+        r"<section\b[^>]*class=[\"'][^\"']*\bslide\b",
+        r"<div\b[^>]*class=[\"'][^\"']*\bslide\b",
+        r"data-slide",
+    ]
+    return max(len(re.findall(pattern, text, re.I)) for pattern in patterns)
+
+
+def has_section_marker(html_text: str, section_id: str) -> bool:
+    escaped = re.escape(section_id)
+    patterns = [
+        rf"data-offeros-section\s*=\s*[\"']{escaped}[\"']",
+        rf"id\s*=\s*[\"']{escaped}[\"']",
+    ]
+    return any(re.search(pattern, html_text, re.I) for pattern in patterns)
+
+
+def section_html(html_text: str, section_id: str) -> str:
+    escaped = re.escape(section_id)
+    match = re.search(
+        rf"<section\b(?=[^>]*data-offeros-section\s*=\s*[\"']{escaped}[\"'])[^>]*>.*?</section>",
+        html_text,
+        flags=re.I | re.S,
+    )
+    return match.group(0) if match else ""
+
+
+def has_marker(html_text: str, marker: str) -> bool:
+    return bool(re.search(rf"\b{re.escape(marker)}(?:\s|=|>)", html_text, flags=re.I))
+
+
+def element_with_marker(html_text: str, marker: str) -> str:
+    match = re.search(
+        rf"<(?P<tag>[a-z][a-z0-9]*)\b(?=[^>]*\b{re.escape(marker)}(?:\s|=|>))[^>]*>.*?</(?P=tag)>",
+        html_text,
+        flags=re.I | re.S,
+    )
+    return match.group(0) if match else ""
+
+
+def anchor_hrefs_with_marker(html_text: str, marker: str) -> list[str]:
+    hrefs = []
+    for match in re.finditer(r"<a\b([^>]*)>", html_text, flags=re.I | re.S):
+        attrs = match.group(1)
+        if not re.search(rf"\b{re.escape(marker)}(?:\s|=|>)", attrs, flags=re.I):
+            continue
+        href = re.search(r'\bhref\s*=\s*["\']([^"\']+)["\']', attrs, flags=re.I)
+        if href:
+            hrefs.append(href.group(1).strip())
+    return hrefs
+
+
+def section_opening_tag_has(html_text: str, section_id: str, pattern: str) -> bool:
+    escaped = re.escape(section_id)
+    match = re.search(
+        rf"<section\b(?=[^>]*data-offeros-section\s*=\s*[\"']{escaped}[\"'])[^>]*>",
+        html_text,
+        flags=re.I | re.S,
+    )
+    return bool(match and re.search(pattern, match.group(0), flags=re.I))
+
+
+def contains_expected_price(html_text: str, price: float) -> bool:
+    if not price:
+        return True
+    expected = int(price)
+    visible = visible_text_from_html(html_text)
+    return bool(re.search(rf"\$\s*{expected}\b|\b{expected}\s+dollars?\b", visible, flags=re.I))
+
+
+def generated_claim(artifact: dict) -> bool:
+    text = f"{artifact.get('title', '')} {artifact.get('description', '')}".lower()
+    return any(term in text for term in ["generated image", "ai-generated", "imagegen", "generated product", "generated tactical"])
+
+
+def quality_number(value) -> int:
+    try:
+        return int(value)
+    except Exception:
+        return 0
+
+
+def quality_float(value) -> float:
+    try:
+        return float(value)
+    except Exception:
+        return 0.0
+
+
+def visible_text_from_html(html_text: str) -> str:
+    text = re.sub(r"<(script|style)\b[^>]*>.*?</\1>", " ", html_text, flags=re.I | re.S)
+    text = re.sub(r"<[^>]+>", "\n", text)
+    text = unescape(text)
+    return re.sub(r"[ \t\r\f\v]+", " ", text)
+
+
+def repeated_sentences(text: str, threshold: int = 4) -> list[tuple[str, int]]:
+    counts: dict[str, int] = {}
+    for sentence in re.split(r"[.!?]\s+|\n+", text):
+        normalized = re.sub(r"\s+", " ", sentence.strip().lower())
+        normalized = re.sub(r"[^a-z0-9 $%'-]+", "", normalized)
+        if len(normalized.split()) < 6:
+            continue
+        counts[normalized] = counts.get(normalized, 0) + 1
+    return sorted(
+        [(sentence, count) for sentence, count in counts.items() if count >= threshold],
+        key=lambda item: item[1],
+        reverse=True,
+    )
+
+
+def repeated_body_blocks(html_text: str, threshold: int = 2) -> list[tuple[str, int]]:
+    counts: dict[str, int] = {}
+    for match in re.finditer(r"<(?:p|li|dd|figcaption)\b[^>]*>(.*?)</(?:p|li|dd|figcaption)>", html_text, flags=re.I | re.S):
+        text = visible_text_from_html(match.group(1))
+        normalized = re.sub(r"\s+", " ", text.strip().lower())
+        normalized = re.sub(r"[^a-z0-9 $%'-]+", "", normalized)
+        if len(normalized.split()) < 6:
+            continue
+        counts[normalized] = counts.get(normalized, 0) + 1
+    return sorted(
+        [(text, count) for text, count in counts.items() if count >= threshold],
+        key=lambda item: item[1],
+        reverse=True,
+    )
+
+
+def visible_lines(text: str) -> list[str]:
+    return [line.strip() for line in re.split(r"[\r\n]+", text) if line.strip()]
+
+
+def pptx_slide_texts(path: Path) -> list[list[str]]:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = sorted(
+                [name for name in archive.namelist() if re.match(r"ppt/slides/slide\d+\.xml$", name)],
+                key=lambda name: int(re.search(r"slide(\d+)\.xml$", name).group(1)),
+            )
+            slides = []
+            for name in names:
+                xml = archive.read(name).decode("utf-8", errors="ignore")
+                slides.append([unescape(text) for text in re.findall(r"<a:t>(.*?)</a:t>", xml)])
+            return slides
+    except Exception:
+        return []
+
+
+def pptx_note_texts(path: Path) -> list[list[str]]:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = sorted(
+                [name for name in archive.namelist() if re.match(r"ppt/notesSlides/notesSlide\d+\.xml$", name)],
+                key=lambda name: int(re.search(r"notesSlide(\d+)\.xml$", name).group(1)),
+            )
+            notes = []
+            for name in names:
+                xml = archive.read(name).decode("utf-8", errors="ignore")
+                notes.append([unescape(text) for text in re.findall(r"<a:t>(.*?)</a:t>", xml)])
+            return notes
+    except Exception:
+        return []
+
+
+def count_pptx_media(path: Path) -> int | None:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            return len([name for name in archive.namelist() if name.startswith("ppt/media/")])
+    except Exception:
+        return None
+
+
+def pillow_available() -> bool:
+    try:
+        from PIL import Image  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+
+def pptx_relationship_targets(archive: zipfile.ZipFile, slide_name: str) -> dict[str, str]:
+    slide_base = posixpath.basename(slide_name)
+    rel_name = posixpath.join(posixpath.dirname(slide_name), "_rels", f"{slide_base}.rels")
+    if rel_name not in archive.namelist():
+        return {}
+    xml = archive.read(rel_name).decode("utf-8", errors="ignore")
+    targets: dict[str, str] = {}
+    for rel in re.finditer(r"<Relationship\b[^>]*/?>", xml, flags=re.I):
+        attrs = rel.group(0)
+        rel_id = re.search(r'\bId="([^"]+)"', attrs)
+        target = re.search(r'\bTarget="([^"]+)"', attrs)
+        rel_type = re.search(r'\bType="([^"]+)"', attrs)
+        if not rel_id or not target:
+            continue
+        target_value = unescape(target.group(1))
+        type_value = rel_type.group(1).lower() if rel_type else ""
+        if "image" not in type_value and "/media/" not in target_value and not target_value.startswith("../media/"):
+            continue
+        if target_value.startswith("/"):
+            media_name = target_value.lstrip("/")
+        else:
+            media_name = posixpath.normpath(posixpath.join(posixpath.dirname(slide_name), target_value))
+        targets[rel_id.group(1)] = media_name
+    return targets
+
+
+def pptx_image_dimensions(archive: zipfile.ZipFile, media_name: str) -> tuple[int, int] | None:
+    try:
+        from PIL import Image
+    except Exception:
+        return None
+    if media_name not in archive.namelist():
+        return None
+    suffix = Path(media_name).suffix.lower()
+    if suffix not in BITMAP_EXTS:
+        return None
+    try:
+        with Image.open(BytesIO(archive.read(media_name))) as image:
+            return image.size
+    except Exception:
+        return None
+
+
+def pptx_image_aspect_issues(path: Path, tolerance: float = 0.08) -> list[str]:
+    findings = []
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = sorted(
+                [name for name in archive.namelist() if re.match(r"ppt/slides/slide\d+\.xml$", name)],
+                key=lambda name: int(re.search(r"slide(\d+)\.xml$", name).group(1)),
+            )
+            dimensions_cache: dict[str, tuple[int, int] | None] = {}
+            for slide_name in names:
+                slide_index = int(re.search(r"slide(\d+)\.xml$", slide_name).group(1))
+                rel_targets = pptx_relationship_targets(archive, slide_name)
+                xml = archive.read(slide_name).decode("utf-8", errors="ignore")
+                for pic_index, pic in enumerate(re.finditer(r"<p:pic\b.*?</p:pic>", xml, flags=re.I | re.S), 1):
+                    block = pic.group(0)
+                    embed = re.search(r'<a:blip\b[^>]*\br:embed="([^"]+)"', block, flags=re.I)
+                    if not embed:
+                        continue
+                    media_name = rel_targets.get(embed.group(1))
+                    if not media_name:
+                        continue
+                    if media_name not in dimensions_cache:
+                        dimensions_cache[media_name] = pptx_image_dimensions(archive, media_name)
+                    dimensions = dimensions_cache[media_name]
+                    if not dimensions:
+                        continue
+                    source_w, source_h = dimensions
+                    if source_w <= 0 or source_h <= 0:
+                        continue
+                    sppr = re.search(r"<p:spPr\b.*?</p:spPr>", block, flags=re.I | re.S)
+                    ext = re.search(r'<a:ext\b[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"', sppr.group(0) if sppr else block, flags=re.I)
+                    if not ext:
+                        continue
+                    box_w = int(ext.group(1))
+                    box_h = int(ext.group(2))
+                    if box_w <= 0 or box_h <= 0:
+                        continue
+                    has_src_rect = bool(re.search(r"<a:srcRect\b", block, flags=re.I))
+                    source_ratio = source_w / source_h
+                    box_ratio = box_w / box_h
+                    distortion = abs(math.log(box_ratio / source_ratio))
+                    if distortion > tolerance and not has_src_rect:
+                        findings.append(
+                            f"slide {slide_index} picture {pic_index} ({posixpath.basename(media_name)}) "
+                            f"uses box ratio {box_ratio:.2f}:1 for source ratio {source_ratio:.2f}:1 without sizing/crop metadata"
+                        )
+    except Exception:
+        return []
+    return findings
+
+
+def stale_price_mentions(text: str, expected_price: float) -> list[str]:
+    if not expected_price:
+        return []
+    expected_int = int(expected_price)
+    numeric_hits = [
+        match.group(0)
+        for match in re.finditer(r"\$\s*(\d+(?:\.\d+)?)|\b(\d+(?:\.\d+)?)\s+dollars?\b", text, flags=re.I)
+        if int(float(match.group(1) or match.group(2))) != expected_int
+    ]
+    number_words = {
+        17: ["seventeen"],
+        27: ["twenty-seven", "twenty seven"],
+        37: ["thirty-seven", "thirty seven"],
+        47: ["forty-seven", "forty seven"],
+        57: ["fifty-seven", "fifty seven"],
+        67: ["sixty-seven", "sixty seven"],
+        77: ["seventy-seven", "seventy seven"],
+        97: ["ninety-seven", "ninety seven"],
+    }
+    text_lower = text.lower()
+    for price, words in number_words.items():
+        if price == expected_int:
+            continue
+        for word in words:
+            if re.search(rf"\b{re.escape(word)}\s+dollars?\b", text_lower):
+                numeric_hits.append(f"{word} dollars")
+    return sorted(set(numeric_hits))
+
+
+def visible_stage_labels(slides: list[list[str]]) -> list[str]:
+    found = []
+    stage = "|".join(sorted(BANNED_VISIBLE_VSL_STAGE_LABELS))
+    for slide_index, texts in enumerate(slides, 1):
+        for text in texts:
+            compact = re.sub(r"\s+", " ", text.strip())
+            lower = compact.lower()
+            label = lower
+            match = re.match(r"^\d{1,2}\s*/\s*([a-z ]+)$", lower)
+            if match:
+                label = match.group(1).strip()
+            if (
+                label in BANNED_VISIBLE_VSL_STAGE_LABELS
+                or re.match(rf"^\d{{1,2}}\s*/\s*({stage})\b", lower)
+                or re.match(rf"^(stage|section|beat)\s*[:/\-]\s*({stage})\b", lower)
+                or re.match(rf"^({stage})\s*[:/\-]\s*", lower)
+            ):
+                found.append(f"slide {slide_index}: {compact}")
+    return found
+
+
+def audit_scores_ok(audit: dict, issues: list[str], warnings: list[str]) -> None:
+    if not isinstance(audit, dict):
+        issues.append("Commercial audit missing or invalid.")
+        return
+    status = str(audit.get("status", "")).lower()
+    if status not in {"passed", "complete", "validated"}:
+        issues.append("Commercial audit status is not passed/complete/validated.")
+    scores = audit.get("scores", {})
+    if not isinstance(scores, dict):
+        issues.append("Commercial audit scores missing or invalid.")
+        return
+    for artifact_id in MAJOR_ARTIFACTS:
+        score = scores.get(artifact_id)
+        if score is None:
+            issues.append(f"Commercial audit missing score for {artifact_id}.")
+            continue
+        if isinstance(score, dict):
+            for metric in ["buyerValue", "usability", "trust"]:
+                value = quality_number(score.get(metric))
+                if value < 4:
+                    issues.append(f"Commercial audit score below 4 for {artifact_id}.{metric}: {value or 'missing'}")
+        else:
+            value = quality_number(score)
+            if value < 4:
+                issues.append(f"Commercial audit score below 4 for {artifact_id}: {value or 'missing'}")
+    if audit.get("blockingIssues"):
+        warnings.append("Commercial audit lists blocking issues; do not mark the run complete until resolved.")
+
+
+def validate_pdf(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    pdf_artifact = by_id.get("pdf-product")
+    pdf_path = artifact_path(root, pdf_artifact)
+    if not pdf_path or not pdf_path.exists():
+        issues.append("PDF product missing; cannot validate depth.")
+        return
+
+    min_pages, min_surfaces, min_words = pdf_targets(numeric_price(manifest.get("price")))
+    page_count, word_count = count_pdf(pdf_path)
+    if page_count is None:
+        warnings.append("Could not inspect PDF page count because pypdf is unavailable or failed.")
+    elif page_count < min_pages:
+        issues.append(f"PDF product is too thin for the price point: {page_count} pages found, {min_pages}+ expected.")
+    if word_count is not None and word_count < min_words:
+        issues.append(f"PDF extracted text is light for a paid product: {word_count} words found, {min_words}+ expected.")
+
+    pdf_quality = manifest.get("quality", {}).get("pdf", {})
+    if not isinstance(pdf_quality, dict):
+        pdf_quality = {}
+    action_count = quality_number(pdf_quality.get("actionSurfaceCount"))
+    if action_count < min_surfaces:
+        issues.append(f"PDF action-surface count below target: {action_count or 'missing'} found, {min_surfaces}+ expected.")
+    if pdf_quality.get("hasCompletedExamples") is not True:
+        issues.append("PDF quality metadata must confirm completed examples.")
+    if pdf_quality.get("hasBlankTemplates") is not True:
+        issues.append("PDF quality metadata must confirm blank buyer-fillable templates.")
+    if pdf_quality.get("renderChecked") is not True:
+        issues.append("PDF quality metadata must confirm rendered page visual QA.")
+
+
+def validate_email_sequence(root: Path, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    email_artifact = by_id.get("email-sequence")
+    email_path = artifact_path(root, email_artifact)
+    if not email_path or not email_path.exists():
+        issues.append("Email sequence artifact missing; cannot validate launch email readiness.")
+        return
+    if email_path.suffix.lower() not in TEXT_EXTS:
+        return
+    raw_text = text_for(email_path)
+    visible = visible_text_from_html(raw_text) if email_path.suffix.lower() in {".html", ".htm"} else raw_text
+    lower = visible.lower()
+
+    email_count = max(
+        len(re.findall(r"\bemail\s+\d+\b", lower)),
+        len(re.findall(r"<article\b[^>]*class=[\"'][^\"']*\bemail\b", raw_text, flags=re.I)),
+    )
+    if email_count < 5:
+        issues.append(f"Email sequence is too thin: {email_count} numbered emails found, 5+ expected.")
+    if "launch email sequence" in lower and email_count < 7:
+        issues.append(f"Launch email sequence must include 7+ numbered emails: {email_count} found.")
+
+    subject_count = max(
+        len(re.findall(r"\bsubject\s*:", lower)),
+        len(re.findall(r"<h[12]\b[^>]*>", raw_text, flags=re.I)) - 1,
+    )
+    preview_count = len(re.findall(r"\bpreview\s*:", lower))
+    cta_count = len(re.findall(r"\bcta\s*:", lower))
+    send_count = max(len(re.findall(r"\bsend\s*(?:timing|date|day)?\s*:", lower)), len(re.findall(r"\bday\s+\d+\b", lower)))
+    role_count = max(
+        len(re.findall(r"\b(?:campaign\s+)?role\s*:", lower)),
+        len(re.findall(r"class=[\"'][^\"']*\brole\b", raw_text, flags=re.I)),
+    )
+    required_counts = {
+        "subject line": subject_count,
+        "preview text": preview_count,
+        "CTA": cta_count,
+        "send timing": send_count,
+        "campaign role": role_count,
+    }
+    target_count = min(email_count or 7, 7)
+    for label, count in required_counts.items():
+        if count < target_count:
+            issues.append(f"Email sequence missing {label} metadata: {count} found, {target_count}+ expected.")
+
+    repeated = repeated_sentences(visible, threshold=3)
+    if repeated:
+        examples = "; ".join(f"'{sentence[:80]}' x{count}" for sentence, count in repeated[:3])
+        issues.append("Email sequence contains repeated boilerplate copy: " + examples)
+    repeated_blocks = repeated_body_blocks(raw_text, threshold=2)
+    if repeated_blocks:
+        examples = "; ".join(f"'{sentence[:80]}' x{count}" for sentence, count in repeated_blocks[:3])
+        issues.append("Email sequence contains repeated body blocks: " + examples)
+
+
+def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    page_artifact = by_id.get("sales-page")
+    page_path = artifact_path(root, page_artifact)
+    if not page_path or not page_path.exists():
+        issues.append("Sales page missing; cannot validate direct-response structure.")
+        return
+    html_text = text_for(page_path)
+    missing = [section for section in REQUIRED_SALES_PAGE_SECTIONS if not has_section_marker(html_text, section)]
+    if missing:
+        issues.append("Sales page missing required direct-response section markers: " + ", ".join(missing))
+    if "data-offeros-section" not in html_text.lower():
+        issues.append("Sales page must use data-offeros-section markers from the OfferOS section map.")
+    sales_quality = manifest.get("quality", {}).get("salesPage", {})
+    if not isinstance(sales_quality, dict):
+        sales_quality = {}
+    if sales_quality.get("requiredSectionContract") not in {"direct-response-v1", "direct-response"}:
+        issues.append("Sales page quality metadata must record requiredSectionContract: direct-response-v1.")
+    if sales_quality.get("sectionMarkersPresent") is not True:
+        issues.append("Sales page quality metadata must confirm sectionMarkersPresent.")
+    page_type = str(sales_quality.get("pageType", "")).strip()
+    if page_type not in ALLOWED_SALES_PAGE_TYPES:
+        issues.append("Sales page quality metadata must record a valid pageType from references/sales-page-types.md.")
+    price = numeric_price(manifest.get("price"))
+    if price and price <= 99 and sales_quality.get("pageTypeOverrideUserRequested") is not True and page_type != "direct-response-long-form-vsl":
+        issues.append("Paid front-end offers at $99 or below must use pageType: direct-response-long-form-vsl unless pageTypeOverrideUserRequested is true.")
+    if sales_quality.get("sectionDepthChecked") is not True:
+        issues.append("Sales page quality metadata must confirm sectionDepthChecked.")
+    if sales_quality.get("repeatedTextChecked") is not True:
+        issues.append("Sales page quality metadata must confirm repeatedTextChecked.")
+    if sales_quality.get("offerStackItemsUnique") is not True:
+        issues.append("Sales page quality metadata must confirm offerStackItemsUnique.")
+
+    visible_text = visible_text_from_html(html_text)
+    word_count = len(re.findall(r"\b[\w'-]+\b", visible_text))
+    recorded_word_count = quality_number(sales_quality.get("visibleWordCount"))
+    if recorded_word_count and abs(recorded_word_count - word_count) > max(250, word_count * 0.25):
+        warnings.append("Sales page visibleWordCount metadata differs substantially from inspected page text.")
+    if page_type == "direct-response-long-form-vsl" and word_count < 2500:
+        issues.append(f"Direct-response long-form VSL page is too thin: {word_count} visible words found, 2500+ expected.")
+    faq_marker_count = len(re.findall(r"data-offeros-faq-item(?:\s|=|>)", html_text, flags=re.I))
+    cta_marker_count = len(re.findall(r"data-offeros-cta(?:\s|=|>)", html_text, flags=re.I))
+    if page_type == "direct-response-long-form-vsl" and faq_marker_count < 7:
+        issues.append(f"Direct-response long-form VSL page must include 7+ FAQ items marked data-offeros-faq-item: {faq_marker_count} found.")
+    if page_type == "direct-response-long-form-vsl" and cta_marker_count < 4:
+        issues.append(f"Direct-response long-form VSL page must include 4+ CTA elements marked data-offeros-cta: {cta_marker_count} found.")
+    if page_type == "direct-response-long-form-vsl" and quality_number(sales_quality.get("objectionCount")) < 7:
+        issues.append("Direct-response long-form VSL page must record 7+ objections handled.")
+    if page_type == "direct-response-long-form-vsl" and quality_number(sales_quality.get("ctaCount")) < 4:
+        issues.append("Direct-response long-form VSL page must record 4+ CTA placements.")
+    if page_type == "direct-response-long-form-vsl":
+        validate_direct_response_page_contract(html_text, manifest, sales_quality, issues)
+
+    repeated = repeated_sentences(visible_text)
+    if repeated:
+        examples = "; ".join(f"'{text[:80]}' x{count}" for text, count in repeated[:3])
+        issues.append("Sales page contains repeated boilerplate copy: " + examples)
+    repeated_blocks = repeated_body_blocks(html_text, threshold=2)
+    if repeated_blocks:
+        examples = "; ".join(f"'{text[:80]}' x{count}" for text, count in repeated_blocks[:3])
+        issues.append("Sales page contains repeated card/body copy: " + examples)
+
+
+def validate_direct_response_page_contract(html_text: str, manifest: dict, sales_quality: dict, issues: list[str]) -> None:
+    if sales_quality.get("heroContract") != "direct-response-hero-v1":
+        issues.append("Direct-response sales page quality metadata must record heroContract: direct-response-hero-v1.")
+    if sales_quality.get("offerStackContract") != "direct-response-buy-box-v1":
+        issues.append("Direct-response sales page quality metadata must record offerStackContract: direct-response-buy-box-v1.")
+
+    price = numeric_price(manifest.get("price"))
+    hero = section_html(html_text, "hero")
+    if hero:
+        if not has_marker(hero, "data-offeros-buyer-filter"):
+            issues.append("Direct-response hero must include a buyer filter marked data-offeros-buyer-filter.")
+        if not has_marker(hero, "data-offeros-hero-video"):
+            issues.append("Direct-response hero must include a VSL/video frame marked data-offeros-hero-video.")
+        else:
+            hero_video = element_with_marker(hero, "data-offeros-hero-video")
+            if "<img" not in hero_video.lower():
+                issues.append("Direct-response hero video frame must include a thumbnail/image.")
+            if not re.search(r"\b(play|watch|video|vsl|pitch)\b", visible_text_from_html(hero_video), flags=re.I):
+                issues.append("Direct-response hero video frame must include a play/watch/pitch cue.")
+        if not has_marker(hero, "data-offeros-price-strip"):
+            issues.append("Direct-response hero must include an in-hero price strip marked data-offeros-price-strip.")
+        else:
+            price_strip = element_with_marker(hero, "data-offeros-price-strip")
+            if not contains_expected_price(price_strip, price):
+                issues.append("Direct-response hero price strip must show manifest.price.")
+            if not re.search(r"\b(total value|value|normally|regular|today|includes?)\b", visible_text_from_html(price_strip), flags=re.I):
+                issues.append("Direct-response hero price strip must include value context and a short stack summary.")
+        if not any(href == "#buy" for href in anchor_hrefs_with_marker(hero, "data-offeros-cta")):
+            issues.append('Direct-response hero must include a primary data-offeros-cta link with href="#buy".')
+        if not has_marker(hero, "data-offeros-trust-row"):
+            issues.append("Direct-response hero must include a trust row marked data-offeros-trust-row.")
+        else:
+            trust_row = element_with_marker(hero, "data-offeros-trust-row")
+            trust_items = len(re.findall(r"<li\b", trust_row, flags=re.I))
+            if trust_items < 3:
+                issues.append(f"Direct-response hero trust row must include 3+ trust bullets: {trust_items} found.")
+
+    offer_stack = section_html(html_text, "offer-stack")
+    if offer_stack:
+        if not section_opening_tag_has(html_text, "offer-stack", r'\bid\s*=\s*["\']buy["\']|\bdata-offeros-buy-section(?:\s|=|>)'):
+            issues.append('Direct-response offer stack must be the buy section with id="buy" or data-offeros-buy-section.')
+        if not has_marker(offer_stack, "data-offeros-product-bundle"):
+            issues.append("Direct-response offer stack must include a product bundle visual marked data-offeros-product-bundle.")
+        if not has_marker(offer_stack, "data-offeros-offer-checklist"):
+            issues.append("Direct-response offer stack must include a deliverable checklist marked data-offeros-offer-checklist.")
+        else:
+            checklist = element_with_marker(offer_stack, "data-offeros-offer-checklist")
+            checklist_items = len(re.findall(r"<li\b", checklist, flags=re.I))
+            if checklist_items < 8:
+                issues.append(f"Direct-response offer checklist must include 8+ concrete deliverables: {checklist_items} found.")
+        if not has_marker(offer_stack, "data-offeros-value-row"):
+            issues.append("Direct-response offer stack must include a normally/today value row marked data-offeros-value-row.")
+        else:
+            value_row = element_with_marker(offer_stack, "data-offeros-value-row")
+            value_text = visible_text_from_html(value_row)
+            if not re.search(r"\b(normally|regular|total value|value)\b", value_text, flags=re.I) or not re.search(r"\b(today|now)\b", value_text, flags=re.I):
+                issues.append("Direct-response offer value row must contrast normal/total value with today's price.")
+            if not contains_expected_price(value_row, price):
+                issues.append("Direct-response offer value row must show manifest.price.")
+        if not has_marker(offer_stack, "data-offeros-stack-cta"):
+            issues.append("Direct-response offer stack must include a large stack CTA marked data-offeros-stack-cta.")
+        if not anchor_hrefs_with_marker(offer_stack, "data-offeros-cta"):
+            issues.append("Direct-response offer stack must include a data-offeros-cta purchase/access link.")
+        if not has_marker(offer_stack, "data-offeros-access-copy"):
+            issues.append("Direct-response offer stack must include guarantee/instant-access reassurance marked data-offeros-access-copy.")
+
+
+def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    logo_artifact = by_id.get("logo")
+    logo_path = artifact_path(root, logo_artifact)
+    if not logo_path or not logo_path.exists():
+        issues.append("Logo missing; cannot validate identity quality.")
+        return
+
+    logo_quality = manifest.get("quality", {}).get("logo", {})
+    if not isinstance(logo_quality, dict):
+        logo_quality = {}
+
+    if quality_number(logo_quality.get("conceptCount")) < 3:
+        issues.append("Logo quality metadata must record 3+ explored concepts.")
+    if logo_quality.get("smallSizeChecked") is not True:
+        issues.append("Logo quality metadata must confirm smallSizeChecked.")
+    if logo_quality.get("oneColorChecked") is not True:
+        issues.append("Logo quality metadata must confirm oneColorChecked.")
+    if logo_quality.get("exportedPng") is not True:
+        issues.append("Logo quality metadata must confirm exportedPng/bitmap preview.")
+    if logo_quality.get("critiquePassed") is not True:
+        issues.append("Logo quality metadata must confirm critiquePassed.")
+
+    provenance = (logo_artifact or {}).get("provenance", "")
+    deep_run = manifest.get("mode") == "deep"
+    design_type = str(manifest.get("designSource", {}).get("type", "")).strip()
+    if deep_run and design_type in {"", "unresolved"}:
+        issues.append("Deep runs must resolve designSource.type before completion. Use generated when creating a generated design direction.")
+    logo_requires_imagegen = deep_run and provenance not in {"provided", "licensed"}
+    vector_primary_requested = logo_quality.get("vectorPrimaryUserRequested") is True
+    if logo_requires_imagegen and logo_path.suffix.lower() == ".svg" and not vector_primary_requested:
+        issues.append("Deep generated-design runs must not use SVG as the primary logo. Use a PNG/WebP primary logo and register SVG only as a secondary export unless vectorPrimaryUserRequested is true.")
+    primary_format = str(logo_quality.get("primaryFormat", "")).lower().strip()
+    if logo_requires_imagegen and not vector_primary_requested and primary_format not in {"png", "webp", "jpg", "jpeg"}:
+        issues.append("Logo quality metadata must record bitmap primaryFormat for generated-design deep runs.")
+    imagegen_blocker = str(logo_quality.get("imagegenNotUsedReason", "")).strip()
+    if logo_requires_imagegen and not vector_primary_requested and not imagegen_blocker and provenance != "imagegen":
+        issues.append("Deep generated-design runs must register the primary logo with provenance: imagegen.")
+    if logo_requires_imagegen and imagegen_blocker and (logo_artifact or {}).get("status") == "complete":
+        issues.append("Logo cannot be complete when quality.logo.imagegenNotUsedReason is set.")
+
+    if logo_path.suffix.lower() == ".svg" and provenance == "code-vector":
+        if not all(
+            [
+                quality_number(logo_quality.get("conceptCount")) >= 3,
+                logo_quality.get("smallSizeChecked") is True,
+                logo_quality.get("oneColorChecked") is True,
+                logo_quality.get("exportedPng") is True,
+                logo_quality.get("critiquePassed") is True,
+            ]
+        ):
+            issues.append("Code-vector SVG logo is marked complete without the required concept/refinement/small-size QA path.")
+
+
+def validate_ads(root: Path, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    ads_artifact = by_id.get("facebook-ads")
+    ads_path = artifact_path(root, ads_artifact)
+    if not ads_path or not ads_path.exists():
+        issues.append("Facebook ads artifact missing; cannot validate ad-copy depth.")
+        return
+    if ads_path.suffix.lower() not in TEXT_EXTS:
+        return
+    raw_text = text_for(ads_path)
+    text = raw_text
+    if ads_path.suffix.lower() in {".html", ".htm"}:
+        text = visible_text_from_html(raw_text)
+    repeated = repeated_sentences(text, threshold=5)
+    if repeated:
+        examples = "; ".join(f"'{sentence[:80]}' x{count}" for sentence, count in repeated[:3])
+        issues.append("Facebook ads contain repeated boilerplate copy: " + examples)
+    repeated_blocks = repeated_body_blocks(raw_text, threshold=2)
+    if repeated_blocks:
+        examples = "; ".join(f"'{sentence[:80]}' x{count}" for sentence, count in repeated_blocks[:3])
+        issues.append("Facebook ads contain repeated card/body copy: " + examples)
+
+
+def validate_vsl(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    deck_artifact = by_id.get("vsl-deck")
+    deck_path = artifact_path(root, deck_artifact)
+    if not deck_path or not deck_path.exists():
+        issues.append("VSL deck missing; cannot validate readiness.")
+        return
+    deck_preview = str((deck_artifact or {}).get("preview", "")).strip()
+    if deck_preview:
+        preview_suffix = Path(deck_preview).suffix.lower()
+        if preview_suffix in {".pptx", ".ppt"}:
+            issues.append("VSL deck preview must be browser-safe HTML or image, not the PowerPoint file itself.")
+        if not (root / deck_preview).exists():
+            issues.append(f"VSL deck preview path does not exist: {deck_preview}")
+
+    slide_count = None
+    deck_text = ""
+    suffix = deck_path.suffix.lower()
+    vsl_quality = manifest.get("quality", {}).get("vsl", {})
+    if not isinstance(vsl_quality, dict):
+        vsl_quality = {}
+    if suffix != ".pptx" and vsl_quality.get("nonPptxUserRequested") is not True:
+        issues.append("Primary VSL deck must be a PowerPoint .pptx artifact. HTML belongs in vsl-preview, not vsl-deck.")
+    if suffix == ".pptx":
+        slide_count = count_pptx_slides(deck_path)
+        slides = pptx_slide_texts(deck_path)
+        stage_label_hits = visible_stage_labels(slides)
+        if stage_label_hits:
+            issues.append("VSL deck exposes internal stage labels as visible slide copy: " + "; ".join(stage_label_hits[:5]))
+        notes = pptx_note_texts(deck_path)
+        if slide_count and len(notes) < slide_count:
+            issues.append(f"VSL deck must include speaker notes for every slide: {len(notes)} note slides found for {slide_count} slides.")
+        short_notes = []
+        for index, note_texts in enumerate(notes[: slide_count or len(notes)], 1):
+            note_text = " ".join(note_texts)
+            word_count = len(re.findall(r"\b[\w'-]+\b", note_text))
+            if word_count < 25:
+                short_notes.append(f"slide {index}: {word_count} words")
+        if short_notes:
+            issues.append("VSL speaker notes are too thin for recording guidance: " + "; ".join(short_notes[:5]))
+        price_mismatches = []
+        expected_price = numeric_price(manifest.get("price"))
+        for index, note_texts in enumerate(notes[: slide_count or len(notes)], 1):
+            note_text = " ".join(note_texts)
+            mismatches = stale_price_mentions(note_text, expected_price)
+            if mismatches:
+                price_mismatches.append(f"slide {index}: {', '.join(mismatches)}")
+        if price_mismatches:
+            issues.append("VSL speaker notes mention prices that differ from manifest.price: " + "; ".join(price_mismatches[:5]))
+        media_count = count_pptx_media(deck_path)
+        visual_asset_count = quality_number(vsl_quality.get("visualAssetCount"))
+        if media_count == 0 and visual_asset_count < 6 and vsl_quality.get("usesVectorDiagrams") is not True:
+            issues.append("VSL PPTX has no embedded media and visualAssetCount is below 6; replace placeholder blocks with real visuals, diagrams, screenshots, or product previews.")
+        if media_count and not pillow_available():
+            issues.append("Cannot validate VSL PPTX image aspect ratios because Pillow is unavailable in the active Python runtime.")
+        else:
+            aspect_issues = pptx_image_aspect_issues(deck_path)
+            if aspect_issues:
+                issues.append("VSL PPTX image aspect ratio distortion detected: " + "; ".join(aspect_issues[:8]))
+    elif suffix in {".html", ".htm"}:
+        deck_text = text_for(deck_path)
+        slide_count = count_html_slides(deck_text)
+        compact = re.sub(r"\s+", "", deck_text.lower())
+        if "display:grid" in compact and "grid-template-columns" in compact:
+            issues.append("VSL deck appears to be a grid/contact sheet. Register that as vsl-preview; vsl-deck must be presentation-ready.")
+    if slide_count is not None and slide_count < 20:
+        issues.append(f"VSL deck has too few slides: {slide_count} found, 20+ expected.")
+
+    expected = {
+        "presentationReady": "presentation-ready deck",
+        "hasSpeakerNotes": "speaker notes or narration guidance",
+        "hasOfferReveal": "offer reveal",
+        "hasPrice": "price slide",
+        "hasGuarantee": "guarantee slide",
+        "hasObjections": "objection handling slides",
+    }
+    for key, label in expected.items():
+        if vsl_quality.get(key) is not True:
+            issues.append(f"VSL quality metadata must confirm {label}.")
+    layout_count = quality_number(vsl_quality.get("layoutCount"))
+    if layout_count < 8:
+        issues.append(f"VSL layout count below target: {layout_count or 'missing'} found, 8+ expected.")
+    max_layout_share = quality_float(vsl_quality.get("maxLayoutShare"))
+    if not max_layout_share:
+        issues.append("VSL quality metadata must record maxLayoutShare.")
+    elif max_layout_share > 0.35:
+        issues.append(f"VSL repeats one layout too often: maxLayoutShare {max_layout_share:.2f}, must be <= 0.35.")
+    layout_audit = vsl_quality.get("layoutAudit")
+    if not isinstance(layout_audit, list) or not layout_audit:
+        issues.append("VSL quality metadata must include layoutAudit with slide, layoutFamily, and visualAsset for every slide.")
+    elif slide_count is not None:
+        if len(layout_audit) != slide_count:
+            issues.append(f"VSL layoutAudit must include one entry per slide: {len(layout_audit)} entries for {slide_count} slides.")
+        family_counts: dict[str, int] = {}
+        missing_layout_fields = 0
+        missing_visual_assets = 0
+        for item in layout_audit:
+            if not isinstance(item, dict) or not item.get("slide") or not item.get("layoutFamily"):
+                missing_layout_fields += 1
+                continue
+            family = str(item.get("layoutFamily")).strip().lower()
+            family_counts[family] = family_counts.get(family, 0) + 1
+            if not str(item.get("visualAsset", "")).strip():
+                missing_visual_assets += 1
+        if missing_layout_fields:
+            issues.append(f"VSL layoutAudit has {missing_layout_fields} entries missing slide/layoutFamily.")
+        if missing_visual_assets:
+            issues.append(f"VSL layoutAudit has {missing_visual_assets} entries missing visualAsset.")
+        if family_counts and slide_count:
+            audit_max_share = max(family_counts.values()) / slide_count
+            if audit_max_share > 0.35:
+                issues.append(f"VSL layoutAudit shows one layout family dominates: {audit_max_share:.2f}, must be <= 0.35.")
+    for key, label in {
+        "notesAreNarration": "notesAreNarration",
+        "visibleStageLabelsRemoved": "visibleStageLabelsRemoved",
+        "layoutDiversityChecked": "layoutDiversityChecked",
+        "visualPlaceholdersRemoved": "visualPlaceholdersRemoved",
+    }.items():
+        if vsl_quality.get(key) is not True:
+            issues.append(f"VSL quality metadata must confirm {label}.")
+    if vsl_quality.get("primaryFormat") not in {"pptx", "powerpoint"} and vsl_quality.get("nonPptxUserRequested") is not True:
+        issues.append("VSL quality metadata must record primaryFormat: pptx.")
+    if slide_count is not None and quality_number(vsl_quality.get("slideCount")) and quality_number(vsl_quality.get("slideCount")) != slide_count:
+        warnings.append("VSL metadata slide count does not match the inspected deck.")
+
+
+def validate_qa_notes(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    qa_artifact = by_id.get("qa-notes")
+    qa_path = artifact_path(root, qa_artifact)
+    if not qa_path or not qa_path.exists():
+        issues.append("QA notes missing; cannot validate final QA record.")
+        return
+    qa_text = text_for(qa_path)
+    qa_lower = qa_text.lower()
+    pdf_pages = quality_number(manifest.get("quality", {}).get("pdf", {}).get("pageCount"))
+    if pdf_pages:
+        page_claims = [int(value) for value in re.findall(r"\b(\d{1,3})-page\s+(?:workbook|pdf|product|toolkit|source)", qa_lower)]
+        mismatches = sorted({value for value in page_claims if value != pdf_pages})
+        if mismatches:
+            issues.append(f"QA notes contain stale PDF page-count claims {mismatches}; manifest records {pdf_pages}.")
+    if '"overflowx": true' in qa_lower:
+        issues.append("QA notes record browser horizontal overflow; fix responsive layout before completion.")
+    if re.search(r'"brokenimages"\s*:\s*\[[^\]]*[^\s\]]', qa_lower):
+        issues.append("QA notes record broken browser images; fix assets before completion.")
+    if "vsl preview" not in qa_lower and "vsl-preview" not in qa_lower:
+        issues.append("QA notes must include browser QA for the VSL preview at desktop and mobile widths.")
+
+
+def validate_dashboard(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    dashboard_artifact = by_id.get("delivery-dashboard")
+    dashboard_path = artifact_path(root, dashboard_artifact)
+    if not dashboard_path or not dashboard_path.exists():
+        issues.append("Delivery dashboard missing; cannot validate modal template.")
+        return
+    html_text = text_for(dashboard_path)
+    compact = re.sub(r"\s+", "", html_text.lower())
+    requirements = {
+        "data-offeros-dashboard=\"v2-modal\"": "standard v2 modal dashboard marker",
+        "class=\"modal\"": "modal preview container",
+        "<iframe": "iframe preview support",
+        "data-preview=": "artifact preview data attributes",
+        "data-path=": "artifact path data attributes",
+        "queryselectorall('.card')": "card click preview binding",
+    }
+    for token, label in requirements.items():
+        if token not in compact:
+            issues.append(f"Delivery dashboard missing {label}. Use scripts/generate_delivery_dashboard.py and theme it instead of hand-rolling a static grid.")
+    deck_artifact = by_id.get("vsl-deck")
+    if deck_artifact:
+        deck_path = deck_artifact.get("path", "")
+        deck_preview = deck_artifact.get("preview", "")
+        if deck_path and f'data-path="{deck_path.lower()}"' not in compact:
+            issues.append("Delivery dashboard must preserve the VSL deck data-path so Open Deck opens the PPTX.")
+        if deck_preview and f'data-preview="{deck_preview.lower()}"' not in compact:
+            issues.append("Delivery dashboard must use the browser-safe VSL deck preview in data-preview.")
+        if deck_path and deck_preview and deck_path == deck_preview and Path(deck_path).suffix.lower() in {".pptx", ".ppt"}:
+            issues.append("Delivery dashboard must not iframe the PPTX as its card preview; use vsl-preview HTML/image.")
+    dashboard_quality = manifest.get("quality", {}).get("dashboard", {})
+    if not isinstance(dashboard_quality, dict):
+        dashboard_quality = {}
+    if dashboard_quality.get("templateVersion") != "v2-modal":
+        issues.append("Dashboard quality metadata must record templateVersion: v2-modal.")
+    if dashboard_quality.get("hasModalPreview") is not True:
+        issues.append("Dashboard quality metadata must confirm hasModalPreview.")
+    if dashboard_quality.get("hasIframePreview") is not True:
+        issues.append("Dashboard quality metadata must confirm hasIframePreview.")
+
+
+def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], warnings: list[str]) -> None:
+    imagegen_count = 0
+    real_bitmap_count = 0
+    for artifact in artifacts:
+        rel_path = artifact.get("path", "")
+        suffix = Path(rel_path).suffix.lower()
+        is_image = artifact.get("type") == "image" or suffix in IMAGE_EXTS or artifact.get("category") in {"Images", "Ads"}
+        if not is_image:
+            continue
+        provenance = artifact.get("provenance", "")
+        if not provenance:
+            issues.append(f"Image artifact missing provenance: {artifact.get('id', rel_path)}")
+        elif provenance not in ALLOWED_PROVENANCE:
+            issues.append(f"Image artifact has invalid provenance '{provenance}': {artifact.get('id', rel_path)}")
+        if generated_claim(artifact) and provenance != "imagegen":
+            issues.append(f"Artifact claims generated imagery without imagegen provenance: {artifact.get('id', rel_path)}")
+        if provenance == "imagegen":
+            imagegen_count += 1
+            if suffix == ".svg":
+                issues.append(f"Imagegen artifact should be bitmap, not SVG: {artifact.get('id', rel_path)}")
+        if provenance in {"imagegen", "provided", "licensed"} and suffix in BITMAP_EXTS:
+            real_bitmap_count += 1
+
+    image_quality = manifest.get("quality", {}).get("images", {})
+    if not isinstance(image_quality, dict):
+        image_quality = {}
+    if manifest.get("mode") == "deep":
+        if manifest.get("designSource", {}).get("type") == "generated" and imagegen_count < 3 and not image_quality.get("imagegenNotUsedReason"):
+            issues.append("Generated-design deep runs should include at least 3 imagegen bitmap artifacts or record imagegenNotUsedReason.")
+        if real_bitmap_count < 3 and not image_quality.get("bitmapNotUsedReason"):
+            warnings.append("Deep runs should include at least 3 real bitmap visual assets for hero/product/ad use.")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Validate registered OfferOS outputs.")
+    parser.add_argument("--manifest", default="offer-os.json")
+    parser.add_argument("--workspace", default=".")
+    parser.add_argument("--strict", action="store_true", help="Require all deep-mode core artifacts.")
+    parser.add_argument("--write-report", default="", help="Optional QA report path.")
+    parser.add_argument("--no-write", action="store_true", help="Do not update offer-os.json with QA results.")
+    args = parser.parse_args()
+
+    root = Path(args.workspace).resolve()
+    manifest_path = root / args.manifest
+    manifest = load_json(manifest_path)
+    issues = []
+    warnings = []
+
+    for key in ["schema", "offerName", "audience", "modules", "artifacts"]:
+        if key not in manifest:
+            issues.append(f"Manifest missing key: {key}")
+
+    artifacts = manifest.get("artifacts", [])
+    if not isinstance(artifacts, list):
+        issues.append("Manifest artifacts must be a list of artifact objects.")
+        artifacts = []
+    by_id = artifact_map(artifacts)
+
+    deep_required = args.strict or manifest.get("mode") == "deep"
+    if deep_required:
+        for artifact_id in DEEP_REQUIRED_IDS:
+            if artifact_id not in by_id:
+                issues.append(f"Missing required deep artifact registration: {artifact_id}")
+
+    ad_image_count = sum(1 for item in artifacts if item.get("category") == "Ads" and item.get("type") == "image")
+    if deep_required and ad_image_count < 3:
+        issues.append("Deep mode must register at least 3 Facebook ad images in category Ads.")
+
+    for artifact in artifacts:
+        rel_path = artifact.get("path", "")
+        if not rel_path:
+            issues.append(f"Artifact missing path: {artifact.get('id', 'unknown')}")
+            continue
+        path = root / rel_path
+        if not path.exists():
+            issues.append(f"Missing artifact file: {rel_path}")
+            continue
+        if path.suffix.lower() in TEXT_EXTS:
+            tokens = scan_text(path)
+            for token in tokens:
+                issues.append(f"Possible unresolved token in {rel_path}: {token}")
+
+        preview = artifact.get("preview")
+        if preview and not (root / preview).exists():
+            issues.append(f"Missing preview for {rel_path}: {preview}")
+
+        if artifact.get("status") in {"draft", "needs_revision", "planned"}:
+            warnings.append(f"Artifact is not complete: {artifact.get('id', rel_path)} ({artifact.get('status')})")
+
+    if deep_required:
+        validate_images(manifest, artifacts, issues, warnings)
+        validate_logo(root, manifest, by_id, issues, warnings)
+        validate_ads(root, by_id, issues, warnings)
+        validate_email_sequence(root, by_id, issues, warnings)
+        validate_sales_page(root, manifest, by_id, issues, warnings)
+        validate_pdf(root, manifest, by_id, issues, warnings)
+        validate_vsl(root, manifest, by_id, issues, warnings)
+        validate_dashboard(root, manifest, by_id, issues, warnings)
+        validate_qa_notes(root, manifest, by_id, issues, warnings)
+        audit_scores_ok(manifest.get("commercialAudit", {}), issues, warnings)
+        qa = manifest.get("qa", {})
+        if not isinstance(qa, dict):
+            issues.append("QA metadata missing or invalid.")
+        else:
+            technical = qa.get("technical", {})
+            commercial = qa.get("commercial", {})
+            if not isinstance(technical, dict) or str(technical.get("status", "")).lower() not in {"passed", "complete", "validated"}:
+                issues.append("QA metadata must include technical.status passed/complete/validated.")
+            if not isinstance(commercial, dict) or str(commercial.get("status", "")).lower() not in {"passed", "complete", "validated"}:
+                issues.append("QA metadata must include commercial.status passed/complete/validated.")
+
+    result = {
+        "ok": not issues,
+        "issueCount": len(issues),
+        "warningCount": len(warnings),
+        "issues": issues,
+        "warnings": warnings,
+    }
+
+    if not args.no_write:
+        qa = manifest.setdefault("qa", {})
+        qa.update(
+            {
+                "lastRun": datetime.now(timezone.utc).isoformat(),
+                "status": "passed" if not issues else "failed",
+                "issues": issues,
+                "warnings": warnings,
+            }
+        )
+        qa.setdefault("technical", {})
+        qa.setdefault("commercial", {})
+        if issues:
+            qa["technical"].setdefault("status", "failed")
+            qa["commercial"].setdefault("status", "failed")
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    if args.write_report:
+        report_path = root / args.write_report
+        lines = [
+            "# OfferOS QA Report",
+            "",
+            f"Status: {'PASSED' if not issues else 'FAILED'}",
+            f"Issues: {len(issues)}",
+            f"Warnings: {len(warnings)}",
+            "",
+            "## Issues",
+            *(f"- {issue}" for issue in issues),
+            "",
+            "## Warnings",
+            *(f"- {warning}" for warning in warnings),
+            "",
+        ]
+        report_path.write_text("\n".join(lines), encoding="utf-8")
+
+    print(json.dumps(result, indent=2))
+    return 0 if not issues else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
