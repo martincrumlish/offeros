@@ -99,7 +99,13 @@ git -C "$HOME\plugins\offer-os" pull --ff-only
 Before tagging a release:
 
 ```powershell
-python skills/offer-os/scripts/self_test_offer_os_skill.py --bad-workspace D:\dev\hyroxoffer3
+python skills/offer-os/scripts/self_test_offer_os_skill.py
+```
+
+Maintainers can also run regression checks against local known-bad generated outputs:
+
+```powershell
+python skills/offer-os/scripts/self_test_offer_os_skill.py --bad-workspace <path-to-known-bad-output>
 ```
 
 Then:

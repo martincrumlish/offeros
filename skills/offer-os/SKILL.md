@@ -116,8 +116,10 @@ Browser QA must include sales page, delivery dashboard, and VSL preview at deskt
 Before handing a revised OfferOS skill or generated offer back to the user, run:
 
 ```powershell
-python plugins\offer-os\skills\offer-os\scripts\self_test_offer_os_skill.py --bad-workspace D:\dev\hyroxoffer3
+python plugins\offer-os\skills\offer-os\scripts\self_test_offer_os_skill.py
 ```
+
+Maintainers may add `--bad-workspace <path-to-known-bad-output>` when testing against a local regression fixture.
 
 Use the available Python executable. This self-test checks that the skill source contains the exact recipes and that known bad outputs fail for the expected reasons. If the self-test fails, fix the source instructions or validator before asking the user to test again.
 

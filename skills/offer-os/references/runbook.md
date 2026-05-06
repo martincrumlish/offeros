@@ -231,8 +231,10 @@ Deep mode is not complete if the validator reports issues or warnings. Revise so
 When changing the OfferOS skill itself or assessing a generated regression workspace, run the self-test:
 
 ```powershell
-.\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\self_test_offer_os_skill.py --bad-workspace D:\dev\hyroxoffer3
+.\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\self_test_offer_os_skill.py
 ```
+
+Maintainers may add `--bad-workspace <path-to-known-bad-output>` when testing against a local regression fixture.
 
 Then perform browser/visual checks for sales page, PDF, VSL preview, deck, and dashboard. Run a commercial value audit for sales page, PDF product, ads, emails, VSL deck, and dashboard. Fix blockers before final delivery.
 
