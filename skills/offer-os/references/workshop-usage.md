@@ -98,19 +98,25 @@ Rewrite design.md into a practical production guide with colors, typography, lay
 For weak logo output:
 
 ```text
-The logo is a one-pass placeholder, primary SVG, or non-imagegen bitmap. Re-run the Logo Gate: create 3 logo concepts, select one with rationale, use imagegen for the refined primary PNG/WebP logo or brand mark, add optional secondary SVG only if needed, check small-size and one-color use, and record quality.logo metadata.
+The logo is a one-pass placeholder, icon-only mark, primary SVG, or non-imagegen bitmap. Re-run the Logo Gate: create 3 logo concepts, select one with rationale, use imagegen for the brand mark, save assets/logo.png as a complete readable logo lockup with the offer name, add optional secondary SVG only if needed, check small-size and one-color use, and record quality.logo metadata.
 ```
 
 For weak sales-page structure:
 
 ```text
-The sales page is too short/product-page-like. Select a page type from sales-page-types.md, default to direct-response-long-form-vsl, then rewrite copy.md and index.html to include the full problem, agitation, failed alternatives, mechanism, proof/demo, offer stack, price, guarantee, objection, and close arc.
+The sales page is too short/product-page-like or reads as a wall of text. Select a page type from sales-page-types.md, default to direct-response-long-form-vsl, then rewrite copy.md and index.html to include the full problem, agitation, failed alternatives, mechanism, proof/demo, offer stack, price, guarantee, objection, and close arc. Keep VSL setup short, paragraphs under 55 words, and use tables/callouts/checklists instead of generic essay sections.
+```
+
+For weak PDF product:
+
+```text
+The PDF is not a paid workbook; it repeats the same page layout or generic Action Surface boxes. Rebuild it from the PDF Product Recipe: define named buyer tools/templates, add completed examples and matching blank versions, use 7+ page archetypes, raise the extracted word count to the price-point target, and render representative pages from every archetype.
 ```
 
 For weak VSL output:
 
 ```text
-The VSL deck is not presentation-ready. Rebuild the PPTX using vsl-deck-quality.md: remove visible stage labels, create at least 8 visual treatments, replace placeholder blocks with real visuals/diagrams/product previews, and make speaker notes usable narration.
+The VSL deck is not presentation-ready. Rebuild the PPTX using vsl-deck-quality.md: remove visible stage labels, create at least 8 layout families, use 12+ unique visual assets/treatments, stop recycling the same few images, replace placeholder blocks with real visuals/diagrams/product previews, and make speaker notes usable narration.
 ```
 
 For incomplete QA:

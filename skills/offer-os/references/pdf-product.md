@@ -24,11 +24,15 @@ Do not ship a thin PDF. In `deep` mode, the product should feel like the buyer's
 
 Minimum paid-product targets:
 
-- Up to $29: 18+ pages, 2,500+ extracted words, 4+ modules, 5+ buyer-action surfaces.
-- $30-$99: 25+ pages, 4,000+ extracted words, 5+ modules, 8+ buyer-action surfaces.
+- Up to $29: 22+ pages, 3,500+ extracted words, 4+ modules, 8+ buyer-action surfaces, 8+ named tools/templates.
+- $30-$99: 25+ pages, 4,000+ extracted words, 5+ modules, 8+ buyer-action surfaces, 10+ named tools/templates.
 - $100+: 35+ pages, 6,000+ extracted words, 6+ modules, 10+ buyer-action surfaces.
 
 Buyer-action surfaces include worksheets, calculators, scorecards, scripts, swipe files, checklists, templates, station cards, planners, examples, implementation plans, and audits. At least one core tool should have both a filled example and a blank worksheet.
+
+Deep-mode PDFs must also use distinct page archetypes. Use at least 7 archetypes such as cover, quick start, guide lesson, decision matrix, completed example, blank worksheet, checklist, script/swipe, audit/scoring, implementation plan, and resource index. No single archetype should account for more than 35% of pages.
+
+Do not ship pages that repeat the same header/body/"Action Surface" box layout. Do not use "Action Surface" as repeated buyer-facing page furniture. Name the actual tool the buyer is using.
 
 If the product genuinely needs fewer pages or fewer extracted words because it is intentionally visual, explicitly record the user-approved reason in the QA notes and commercial audit. Do not silently call a short or low-substance PDF complete.
 
@@ -70,5 +74,8 @@ Verify:
 - page count and action-surface count meet the price-point depth target
 - extracted text meets the price-point target unless the user approved a visual exception
 - rendered screenshots or page images were inspected
+- named tools/templates are counted
+- page archetype variety is counted
+- no repeated generic "Action Surface" boxes or identical page layouts dominate the product
 
 Use the PDF skill when rendering, inspecting, or layout-checking PDFs.

@@ -12,6 +12,7 @@ Each section must include `data-offeros-section="<id>"` so QA can validate struc
 | Hero | `hero` | Create immediate desire and buying momentum | Buyer filter pill, prehead, specific headline, benefit lead, VSL/video frame, price strip, CTA to `#buy`, trust row | Hero VSL thumbnail/video frame |
 | VSL | `vsl` | Deepen the pitch after the hero | VSL thumbnail/preview, play CTA, short promise, bridge from hero | VSL thumbnail |
 | Problem Diagnosis | `problem` | Make the buyer feel understood | Specific pain, hidden cost, current state | Problem visual |
+| Agitation | `agitation` | Make inaction feel expensive | Cost of delay, compounding consequence, emotional frustration, business/operational drag | Cost-of-delay graphic or callout |
 | Failed Alternatives | `failed-alternatives` | Invalidate what they already tried | Common fixes and why they fail | Comparison table |
 | Unique Mechanism | `mechanism` | Install the new belief | Mechanism name, explanation, why it works | Framework diagram |
 | Before/After | `before-after` | Make value concrete | Weak current state vs desired state | Before/after graphic |
@@ -65,6 +66,12 @@ Hard requirements for `direct-response-long-form-vsl`:
 
 - 2,500+ visible words.
 - 16+ meaningful sections or subsections.
+- Separate `problem`, `agitation`, and `failed-alternatives` sections; do not combine them into one essay.
+- VSL section visible copy must stay under 220 words and function as a video/pitch setup, not a long written sales letter.
+- Normal paragraphs must stay under 55 words; use bullets, tables, proof cards, and callouts for longer ideas.
+- No section except FAQ or offer stack may exceed 500 visible words.
+- Every table cell, before/after card, proof/demo card, and product/bonus card must contain visible buyer-facing text.
+- Text/background contrast must be checked in-browser; white text on white, invisible badges, or blank-looking cards fail the page.
 - 7+ FAQ items marked with `data-offeros-faq-item`.
 - 4+ CTA links/buttons marked with `data-offeros-cta`.
 - Unique buyer-facing copy for every offer-stack, angle, bonus, and product card.

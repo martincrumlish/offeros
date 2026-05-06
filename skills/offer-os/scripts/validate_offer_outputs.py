@@ -44,6 +44,7 @@ DEEP_REQUIRED_IDS = [
 
 ALLOWED_PROVENANCE = {
     "imagegen",
+    "imagegen-composite",
     "provided",
     "licensed",
     "screenshot",
@@ -68,6 +69,7 @@ REQUIRED_SALES_PAGE_SECTIONS = [
     "hero",
     "vsl",
     "problem",
+    "agitation",
     "failed-alternatives",
     "mechanism",
     "before-after",
@@ -126,10 +128,18 @@ def numeric_price(value) -> float:
 
 def pdf_targets(price: float) -> tuple[int, int, int]:
     if price and price <= 29:
-        return 18, 5, 2500
+        return 22, 8, 3500
     if price and price <= 99:
         return 25, 8, 4000
     return 35, 10, 6000
+
+
+def pdf_tool_targets(price: float) -> tuple[int, int]:
+    if price and price <= 29:
+        return 8, 2
+    if price and price <= 99:
+        return 10, 3
+    return 12, 3
 
 
 def artifact_map(artifacts: list[dict]) -> dict[str, dict]:
@@ -155,6 +165,24 @@ def count_pdf(path: Path) -> tuple[int | None, int | None]:
         except Exception:
             pass
     return len(reader.pages), words
+
+
+def extract_pdf_text(path: Path) -> str:
+    try:
+        from pypdf import PdfReader
+    except Exception:
+        return ""
+    try:
+        reader = PdfReader(str(path))
+    except Exception:
+        return ""
+    pages = []
+    for page in reader.pages:
+        try:
+            pages.append(page.extract_text() or "")
+        except Exception:
+            pass
+    return "\n".join(pages)
 
 
 def count_pptx_slides(path: Path) -> int | None:
@@ -262,6 +290,31 @@ def visible_text_from_html(html_text: str) -> str:
     return re.sub(r"[ \t\r\f\v]+", " ", text)
 
 
+def html_word_count(html_text: str) -> int:
+    return len(re.findall(r"\b[\w'-]+\b", visible_text_from_html(html_text)))
+
+
+def long_paragraphs(html_text: str, limit: int = 55) -> list[str]:
+    findings = []
+    for index, match in enumerate(re.finditer(r"<p\b[^>]*>(.*?)</p>", html_text, flags=re.I | re.S), 1):
+        text = visible_text_from_html(match.group(1))
+        word_count = len(re.findall(r"\b[\w'-]+\b", text))
+        if word_count > limit:
+            findings.append(f"paragraph {index}: {word_count} words")
+    return findings
+
+
+def empty_table_cells(html_text: str) -> int:
+    empty_count = 0
+    for match in re.finditer(r"<t[dh]\b[^>]*>(.*?)</t[dh]>", html_text, flags=re.I | re.S):
+        content = match.group(1)
+        if "<img" in content.lower():
+            continue
+        if len(re.findall(r"\b[\w'-]+\b", visible_text_from_html(content))) == 0:
+            empty_count += 1
+    return empty_count
+
+
 def repeated_sentences(text: str, threshold: int = 4) -> list[tuple[str, int]]:
     counts: dict[str, int] = {}
     for sentence in re.split(r"[.!?]\s+|\n+", text):
@@ -332,7 +385,7 @@ def pptx_note_texts(path: Path) -> list[list[str]]:
 def count_pptx_media(path: Path) -> int | None:
     try:
         with zipfile.ZipFile(path) as archive:
-            return len([name for name in archive.namelist() if name.startswith("ppt/media/")])
+            return len([name for name in archive.namelist() if name.startswith("ppt/media/") and Path(name).suffix.lower() in IMAGE_EXTS])
     except Exception:
         return None
 
@@ -439,6 +492,51 @@ def pptx_image_aspect_issues(path: Path, tolerance: float = 0.08) -> list[str]:
     return findings
 
 
+def pptx_large_bitmap_reuse(path: Path, min_area: int = 200_000) -> dict:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            slide_names = sorted(
+                [name for name in archive.namelist() if re.match(r"ppt/slides/slide\d+\.xml$", name)],
+                key=lambda name: int(re.search(r"slide(\d+)\.xml$", name).group(1)),
+            )
+            media_hashes: dict[str, str] = {}
+            dimensions_cache: dict[str, tuple[int, int] | None] = {}
+            hash_slide_counts: dict[str, int] = {}
+            for slide_name in slide_names:
+                rel_targets = pptx_relationship_targets(archive, slide_name)
+                xml = archive.read(slide_name).decode("utf-8", errors="ignore")
+                slide_hashes = set()
+                for embed in re.finditer(r'<a:blip\b[^>]*\br:embed="([^"]+)"', xml, flags=re.I):
+                    media_name = rel_targets.get(embed.group(1))
+                    if not media_name or media_name not in archive.namelist():
+                        continue
+                    if media_name not in dimensions_cache:
+                        dimensions_cache[media_name] = pptx_image_dimensions(archive, media_name)
+                    dimensions = dimensions_cache[media_name]
+                    if not dimensions:
+                        continue
+                    width, height = dimensions
+                    if width * height < min_area:
+                        continue
+                    if media_name not in media_hashes:
+                        import hashlib
+
+                        media_hashes[media_name] = hashlib.sha256(archive.read(media_name)).hexdigest()
+                    slide_hashes.add(media_hashes[media_name])
+                for media_hash in slide_hashes:
+                    hash_slide_counts[media_hash] = hash_slide_counts.get(media_hash, 0) + 1
+            slide_count = len(slide_names)
+            most_repeated = max(hash_slide_counts.values(), default=0)
+            return {
+                "slideCount": slide_count,
+                "uniqueLargeBitmapHashes": len(hash_slide_counts),
+                "mostRepeatedLargeBitmapSlides": most_repeated,
+                "mostRepeatedLargeBitmapShare": most_repeated / slide_count if slide_count else 0,
+            }
+    except Exception:
+        return {}
+
+
 def stale_price_mentions(text: str, expected_price: float) -> list[str]:
     if not expected_price:
         return []
@@ -525,7 +623,9 @@ def validate_pdf(root: Path, manifest: dict, by_id: dict[str, dict], issues: lis
         issues.append("PDF product missing; cannot validate depth.")
         return
 
-    min_pages, min_surfaces, min_words = pdf_targets(numeric_price(manifest.get("price")))
+    price = numeric_price(manifest.get("price"))
+    min_pages, min_surfaces, min_words = pdf_targets(price)
+    min_named_tools, min_example_pairs = pdf_tool_targets(price)
     page_count, word_count = count_pdf(pdf_path)
     if page_count is None:
         warnings.append("Could not inspect PDF page count because pypdf is unavailable or failed.")
@@ -533,6 +633,10 @@ def validate_pdf(root: Path, manifest: dict, by_id: dict[str, dict], issues: lis
         issues.append(f"PDF product is too thin for the price point: {page_count} pages found, {min_pages}+ expected.")
     if word_count is not None and word_count < min_words:
         issues.append(f"PDF extracted text is light for a paid product: {word_count} words found, {min_words}+ expected.")
+    pdf_text = extract_pdf_text(pdf_path).lower()
+    action_surface_mentions = len(re.findall(r"\baction surface\b", pdf_text))
+    if action_surface_mentions > 2:
+        issues.append(f"PDF repeats generic 'Action Surface' labels {action_surface_mentions} times; use named buyer tools/templates instead.")
 
     pdf_quality = manifest.get("quality", {}).get("pdf", {})
     if not isinstance(pdf_quality, dict):
@@ -540,6 +644,25 @@ def validate_pdf(root: Path, manifest: dict, by_id: dict[str, dict], issues: lis
     action_count = quality_number(pdf_quality.get("actionSurfaceCount"))
     if action_count < min_surfaces:
         issues.append(f"PDF action-surface count below target: {action_count or 'missing'} found, {min_surfaces}+ expected.")
+    named_tool_count = quality_number(pdf_quality.get("namedToolCount"))
+    if named_tool_count < min_named_tools:
+        issues.append(f"PDF named tool/template count below target: {named_tool_count or 'missing'} found, {min_named_tools}+ expected.")
+    page_archetype_count = quality_number(pdf_quality.get("pageArchetypeCount"))
+    if page_archetype_count < 7:
+        issues.append(f"PDF page archetype count below target: {page_archetype_count or 'missing'} found, 7+ expected.")
+    max_page_archetype_share = quality_float(pdf_quality.get("maxPageArchetypeShare"))
+    if not max_page_archetype_share:
+        issues.append("PDF quality metadata must record maxPageArchetypeShare.")
+    elif max_page_archetype_share > 0.35:
+        issues.append(f"PDF repeats one page archetype too often: maxPageArchetypeShare {max_page_archetype_share:.2f}, must be <= 0.35.")
+    completed_example_count = quality_number(pdf_quality.get("completedExampleCount"))
+    blank_template_count = quality_number(pdf_quality.get("blankTemplateCount"))
+    if completed_example_count < min_example_pairs:
+        issues.append(f"PDF completed example count below target: {completed_example_count or 'missing'} found, {min_example_pairs}+ expected.")
+    if blank_template_count < min_example_pairs:
+        issues.append(f"PDF blank template count below target: {blank_template_count or 'missing'} found, {min_example_pairs}+ expected.")
+    if pdf_quality.get("genericActionSurfaceLabelsRemoved") is not True:
+        issues.append("PDF quality metadata must confirm genericActionSurfaceLabelsRemoved.")
     if pdf_quality.get("hasCompletedExamples") is not True:
         issues.append("PDF quality metadata must confirm completed examples.")
     if pdf_quality.get("hasBlankTemplates") is not True:
@@ -633,6 +756,8 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         issues.append("Sales page quality metadata must confirm repeatedTextChecked.")
     if sales_quality.get("offerStackItemsUnique") is not True:
         issues.append("Sales page quality metadata must confirm offerStackItemsUnique.")
+    if page_type == "direct-response-long-form-vsl" and sales_quality.get("compositionContract") != "direct-response-composition-v1":
+        issues.append("Direct-response sales page quality metadata must record compositionContract: direct-response-composition-v1.")
 
     visible_text = visible_text_from_html(html_text)
     word_count = len(re.findall(r"\b[\w'-]+\b", visible_text))
@@ -652,6 +777,27 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
     if page_type == "direct-response-long-form-vsl" and quality_number(sales_quality.get("ctaCount")) < 4:
         issues.append("Direct-response long-form VSL page must record 4+ CTA placements.")
     if page_type == "direct-response-long-form-vsl":
+        vsl_words = html_word_count(section_html(html_text, "vsl"))
+        if vsl_words > 220:
+            issues.append(f"Direct-response VSL setup section is too text-heavy: {vsl_words} visible words found, 220 maximum.")
+        section_limits = [
+            section
+            for section in REQUIRED_SALES_PAGE_SECTIONS
+            if section not in {"header", "hero", "offer-stack", "faq", "footer"}
+        ]
+        oversized_sections = []
+        for section in section_limits:
+            section_words = html_word_count(section_html(html_text, section))
+            if section_words > 500:
+                oversized_sections.append(f"{section}: {section_words} words")
+        if oversized_sections:
+            issues.append("Direct-response page has wall-of-text sections above 500 words: " + "; ".join(oversized_sections[:5]))
+        paragraph_findings = long_paragraphs(html_text, limit=55)
+        if paragraph_findings:
+            issues.append("Sales page has paragraphs above the 55-word direct-response limit: " + "; ".join(paragraph_findings[:5]))
+        blank_cells = empty_table_cells(html_text)
+        if blank_cells:
+            issues.append(f"Sales page contains {blank_cells} blank table cells; required comparison cells must contain visible copy.")
         validate_direct_response_page_contract(html_text, manifest, sales_quality, issues)
 
     repeated = repeated_sentences(visible_text)
@@ -752,6 +898,18 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
         issues.append("Logo quality metadata must confirm exportedPng/bitmap preview.")
     if logo_quality.get("critiquePassed") is not True:
         issues.append("Logo quality metadata must confirm critiquePassed.")
+    if logo_quality.get("logoLockup") is not True:
+        issues.append("Logo quality metadata must confirm logoLockup so the primary logo is not icon-only.")
+    if logo_quality.get("includesReadableOfferName") is not True:
+        issues.append("Logo quality metadata must confirm includesReadableOfferName.")
+    logo_provenance_for_source = (logo_artifact or {}).get("provenance", "")
+    if (
+        manifest.get("mode") == "deep"
+        and logo_provenance_for_source not in {"provided", "licensed"}
+        and logo_quality.get("vectorPrimaryUserRequested") is not True
+        and str(logo_quality.get("brandMarkSource", "")).strip().lower() != "imagegen"
+    ):
+        issues.append("Logo quality metadata must record brandMarkSource: imagegen for deep generated-design runs.")
 
     provenance = (logo_artifact or {}).get("provenance", "")
     deep_run = manifest.get("mode") == "deep"
@@ -766,8 +924,8 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
     if logo_requires_imagegen and not vector_primary_requested and primary_format not in {"png", "webp", "jpg", "jpeg"}:
         issues.append("Logo quality metadata must record bitmap primaryFormat for generated-design deep runs.")
     imagegen_blocker = str(logo_quality.get("imagegenNotUsedReason", "")).strip()
-    if logo_requires_imagegen and not vector_primary_requested and not imagegen_blocker and provenance != "imagegen":
-        issues.append("Deep generated-design runs must register the primary logo with provenance: imagegen.")
+    if logo_requires_imagegen and not vector_primary_requested and not imagegen_blocker and provenance not in {"imagegen", "imagegen-composite"}:
+        issues.append("Deep generated-design runs must register the primary logo with provenance: imagegen or imagegen-composite.")
     if logo_requires_imagegen and imagegen_blocker and (logo_artifact or {}).get("status") == "complete":
         issues.append("Logo cannot be complete when quality.logo.imagegenNotUsedReason is set.")
 
@@ -864,6 +1022,13 @@ def validate_vsl(root: Path, manifest: dict, by_id: dict[str, dict], issues: lis
             aspect_issues = pptx_image_aspect_issues(deck_path)
             if aspect_issues:
                 issues.append("VSL PPTX image aspect ratio distortion detected: " + "; ".join(aspect_issues[:8]))
+            reuse = pptx_large_bitmap_reuse(deck_path)
+            if reuse.get("mostRepeatedLargeBitmapShare", 0) > 0.25:
+                issues.append(
+                    "VSL deck repeats the same large bitmap too often: "
+                    f"{reuse.get('mostRepeatedLargeBitmapSlides')} of {reuse.get('slideCount')} slides "
+                    f"({reuse.get('mostRepeatedLargeBitmapShare'):.2f}), must be <= 0.25."
+                )
     elif suffix in {".html", ".htm"}:
         deck_text = text_for(deck_path)
         slide_count = count_html_slides(deck_text)
@@ -887,6 +1052,16 @@ def validate_vsl(root: Path, manifest: dict, by_id: dict[str, dict], issues: lis
     layout_count = quality_number(vsl_quality.get("layoutCount"))
     if layout_count < 8:
         issues.append(f"VSL layout count below target: {layout_count or 'missing'} found, 8+ expected.")
+    unique_visual_count = quality_number(vsl_quality.get("uniqueVisualAssetCount"))
+    if unique_visual_count < 12:
+        issues.append(f"VSL unique visual asset/treatment count below target: {unique_visual_count or 'missing'} found, 12+ expected.")
+    max_repeated_bitmap_share = quality_float(vsl_quality.get("maxRepeatedBitmapShare"))
+    if "maxRepeatedBitmapShare" not in vsl_quality:
+        issues.append("VSL quality metadata must record maxRepeatedBitmapShare.")
+    elif max_repeated_bitmap_share > 0.25:
+        issues.append(f"VSL maxRepeatedBitmapShare too high: {max_repeated_bitmap_share:.2f}, must be <= 0.25.")
+    if vsl_quality.get("visualReuseChecked") is not True:
+        issues.append("VSL quality metadata must confirm visualReuseChecked.")
     max_layout_share = quality_float(vsl_quality.get("maxLayoutShare"))
     if not max_layout_share:
         issues.append("VSL quality metadata must record maxLayoutShare.")
@@ -1007,9 +1182,9 @@ def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], wa
             issues.append(f"Image artifact missing provenance: {artifact.get('id', rel_path)}")
         elif provenance not in ALLOWED_PROVENANCE:
             issues.append(f"Image artifact has invalid provenance '{provenance}': {artifact.get('id', rel_path)}")
-        if generated_claim(artifact) and provenance != "imagegen":
-            issues.append(f"Artifact claims generated imagery without imagegen provenance: {artifact.get('id', rel_path)}")
-        if provenance == "imagegen":
+        if generated_claim(artifact) and provenance not in {"imagegen", "imagegen-composite"}:
+            issues.append(f"Artifact claims generated imagery without imagegen/imagegen-composite provenance: {artifact.get('id', rel_path)}")
+        if provenance in {"imagegen", "imagegen-composite"}:
             imagegen_count += 1
             if suffix == ".svg":
                 issues.append(f"Imagegen artifact should be bitmap, not SVG: {artifact.get('id', rel_path)}")

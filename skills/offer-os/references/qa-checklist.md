@@ -46,7 +46,7 @@ Check:
 - no mobile horizontal overflow
 - text is readable
 - buttons are consistent
-- logo is not a one-pass placeholder; concept count, small-size check, one-color check, and bitmap preview are recorded
+- logo is not a one-pass placeholder or icon-only mark; it includes the readable offer name, concept count, small-size check, one-color check, and bitmap preview are recorded
 - generated graphics fit their containers
 - image provenance is recorded honestly
 - SVG/PIL/CSS fallbacks are not mislabeled as imagegen outputs
@@ -69,6 +69,8 @@ Check:
 - extracted text meets the price-point depth target unless the user explicitly approved a highly visual workbook
 - action surfaces are present: worksheets, templates, examples, checklists, scripts, planners, or scorecards
 - completed examples and blank buyer-fillable templates exist for the core tool
+- buyer-action pages use named tools/templates instead of repeated "Action Surface" boxes
+- page archetypes vary across the guide/workbook; the PDF is not one repeated page layout
 - rendered pages/screenshots were inspected visually
 
 ## Deck QA
@@ -85,6 +87,7 @@ Check:
 - dashboard card uses browser-safe preview for the PPTX and the open action points to the actual `.pptx`
 - deck is presentation-ready, not just a contact-sheet grid
 - deck uses varied layouts; no single layout family dominates
+- deck uses 12+ unique visual assets/treatments and does not repeat the same few large images as filler
 - visible slide copy is buyer-facing everywhere, with no internal labels such as "Agitate", "Stage: Problem", or "CTA"
 - speaker notes are usable narration guidance, not author reminders
 - placeholder visual blocks were replaced or clearly recorded as drafts

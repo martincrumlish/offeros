@@ -79,10 +79,13 @@ Required result:
 
 - `assets/logo.png`
 - `brand.logo = "assets/logo.png"`
-- `logo` artifact registered with `provenance: "imagegen"`
-- `quality.logo.generationTool = "imagegen"`
+- primary logo is a complete lockup with readable offer name, not an icon-only mark
+- `logo` artifact registered with `provenance: "imagegen"` or `provenance: "imagegen-composite"`
+- `quality.logo.brandMarkSource = "imagegen"`
+- `quality.logo.logoLockup = true`
+- `quality.logo.includesReadableOfferName = true`
 
-Do not create or register a primary SVG logo. Do not create a PIL/HTML/CSS raster fallback and call it complete.
+Do not create or register a primary SVG logo. Do not create an icon-only mark, PIL/HTML/CSS raster fallback, or text-only graphic and call it complete.
 
 Update `offer-os.json`:
 
@@ -122,9 +125,12 @@ Required result:
 
 - `index.html` started from `assets/templates/sales-page/page-skeleton.html`
 - every required `data-offeros-section` marker retained
+- separate `problem`, `agitation`, and `failed-alternatives` sections retained
 - direct-response hero contract retained: video frame, price strip, CTA to `#buy`, trust row
 - offer-stack buy-box contract retained: `id="buy"`, bundle image, 8+ item checklist, value row, large CTA, guarantee/access reassurance
 - at least 2,500 visible words for `direct-response-long-form-vsl`
+- VSL setup section under 220 visible words
+- normal paragraphs under 55 words
 - at least 7 FAQ objections
 - at least 4 CTA placements
 - unique buyer-facing copy for each offer-stack card
@@ -160,7 +166,7 @@ Record provenance for every visual artifact. If an asset is hand-coded SVG, PIL,
 
 Follow the PDF Product Recipe in `references/exact-build-recipes.md`. Create a buyer-ready PDF under `output/pdf/`. Include an editable source file when useful.
 
-Apply the depth target from `references/pdf-product.md`: page count, extracted word count, action surfaces, completed examples, blank templates, and rendered page QA. Do not call a short outline or thin workbook complete.
+Apply the depth target from `references/pdf-product.md`: page count, extracted word count, action surfaces, named tools/templates, page archetype variety, completed examples, blank templates, and rendered page QA. Do not call a short outline, repeated "Action Surface" page set, or thin workbook complete.
 
 Use the PDF skill for generation/render checks when needed.
 
@@ -199,6 +205,8 @@ Required result:
 - 8+ layout names planned before generation
 - no layout above 35% usage
 - no visible internal stage labels
+- 12+ unique visual assets/treatments
+- no non-logo bitmap repeated on more than 25% of slides
 - speaker notes of at least 25 words per slide
 - HTML/contact-sheet only after the PPTX exists and only registered as `vsl-preview`
 - `vsl-deck.preview` points to browser-safe HTML/image, not the `.pptx`

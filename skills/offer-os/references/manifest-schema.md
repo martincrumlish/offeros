@@ -62,7 +62,7 @@
   "preview": "index.html",
   "description": "Coded sales page for the offer.",
   "status": "complete",
-  "provenance": "imagegen|provided|licensed|screenshot|code-vector|html-css|pil-generated|manual|generated-by-code",
+  "provenance": "imagegen|imagegen-composite|provided|licensed|screenshot|code-vector|html-css|pil-generated|manual|generated-by-code",
   "quality": {
     "buyerValue": 5,
     "usability": 5,
@@ -75,6 +75,7 @@
 Use `provenance` for all images and previews. Use honest labels:
 
 - `imagegen`: imagegen skill/tool output
+- `imagegen-composite`: imagegen output composited with deterministic rendered text/layout
 - `provided`: supplied by user
 - `licensed`: licensed external asset
 - `screenshot`: rendered screenshot from a real artifact
@@ -84,7 +85,7 @@ Use `provenance` for all images and previews. Use honest labels:
 - `manual`: hand-authored document/page/deck
 - `generated-by-code`: deterministic script output
 
-Do not use words like "generated image", "AI-generated", or "imagegen" in an artifact title or description unless provenance is `imagegen`.
+Do not use words like "generated image", "AI-generated", or "imagegen" in an artifact title or description unless provenance is `imagegen` or `imagegen-composite`.
 
 ## Artifact Types
 
@@ -132,6 +133,12 @@ For deep mode, include module-level quality metadata when applicable:
     "pdf": {
       "pageCount": 28,
       "actionSurfaceCount": 10,
+      "namedToolCount": 10,
+      "pageArchetypeCount": 8,
+      "maxPageArchetypeShare": 0.25,
+      "completedExampleCount": 3,
+      "blankTemplateCount": 3,
+      "genericActionSurfaceLabelsRemoved": true,
       "hasCompletedExamples": true,
       "hasBlankTemplates": true,
       "renderChecked": true
@@ -140,8 +147,12 @@ For deep mode, include module-level quality metadata when applicable:
       "conceptCount": 3,
       "selectedConcept": "wordmark plus mechanism badge",
       "primaryFormat": "png",
-      "generationTool": "imagegen",
+      "generationTool": "imagegen+text-composite",
       "imagegenNotUsedReason": "",
+      "brandMarkSource": "imagegen",
+      "wordmarkSource": "rendered-text-composite",
+      "logoLockup": true,
+      "includesReadableOfferName": true,
       "vectorPrimaryUserRequested": false,
       "smallSizeChecked": true,
       "oneColorChecked": true,
@@ -153,6 +164,9 @@ For deep mode, include module-level quality metadata when applicable:
       "layoutCount": 9,
       "maxLayoutShare": 0.29,
       "visualAssetCount": 8,
+      "uniqueVisualAssetCount": 12,
+      "maxRepeatedBitmapShare": 0.21,
+      "visualReuseChecked": true,
       "primaryFormat": "pptx",
       "presentationReady": true,
       "hasSpeakerNotes": true,
@@ -172,6 +186,9 @@ For deep mode, include module-level quality metadata when applicable:
       "pageType": "direct-response-long-form-vsl",
       "pageTypeReason": "Cold front-end offer needs full belief-shift page.",
       "requiredSectionContract": "direct-response-v1",
+      "heroContract": "direct-response-hero-v1",
+      "offerStackContract": "direct-response-buy-box-v1",
+      "compositionContract": "direct-response-composition-v1",
       "sectionMarkersPresent": true,
       "visibleWordCount": 3200,
       "objectionCount": 8,

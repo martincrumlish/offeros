@@ -73,6 +73,10 @@ Key slides must include real visuals, diagrams, screenshots, generated frames, o
 
 Use the resolved design system, but vary composition, scale, contrast, and focal point. A consistent theme does not mean identical slide structure.
 
+Before building the PPTX, create a slide-by-slide visual asset plan. A deep-mode 20-30 slide deck needs 12+ unique visual assets or distinct diagram treatments. Reusing the same 3 generated images as slide filler fails the deck even if the copy changes.
+
+No single non-logo bitmap should appear on more than 25% of slides. Product bundle imagery should appear only on product reveal, offer stack, price/value, and final CTA slides. Use diagrams, comparison tables, matrices, screenshots, product previews, and generated frames to create visual variety instead of stretching a small image set across the whole VSL.
+
 PowerPoint image placement must preserve aspect ratio. In `pptxgenjs`, do not place bitmaps with only arbitrary `x`, `y`, `w`, and `h` values unless the source image ratio already matches the box. Route every deck image through an explicit helper that sets `sizing: { type: "cover", w, h }` for full-bleed/photo boxes or `sizing: { type: "contain", w, h }` for logos, product previews, and UI screenshots. A stretched or compressed bitmap fails the VSL gate.
 
 ## Speaker Notes
@@ -108,6 +112,10 @@ Populate `quality.vsl`:
   "layoutCount": 9,
   "maxLayoutShare": 0.29,
   "primaryFormat": "pptx",
+  "visualAssetCount": 14,
+  "uniqueVisualAssetCount": 12,
+  "maxRepeatedBitmapShare": 0.21,
+  "visualReuseChecked": true,
   "presentationReady": true,
   "hasSpeakerNotes": true,
   "notesAreNarration": true,

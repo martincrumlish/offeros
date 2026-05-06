@@ -28,7 +28,7 @@ Create these outputs for a full run:
 1. `offer-os.json` manifest
 2. offer architecture
 3. `design.md`
-4. primary `assets/logo.png`/`.webp` imagegen logo or brand-mark asset
+4. primary `assets/logo.png`/`.webp` imagegen-based logo lockup with readable offer name
 5. long-form sales copy
 6. coded sales page
 7. supporting images
@@ -61,7 +61,7 @@ Build from these source patterns instead of inventing replacements:
 - Generator-first: create or maintain a reproducible offer build script under `scripts/build_offer_system.*` or equivalent. If QA finds a defect, fix the generator and regenerate from a clean output. Do not manually patch generated files as the final state.
 - Sales page: load `assets/templates/sales-page/section-map.md` and start from `assets/templates/sales-page/page-skeleton.html`. Fill every required `data-offeros-section`; preserve the direct-response hero and buy-box offer-stack contracts exactly, then add/remove only optional sub-blocks inside those sections.
 - Sales page type: load `references/sales-page-types.md` before sales copy and choose a page type. Use `direct-response-long-form-vsl` by default for complete low-ticket, cold-traffic, or internet-marketing offers. Record the selected type in `quality.salesPage.pageType`.
-- Logo: create a real logo direction before producing the final asset. In deep generated-design runs, use the `imagegen` skill/tool to create the primary logo/brand-mark bitmap (`.png` or `.webp`) unless the user supplied a logo or imagegen is blocked. SVG may be a secondary export, but do not mark a code-vector SVG, HTML/CSS render, or PIL raster as the complete primary logo.
+- Logo: create a real logo direction before producing the final asset. In deep generated-design runs, use the `imagegen` skill/tool to create the brand mark, then save `assets/logo.png` as a complete logo lockup that includes the readable offer name. SVG may be a secondary export, but do not mark an icon-only mark, code-vector SVG, HTML/CSS render, or PIL-only raster as the complete primary logo.
 - PDF product: follow the PDF Product Recipe. For $30-$99 paid offers, extracted PDF text below 4,000 words or a product that is mostly repeated explanation/blank lines is a failed product, not a warning.
 - Emails: follow the Email Sequence Recipe. Every launch email must include send timing, subject, preview text, campaign role, body copy, and CTA. Repeated boilerplate paragraphs across emails are a failure.
 - Dashboard: generate `delivery-dashboard.html` with `scripts/generate_delivery_dashboard.py`. After generation, edit theme variables, logo, imagery, and copy only. Preserve `data-offeros-dashboard="v2-modal"`, modal markup, iframe/image preview behavior, and artifact `data-path`/`data-preview` cards.
@@ -79,7 +79,7 @@ Follow this order unless the user explicitly requests a narrower module:
 2. Offer architecture
 3. Design resolver
 4. Brand/name refinement
-5. Primary imagegen logo or brand-mark asset
+5. Primary imagegen-based logo lockup with readable offer name
 6. PDF product outline and offer stack
 7. Sales copy
 8. Sales page build

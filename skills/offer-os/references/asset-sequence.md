@@ -68,7 +68,7 @@ Minimum logo prerequisites:
 - small-size and one-color checks
 - bitmap preview/export for QA
 
-In deep generated-design runs, the primary logo artifact should be an `imagegen` `.png` or `.webp`. A code-vector SVG can be registered only as a secondary export or draft unless the user explicitly requested vector-only delivery. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
+In deep generated-design runs, the primary logo artifact should be an `imagegen` or `imagegen-composite` `.png` or `.webp` logo lockup that includes the readable offer name. The imagegen brand mark alone can be saved as `assets/logo-mark.png`, but it is not the primary logo. A code-vector SVG can be registered only as a secondary export or draft unless the user explicitly requested vector-only delivery. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
 
 ### Sales Page Structure
 
@@ -86,7 +86,7 @@ If speed matters, still preserve:
 
 1. offer direction
 2. lightweight design guide
-3. primary `assets/logo.png`/`.webp` imagegen logo or brand-mark asset
+3. primary `assets/logo.png`/`.webp` imagegen-based logo lockup with readable offer name
 4. page/product graphics
 5. ads/VSL/dashboard variants
 

@@ -41,7 +41,7 @@ Avoid mood-board words unless they become implementation rules.
 
 Purpose: create a usable identity system across all offer assets.
 
-Production rule: follow the Logo Recipe in `references/exact-build-recipes.md`. The primary logo for a deep generated-design run is `assets/logo.png`, created with `imagegen`, registered with `provenance: "imagegen"`. No primary SVG.
+Production rule: follow the Logo Recipe in `references/exact-build-recipes.md`. The primary logo for a deep generated-design run is `assets/logo.png`, built from an imagegen brand mark and saved as a complete logo lockup with the readable offer name. Register it with `provenance: "imagegen"` only if imagegen produced the final readable lockup directly; otherwise use `provenance: "imagegen-composite"`. No primary SVG and no icon-only primary logo.
 
 Output:
 
@@ -51,11 +51,11 @@ Output:
 4. Identity system: color, typography, icon, pattern/texture, image rules, product badge rules.
 5. Brand voice: tone, sentence style, words to use, words to avoid, claims style, CTA style.
 6. Usage rules: sales page, PDF, ads, emails, VSL, dashboard.
-7. `imagegen` prompt for the primary bitmap logo or brand mark, with provenance label.
+7. `imagegen` prompt for the brand mark or complete logo, plus the exact text-composite plan for the final readable logo lockup.
 8. Optional secondary vector export prompt only if the user requested vector output.
 9. Logo QA: nav-size preview, one-color check, bitmap export/preview, and `quality.logo` metadata.
 
-Avoid abstract swooshes, generic marks, fragile details, and visual ideas that cannot extend to product assets. In deep generated-design runs, do not use a hand-coded SVG, HTML/CSS render, or PIL text graphic as the primary complete logo. The primary logo must be a bitmap file such as `.png` or `.webp` created with the `imagegen` skill/tool; SVG is secondary only unless the user explicitly requests vector-only delivery.
+Avoid abstract swooshes, generic marks, fragile details, and visual ideas that cannot extend to product assets. In deep generated-design runs, do not use a hand-coded SVG, HTML/CSS render, or PIL text graphic as the primary complete logo. The primary logo must be a bitmap file such as `.png` or `.webp`, must include the exact readable offer name, and must use imagegen for the brand mark; SVG is secondary only unless the user explicitly requests vector-only delivery.
 
 ## Sales Copy
 
@@ -72,7 +72,7 @@ Output:
 5. Objection handling: price, time, trust, complexity, fit, prior failure, delay.
 6. Microcopy: form labels, checkout reassurance, helper text, confirmation copy.
 
-Avoid vague hype, unsupported superlatives, fake urgency, and copy that could sell any offer.
+Composition rules: write the page as section-specific sales copy, not a single essay. Keep normal paragraphs under 55 words, keep the VSL setup under 220 words, and use comparison rows, checklists, callouts, proof/demo blocks, and CTA blocks to make the page scannable. Avoid vague hype, unsupported superlatives, fake urgency, wall-of-text sections, blank-looking cards, and copy that could sell any offer.
 
 ## Sales Page Build
 
@@ -89,7 +89,7 @@ Output:
 5. Implementation: responsive breakpoints, image sizes, performance, accessibility, form behavior, tracking events.
 6. QA checklist: mobile scan, CTA, links, forms, proof, pricing, objections, speed, accessibility.
 
-The coded page must use real copy and assets. Do not leave placeholders unless the user explicitly requests them.
+The coded page must use real copy and assets. Do not leave placeholders unless the user explicitly requests them. Do not create a giant VSL text block or a polished feature page; the section blueprint must drive the HTML structure.
 
 Use the direct-response section contract from `assets/templates/sales-page/section-map.md`. Keep `data-offeros-section` markers for required sections. For `direct-response-long-form-vsl`, keep the exact hero and buy-box offer-stack contracts: hero video frame, price strip, CTA to `#buy`, trust row, bundle image, deliverable checklist, normally/today value row, large stack CTA, and guarantee/access reassurance. Do not ship a short branded product page, polished feature page, or generic card stack in place of the long-form sales page.
 
@@ -107,9 +107,9 @@ Output:
 4. Core content: section copy, examples, checklists, worksheets, templates, scoring models, implementation steps.
 5. Design spec: cover, typography, colors, callouts, tables, worksheets, page furniture.
 6. Exported PDF and source file.
-7. Depth metadata: page count, action-surface count, completed examples, blank templates, render check.
+7. Depth metadata: page count, action-surface count, named tool count, page archetype count, completed example count, blank template count, render check.
 
-Avoid blog-post content, filler introductions, generic tips, vague worksheet prompts, and no clear next step.
+Avoid blog-post content, filler introductions, generic tips, vague worksheet prompts, repeated "Action Surface" boxes, identical page layouts, and no clear next step. A paid workbook must contain named tools, completed examples, matching blank templates, and distinct page archetypes.
 
 ## Facebook Ads
 
@@ -154,11 +154,12 @@ Output:
 2. Narrative arc: hook, problem, stakes, failed alternatives, insight, mechanism, proof, offer, stack, risk reversal, CTA.
 3. Layout palette: at least 8 visual treatments and max share for the most-used layout.
 4. Slide-by-slide plan for 20 to 30 slides: buyer-facing title, internal job, on-slide text, speaker notes, visual direction, motion notes, assets.
-5. Quality metadata: slide count, layout count, max layout share, speaker notes, visible stage labels removed, notes are narration, offer reveal, price, guarantee, objections, presentation-ready status.
+5. Visual asset plan: 12+ unique visual assets or distinct diagram treatments, no non-logo bitmap repeated on more than 25% of slides, and no recycling the same 3 images as filler.
+6. Quality metadata: slide count, layout count, max layout share, speaker notes, visible stage labels removed, notes are narration, offer reveal, price, guarantee, objections, presentation-ready status.
 
 Create the primary `vsl-deck` as a PowerPoint `.pptx`. Create HTML/contact-sheet output only as `vsl-preview`. Avoid repeated one-layout card grids. A contact sheet is a preview artifact, not the VSL deck.
-6. Timing plan: seconds per slide, runtime, pace notes.
-7. Production notes: voice tone, music, captions, aspect ratio, export requirements, end screen.
+7. Timing plan: seconds per slide, runtime, pace notes.
+8. Production notes: voice tone, music, captions, aspect ratio, export requirements, end screen.
 
 Avoid text-heavy slides, summary decks, decorative animations, and delayed offer reveals without reason. Do not put internal labels such as "Agitate", "Problem", "Proof", "Offer", "CTA", "Objection", "Stage: Problem", or "Problem:" anywhere in visible slide copy.
 

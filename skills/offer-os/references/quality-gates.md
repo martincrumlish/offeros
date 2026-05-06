@@ -61,6 +61,7 @@ Every logo, product image, page graphic, ad image, deck visual, and dashboard pr
 Allowed provenance values:
 
 - `imagegen`: created with the imagegen skill/tool from a prompt.
+- `imagegen-composite`: final bitmap composed from an imagegen mark/frame plus deterministic rendered text or layout.
 - `provided`: supplied by the user.
 - `licensed`: externally sourced with permission/license.
 - `screenshot`: captured from a real page, deck, PDF, or product artifact.
@@ -86,14 +87,14 @@ Must include:
 
 - 3 concept directions considered before final production
 - a selected concept with buyer/category rationale
-- primary final logo or brand-mark bitmap as `.png` or `.webp` created with the `imagegen` skill/tool for deep generated-design runs
+- primary final logo lockup as `.png` or `.webp` that includes the readable offer name and uses the `imagegen` skill/tool for the brand mark in deep generated-design runs
 - optional secondary SVG/vector export only when requested or explicitly useful
 - bitmap preview/export for dashboard and QA review
 - small-size navigation check
 - one-color legibility check
 - `quality.logo` metadata
 
-Fails if the primary logo is not an `imagegen` bitmap in a deep generated-design run unless the user supplied the logo, explicitly requested vector-only delivery, or imagegen was blocked and the blocker is recorded. Also fails if the logo is only a hand-coded SVG made from generic text, boxes, lines, or initials and is still marked complete.
+Fails if the primary logo is not an `imagegen` or `imagegen-composite` bitmap in a deep generated-design run unless the user supplied the logo, explicitly requested vector-only delivery, or imagegen was blocked and the blocker is recorded. Also fails if the logo is icon-only, lacks the readable offer name, or is only a hand-coded SVG made from generic text, boxes, lines, or initials and is still marked complete.
 
 ## Copy Gate
 
@@ -125,7 +126,7 @@ The coded sales page must:
 - use the resolved design system
 - include the required direct-response section contract from `assets/templates/sales-page/section-map.md`
 - mark each core section with `data-offeros-section`
-- include VSL, problem, failed alternatives, mechanism, proof, product, offer stack, pricing, guarantee, FAQ, and final CTA areas
+- include VSL, problem, agitation, failed alternatives, mechanism, proof, product, offer stack, pricing, guarantee, FAQ, and final CTA areas
 - work on mobile and desktop
 - have no broken links, missing assets, overflow, unreadable text, or placeholder content
 - use maintainable HTML/CSS/JS
@@ -134,7 +135,9 @@ For `direct-response-long-form-vsl`, the page must include full problem diagnosi
 
 For `direct-response-long-form-vsl`, the hero must follow the direct-response hero contract: buyer filter, prehead, H1, benefit lead, video/VSL frame inside the hero, price strip, CTA to `#buy`, and trust row. The offer stack must follow the buy-box contract: `id="buy"`, bundle image, 8+ item deliverable checklist, normally/today value row, large CTA, and guarantee/instant-access reassurance.
 
-Fails if it is visually thin, nonresponsive, missing core sections, reads like a short product page, skips the internet-marketing/direct-response arc, uses a nice branded hero instead of the required direct-response hero, replaces the buy-box checklist stack with generic cards/pricing panels, repeats generic card blurbs, or contains scaffold remnants.
+For `direct-response-long-form-vsl`, the page must also follow the composition contract: separate problem/agitation/failed-alternatives sections, VSL setup under 220 words, normal paragraphs under 55 words, no non-FAQ/non-stack section above 500 words, and no blank-looking tables/cards.
+
+Fails if it is visually thin, nonresponsive, missing core sections, reads like a short product page, skips the internet-marketing/direct-response arc, uses a nice branded hero instead of the required direct-response hero, turns the VSL area into a wall of text, replaces the buy-box checklist stack with generic cards/pricing panels, repeats generic card blurbs, has invisible/low-contrast text, or contains scaffold remnants.
 
 ## PDF Product Gate
 
@@ -152,15 +155,17 @@ Must include:
 
 Deep-mode minimums:
 
-- At least 18 pages for a paid product up to $29.
+- At least 22 pages for a paid product up to $29.
 - At least 25 pages for a $30-$99 paid product.
 - At least 35 pages for a $100+ paid product, unless the user explicitly asks for a shorter deliverable.
 - Extracted PDF text meets the price-point target from the validator unless the user explicitly approved a highly visual workbook.
-- At least 6 buyer-action surfaces across worksheets, templates, calculators, scripts, scorecards, cards, checklists, examples, or implementation plans.
-- At least one completed example and one blank fill-in version for core worksheets/templates.
+- At least 8 buyer-action surfaces across worksheets, templates, calculators, scripts, scorecards, cards, checklists, examples, or implementation plans.
+- At least 8 named buyer tools/templates for paid products up to $29 and 10+ for $30-$99 products.
+- At least 7 distinct page archetypes, with no single archetype above 35% of pages.
+- At least two completed examples and two blank fill-in versions for core worksheets/templates.
 - Rendered page previews or screenshots proving that pages are not clipped, blank, or unreadable.
 
-Fails if it is an outline, ebook shell, generic advice document, thin article, short checklist, or lacks practical buyer value.
+Fails if it is an outline, ebook shell, generic advice document, thin article, short checklist, repeated "Action Surface" box pages, identical page layouts, or lacks practical buyer value.
 
 ## Ads Gate
 
@@ -200,6 +205,8 @@ Deep-mode VSL requirements:
 - The PPTX and any preview must use distinct structural slide layouts; HTML presenter output is preview only.
 - At least 8 visual treatments and no single layout family above 35% of slides.
 - Real visuals, diagrams, screenshots, generated frames, or product previews on key slides.
+- At least 12 unique visual assets or distinct diagram treatments.
+- No single large non-logo bitmap repeated on more than 25% of slides.
 - PPTX bitmap images preserve aspect ratio using contain/cover/crop sizing. Images must not be stretched into arbitrary boxes.
 - Speaker notes or narration guidance.
 - Speaker notes must be usable narration guidance, not private labels.
@@ -209,7 +216,7 @@ Deep-mode VSL requirements:
 - `vsl-deck.preview` must point to browser-safe HTML/image, not the `.pptx`.
 - Browser QA must include the VSL preview at desktop and mobile widths with no overflow or broken images.
 
-Fails if it is only HTML registered as the primary VSL deck, only a summary deck, a contact sheet, a grid of cards, repeated one-layout slides, placeholder-heavy, exposes production labels on slides, stretches/compresses bitmap images, or cannot guide a convincing VSL recording.
+Fails if it is only HTML registered as the primary VSL deck, only a summary deck, a contact sheet, a grid of cards, repeated one-layout slides, repeats the same few images as filler, placeholder-heavy, exposes production labels on slides, stretches/compresses bitmap images, or cannot guide a convincing VSL recording.
 
 ## Dashboard Gate
 
@@ -265,6 +272,7 @@ Revision is mandatory when any appear:
 - PDF lacks actionable buyer value
 - PDF is below the minimum page/action-surface depth for the price
 - PDF extracted text is below the price-point target
+- PDF repeats the same page layout or visible "Action Surface" box instead of named tools/templates
 - ads are repetitive, noncompliant, or visually unclear
 - ad angle cards repeat boilerplate instead of unique strategy
 - visual assets claim image generation but were actually SVG/PIL/CSS placeholders
@@ -272,6 +280,7 @@ Revision is mandatory when any appear:
 - emails lack sequence logic, send timing, preview text, campaign role, or repeat boilerplate body copy
 - VSL deck lacks a persuasive sales arc, repeats one layout, exposes stage labels, or is only a contact sheet
 - VSL primary deck is HTML instead of PPTX
+- VSL deck recycles the same few large images across many slides
 - VSL PPTX images are stretched or compressed instead of aspect-preserved with contain/cover/crop sizing
 - VSL preview overflows on mobile or the dashboard tries to iframe the PPTX
 - dashboard does not use the standard modal/iframe template

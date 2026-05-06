@@ -33,30 +33,30 @@ Use this recipe for every deep generated-design run.
 1. Read `offer-os.json`, `offer-architecture.md`, and `design.md`.
 2. Write 3 logo concepts in `design.md` under `## Logo Concepts`. Each concept must include: concept name, visual idea, buyer/category signal, reason to select/reject.
 3. Select 1 concept and write the reason in `design.md` under `## Selected Logo Concept`.
-4. Call the `imagegen` skill/tool for the selected concept. Do not create the primary logo with SVG, HTML/CSS, PIL, canvas, screenshots, icon fonts, or CSS text.
+4. Call the `imagegen` skill/tool for the selected concept. The imagegen call must create the distinctive brand mark or a complete logo image. Do not create the primary logo with SVG, HTML/CSS, PIL, canvas, screenshots, icon fonts, or CSS text alone.
 5. Use this prompt structure for the `imagegen` call:
 
 ```text
 Use case: logo-brand
-Asset type: primary bitmap logo or brand mark for a digital offer
+Asset type: distinctive bitmap brand mark for a complete logo lockup
 Offer name: [exact offer name]
 Audience: [specific audience]
 Positioning: [one-sentence promise/mechanism]
 Visual direction: [selected concept from design.md]
 Style: premium, simple, high-contrast, commercial, usable in a website header, product cover, ads, and dashboard
-Composition: centered logo/brand mark on a plain background, generous padding, strong silhouette, legible at small size
-Text handling: include no tiny text, no slogans, and no secondary lines. If exact text is included, use only "[exact offer name]".
+Composition: centered brand mark on a plain background, generous padding, strong silhouette, legible at small size
+Text handling: prefer no text in the generated mark. If exact text is included, use only "[exact offer name]"; no tiny text, no slogans, no secondary lines.
 Avoid: SVG/vector-code look, clip art, stock icons, mockup scenes, watermarks, fake UI, illegible letters, extra words, gradients that destroy small-size clarity
-Output: finished bitmap logo/brand mark suitable to save as assets/logo.png
+Output: finished bitmap brand mark suitable to combine into assets/logo.png
 ```
 
-6. Inspect the image output. If the offer name is misspelled, malformed, or not legible, do one retry with a simpler prompt. If text still fails, use an imagegen text-free brand mark as `assets/logo.png` and render the offer name as live HTML text beside the logo in pages. Do not fall back to SVG.
-7. Move or copy the selected imagegen output into the project as `assets/logo.png`.
+6. Inspect the image output. If the offer name is misspelled, malformed, or not legible, do one retry with a simpler prompt. If text still fails, use the text-free imagegen brand mark and composite the final logo lockup yourself: imagegen mark on the left, exact rendered offer-name wordmark on the right, transparent or plain background, saved as `assets/logo.png`. Do not ship the icon/mark alone as the primary logo.
+7. Move or copy the selected imagegen output into the project as `assets/logo-mark.png` when a composite is needed. Build `assets/logo.png` as the complete horizontal logo lockup. The final primary logo must include the readable offer name in the bitmap itself.
 8. Set `brand.logo` in `offer-os.json` to `assets/logo.png`.
-9. Register the logo artifact exactly:
+9. Register the logo artifact. Use `imagegen` only when the final `assets/logo.png` came directly from imagegen with the offer name readable. Use `imagegen-composite` when `assets/logo.png` combines an imagegen brand mark with exact rendered wordmark text:
 
 ```powershell
-.\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\register_artifact.py --id logo --title "Primary Logo" --type image --category Brand --path assets/logo.png --provenance imagegen --buyer-value 4 --usability 4 --trust 4
+.\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\register_artifact.py --id logo --title "Primary Logo" --type image --category Brand --path assets/logo.png --provenance imagegen-composite --buyer-value 4 --usability 4 --trust 4
 ```
 
 10. Set `quality.logo`:
@@ -66,8 +66,12 @@ Output: finished bitmap logo/brand mark suitable to save as assets/logo.png
   "conceptCount": 3,
   "selectedConcept": "[concept name]",
   "primaryFormat": "png",
-  "generationTool": "imagegen",
+  "generationTool": "imagegen+text-composite",
   "imagegenNotUsedReason": "",
+  "brandMarkSource": "imagegen",
+  "wordmarkSource": "rendered-text-composite",
+  "logoLockup": true,
+  "includesReadableOfferName": true,
   "vectorPrimaryUserRequested": false,
   "smallSizeChecked": true,
   "oneColorChecked": true,
@@ -79,7 +83,10 @@ Output: finished bitmap logo/brand mark suitable to save as assets/logo.png
 Stop conditions:
 
 - If the primary logo path is `.svg`, stop and rebuild the logo.
-- If provenance is not `imagegen`, stop and rebuild the logo.
+- If the primary logo is an icon or mark without the readable offer name, stop and rebuild the logo lockup.
+- If provenance is not `imagegen` or `imagegen-composite`, stop and rebuild the logo.
+- If `quality.logo.brandMarkSource` is not `imagegen`, stop and rebuild the logo.
+- If `quality.logo.logoLockup` or `quality.logo.includesReadableOfferName` is not `true`, stop and rebuild the logo.
 - If `assets/logo.png` does not exist, do not register `logo` as complete.
 - If imagegen is unavailable, set `quality.logo.imagegenNotUsedReason`, mark `logo` as `needs_revision`, and do not set project status to complete.
 
@@ -89,7 +96,8 @@ Use this recipe for every complete paid front-end offer unless the user explicit
 
 1. Set `quality.salesPage.pageType` to `direct-response-long-form-vsl`.
 2. Write `copy.md` before `index.html`.
-3. `copy.md` must include these exact headings:
+3. Before writing the copy body, write a section-by-section copy blueprint with the conversion job, target word count, proof/objection handled, visual block, and CTA role for every section. This blueprint is not optional; it prevents a generic wall of text.
+4. `copy.md` must include these exact headings:
    - `# Sales Page Type`
    - `# Hero`
    - `# VSL Setup`
@@ -107,19 +115,30 @@ Use this recipe for every complete paid front-end offer unless the user explicit
    - `# Guarantee`
    - `# FAQ`
    - `# Final CTA`
-4. Create `index.html` from `assets/templates/sales-page/page-skeleton.html`. Do not start from a blank page.
-5. Use the exact hero contract from `assets/templates/sales-page/section-map.md`: buyer filter, prehead, H1, benefit lead, `data-offeros-hero-video`, `data-offeros-price-strip`, CTA to `#buy`, and `data-offeros-trust-row`.
-6. Use the exact offer-stack buy-box contract from `assets/templates/sales-page/section-map.md`: `id="buy"`, product bundle visual, `data-offeros-offer-checklist` with 8+ deliverables, `data-offeros-value-row`, large `data-offeros-stack-cta`, and `data-offeros-access-copy`.
-7. Keep every required `data-offeros-section` marker from `assets/templates/sales-page/section-map.md`.
-8. Write unique benefit copy for every offer-stack item. Do not map a repeated sentence over multiple cards.
-9. Include at least 7 FAQ objections, at least 4 CTA placements, and at least 2,500 visible words for `direct-response-long-form-vsl`.
-10. Mark every FAQ item with `data-offeros-faq-item`.
-11. Mark every CTA link or button with `data-offeros-cta`.
-12. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `heroContract: "direct-response-hero-v1"`, and `offerStackContract: "direct-response-buy-box-v1"`.
+5. Create `index.html` from `assets/templates/sales-page/page-skeleton.html`. Do not start from a blank page.
+6. Use the exact hero contract from `assets/templates/sales-page/section-map.md`: buyer filter, prehead, H1, benefit lead, `data-offeros-hero-video`, `data-offeros-price-strip`, CTA to `#buy`, and `data-offeros-trust-row`.
+7. Use the exact offer-stack buy-box contract from `assets/templates/sales-page/section-map.md`: `id="buy"`, product bundle visual, `data-offeros-offer-checklist` with 8+ deliverables, `data-offeros-value-row`, large `data-offeros-stack-cta`, and `data-offeros-access-copy`.
+8. Keep every required `data-offeros-section` marker from `assets/templates/sales-page/section-map.md`, including the separate `agitation` section.
+9. Write unique benefit copy for every offer-stack item. Do not map a repeated sentence over multiple cards.
+10. Use direct-response composition rules:
+    - Hero visible copy: 90-180 words, plus price strip and trust bullets.
+    - VSL section: 80-220 words, one thumbnail/video block, 3-5 bullets, and one CTA. Do not put the whole sales letter in the VSL section.
+    - Problem, agitation, failed alternatives, mechanism, product, proof, offer stack, guarantee, FAQ, and close must be separate visible sections.
+    - No normal paragraph may exceed 55 words. Split long explanations into bullets, comparison rows, labeled callouts, or short copy blocks.
+    - No section except FAQ or offer stack may exceed 500 visible words.
+    - Failed alternatives tables, before/after blocks, product cards, and proof/demo blocks must have visible buyer-facing copy in every cell/card.
+    - The design must use high-contrast text/background pairs; white text on white, low-contrast badges, and blank-looking cards are build failures.
+11. Include at least 7 FAQ objections, at least 4 CTA placements, and at least 2,500 visible words for `direct-response-long-form-vsl`.
+12. Mark every FAQ item with `data-offeros-faq-item`.
+13. Mark every CTA link or button with `data-offeros-cta`.
+14. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `compositionContract: "direct-response-composition-v1"`, `heroContract: "direct-response-hero-v1"`, and `offerStackContract: "direct-response-buy-box-v1"`.
 
 Stop conditions:
 
 - If `index.html` has fewer than 2,500 visible words for `direct-response-long-form-vsl`, revise before QA.
+- If the VSL section becomes a wall of text or exceeds 220 visible words, revise before QA.
+- If any normal paragraph exceeds 55 words, revise before QA.
+- If required comparison/card sections contain blank-looking cells or empty cards, revise before QA.
 - If the hero does not include the video frame, price strip, CTA to `#buy`, and trust row, revise before QA.
 - If the offer stack is only cards or a pricing panel instead of the buy-box checklist stack, revise before QA.
 - If any sentence appears 4+ times in buyer-facing page copy, revise before QA.
@@ -130,20 +149,40 @@ Stop conditions:
 Use this recipe for every paid front-end offer.
 
 1. Choose a product type: toolkit, workbook, playbook, scorecard, checklist pack, implementation guide, or prompt bank.
-2. Create an editable source file under `output/pdf/`.
-3. Create the customer PDF under `output/pdf/`.
-4. For $30-$99 offers, the product must have at least:
+2. Write a product blueprint before generating pages. The blueprint must define:
+   - buyer outcome and completion criteria
+   - module list
+   - named buyer tools/templates
+   - completed examples
+   - matching blank worksheets/templates
+   - page archetype list
+   - how the buyer uses the product in one sitting or one implementation cycle
+3. Build a real product, not an ebook with repeated worksheet boxes. Every buyer-action page must have a specific name and job, such as "Funnel Fit Matrix", "Traffic Source Reality Check", "Buyer Awareness Mapper", "Offer Path Selector", or "Final Funnel Blueprint". Do not use the generic visible label "Action Surface" as a repeated page heading or box title.
+4. Use at least 7 distinct page archetypes in deep mode: cover, quick start, guide lesson, comparison/decision matrix, completed example, blank worksheet, checklist, implementation plan, script/swipe, scoring/audit, or resource index. No single page archetype may exceed 35% of the PDF.
+5. Create an editable source file under `output/pdf/`.
+6. Create the customer PDF under `output/pdf/`.
+7. For offers up to $29, the product must have at least:
+   - 22 pages
+   - 3,500 extracted words unless the user explicitly approved a highly visual workbook
+   - 8 buyer-action surfaces
+   - 8 named buyer tools/templates
+   - 2 completed examples and matching blank templates for core tools
+8. For $30-$99 offers, the product must have at least:
    - 25 pages
    - 4,000 extracted words unless the user explicitly approved a highly visual workbook
    - 8 buyer-action surfaces
-   - 1 completed example and matching blank template for the core tool
-5. Use buyer-action surfaces: audits, calculators, cards, examples, worksheets, templates, scripts, checklists, implementation plans, and debriefs.
-6. Render at least 3 representative pages to `output/pdf/render-check/`.
-7. Set `quality.pdf.pageCount`, `actionSurfaceCount`, `hasCompletedExamples`, `hasBlankTemplates`, and `renderChecked` from the generated artifact, not from memory.
+   - 10 named buyer tools/templates
+   - 3 completed examples and matching blank templates for core tools
+9. Use buyer-action surfaces: audits, calculators, cards, examples, worksheets, templates, scripts, checklists, implementation plans, and debriefs.
+10. Render representative pages from every page archetype to `output/pdf/render-check/`.
+11. Set `quality.pdf.pageCount`, `actionSurfaceCount`, `namedToolCount`, `pageArchetypeCount`, `maxPageArchetypeShare`, `completedExampleCount`, `blankTemplateCount`, `genericActionSurfaceLabelsRemoved`, `hasCompletedExamples`, `hasBlankTemplates`, and `renderChecked` from the generated artifact, not from memory.
 
 Stop conditions:
 
 - If the PDF is mostly repeated explanation plus blank lines, rebuild it as a toolkit/workbook.
+- If most pages reuse the same heading/body/"worksheet box" layout, rebuild with distinct page archetypes.
+- If the phrase "Action Surface" appears as repeated buyer-facing page furniture, rebuild with named tools/templates.
+- If the PDF has page count but lacks named tools, completed examples, and matching blank templates, rebuild before QA.
 - If extracted text is below the price-point target, revise before QA.
 - If page count or QA notes disagree with the actual PDF, revise before handoff.
 
@@ -194,7 +233,13 @@ Use this recipe for every VSL deck.
 7. Visible slide copy must be buyer-facing. Do not put `Hook`, `Problem`, `Agitate`, `Market`, `Mechanism`, `Proof`, `Offer`, `CTA`, `Objection`, `Close`, `Stage: Problem`, `Problem:`, or similar internal labels anywhere on a slide, including badges, footers, eyebrows, and small captions.
 8. Speaker notes must be recording notes of at least 25 words per slide. Do not use notes such as `Explain mechanism`, `Show proof`, or `Agitate`.
 9. Key slides must include visuals, diagrams, generated frames, screenshots, or product previews. Do not use dark placeholder rectangles with labels as finished visuals.
-10. Every bitmap image added to the PPTX must preserve aspect ratio. Do not call `slide.addImage({ path, x, y, w, h })` for a visual box unless the image's source ratio exactly matches that box. Use a local helper and route every VSL image through it:
+10. Create a visual asset plan before generating the PPTX:
+   - 12+ unique visual assets or clearly distinct diagram treatments across a 20-30 slide deck.
+   - No single non-logo bitmap may appear on more than 25% of slides.
+   - Do not recycle the same 3 hero/product images across the deck. A repeated theme is allowed; repeated bitmap filler is not.
+   - Product bundle imagery may appear on product reveal, offer stack, value, and CTA slides only.
+   - Every slide must have a specific visual job: pattern interrupt, comparison, map, matrix, mechanism diagram, example, proof substitute, product view, objection card, price/value contrast, or close.
+11. Every bitmap image added to the PPTX must preserve aspect ratio. Do not call `slide.addImage({ path, x, y, w, h })` for a visual box unless the image's source ratio exactly matches that box. Use a local helper and route every VSL image through it:
 
 ```js
 function addPptxImage(slide, relPath, x, y, w, h, fit = "cover") {
@@ -213,16 +258,18 @@ addPptxImage(slide, "assets/images/hero.png", 6.6, 0, 6.73, 7.5, "cover");
 addPptxImage(slide, "assets/logo.png", 5.15, 4.55, 3.0, 1.7, "contain");
 ```
 
-11. Create HTML/contact-sheet only after the PPTX exists. Save it as `output/presentation/vsl-contact-sheet.png` or `output/presentation/vsl-preview.html`.
-12. Register `vsl-deck` as the `.pptx`; set its `preview` to browser-safe `output/presentation/vsl-preview.html` or an image contact sheet, never to the `.pptx` itself.
-13. Set `quality.vsl.maxLayoutShare`, `notesAreNarration`, `visibleStageLabelsRemoved`, `layoutDiversityChecked`, `visualPlaceholdersRemoved`, `visualAssetCount`, and `layoutAudit`.
-14. Browser-test `output/presentation/vsl-preview.html` at desktop and about 390px mobile width. The build must fail if the preview has horizontal overflow or broken images.
+12. Create HTML/contact-sheet only after the PPTX exists. Save it as `output/presentation/vsl-contact-sheet.png` or `output/presentation/vsl-preview.html`.
+13. Register `vsl-deck` as the `.pptx`; set its `preview` to browser-safe `output/presentation/vsl-preview.html` or an image contact sheet, never to the `.pptx` itself.
+14. Set `quality.vsl.maxLayoutShare`, `notesAreNarration`, `visibleStageLabelsRemoved`, `layoutDiversityChecked`, `visualPlaceholdersRemoved`, `visualAssetCount`, `uniqueVisualAssetCount`, `maxRepeatedBitmapShare`, `visualReuseChecked`, and `layoutAudit`.
+15. Browser-test `output/presentation/vsl-preview.html` at desktop and about 390px mobile width. The build must fail if the preview has horizontal overflow or broken images.
 
 Stop conditions:
 
 - If the primary deck is HTML, stop and rebuild as PPTX.
 - If stage labels are visible as slide titles, revise before QA.
 - If one layout dominates the deck, revise before QA.
+- If the same large bitmap appears on more than 25% of slides, revise the visual plan before QA.
+- If the deck uses fewer than 12 unique visual assets/treatments, revise before QA.
 - If notes are author labels instead of narration, revise before QA.
 - If any PPTX bitmap appears in a box with a different aspect ratio and no PowerPoint `sizing`/crop metadata, revise the generator before QA.
 - If the dashboard iframe preview points at the `.pptx`, revise manifest preview metadata before QA.

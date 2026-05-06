@@ -41,6 +41,7 @@ Depth targets:
 - 2,500+ visible page words for a paid complete offer.
 - 3+ CTA placements after the hero.
 - Hero contract `direct-response-hero-v1` and offer stack contract `direct-response-buy-box-v1`.
+- Composition contract `direct-response-composition-v1`: separate problem/agitation/failed-alternatives sections, VSL setup under 220 words, normal paragraphs under 55 words, no non-FAQ/non-stack section above 500 words, and no blank-looking cards/tables.
 - No repeated boilerplate sentences across offer-stack cards.
 
 ### `mechanism-led-product-page`
@@ -97,11 +98,12 @@ Populate `quality.salesPage`:
 ```json
 {
   "pageType": "direct-response-long-form-vsl",
-  "pageTypeReason": "Cold front-end toolkit offer needs belief shift and VSL-first sales arc.",
-  "requiredSectionContract": "direct-response-v1",
-  "heroContract": "direct-response-hero-v1",
-  "offerStackContract": "direct-response-buy-box-v1",
-  "sectionMarkersPresent": true,
+    "pageTypeReason": "Cold front-end toolkit offer needs belief shift and VSL-first sales arc.",
+    "requiredSectionContract": "direct-response-v1",
+    "heroContract": "direct-response-hero-v1",
+    "offerStackContract": "direct-response-buy-box-v1",
+    "compositionContract": "direct-response-composition-v1",
+    "sectionMarkersPresent": true,
   "visibleWordCount": 3200,
   "objectionCount": 8,
   "ctaCount": 5,
