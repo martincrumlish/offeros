@@ -80,12 +80,19 @@ Required result:
 - `assets/logo.png`
 - `brand.logo = "assets/logo.png"`
 - primary logo is a complete lockup with readable offer name, not an icon-only mark
+- imagegen was first used for complete logo lockup candidates with symbol plus exact offer-name wordmark
+- any fallback imagegen symbol is a logo-grade brand symbol, not an illustration, page-curl/app-icon graphic, or rough cover-art mark
+- wordmark preserves the exact offer name and has checked typography, kerning, mark scale, and spacing
+- `output/qa/logo-lockup-preview.png` shows nav-size and cover-size logo previews
 - `logo` artifact registered with `provenance: "imagegen"` or `provenance: "imagegen-composite"`
 - `quality.logo.brandMarkSource = "imagegen"`
 - `quality.logo.logoLockup = true`
 - `quality.logo.includesReadableOfferName = true`
+- `quality.logo.imagegenCompleteLogoLockupAttempted = true`
+- `quality.logo.exactOfferNamePreserved = true`
+- `quality.logo.professionalLockupApproved = true`
 
-Do not create or register a primary SVG logo. Do not create an icon-only mark, PIL/HTML/CSS raster fallback, or text-only graphic and call it complete.
+Do not create or register a primary SVG logo. Do not create an icon-only mark, illustrative mark, rough text composite, PIL/HTML/CSS raster fallback, or text-only graphic and call it complete.
 
 Update `offer-os.json`:
 

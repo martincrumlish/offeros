@@ -442,6 +442,20 @@ def pptx_image_dimensions(archive: zipfile.ZipFile, media_name: str) -> tuple[in
         return None
 
 
+def bitmap_dimensions(path: Path) -> tuple[int, int] | None:
+    try:
+        from PIL import Image
+    except Exception:
+        return None
+    if path.suffix.lower() not in BITMAP_EXTS:
+        return None
+    try:
+        with Image.open(path) as image:
+            return image.size
+    except Exception:
+        return None
+
+
 def pptx_image_aspect_issues(path: Path, tolerance: float = 0.08) -> list[str]:
     findings = []
     try:
@@ -909,6 +923,23 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
         issues.append("Logo quality metadata must confirm logoLockup so the primary logo is not icon-only.")
     if logo_quality.get("includesReadableOfferName") is not True:
         issues.append("Logo quality metadata must confirm includesReadableOfferName.")
+    for key, label in {
+        "exactOfferNamePreserved": "exactOfferNamePreserved",
+        "markIsLogoSymbol": "markIsLogoSymbol",
+        "markNotIllustration": "markNotIllustration",
+        "markOneColorUsable": "markOneColorUsable",
+        "wordmarkTypographyChecked": "wordmarkTypographyChecked",
+        "wordmarkKerningChecked": "wordmarkKerningChecked",
+        "professionalLockupApproved": "professionalLockupApproved",
+        "lockupPreviewChecked": "lockupPreviewChecked",
+    }.items():
+        if logo_quality.get(key) is not True:
+            issues.append(f"Logo quality metadata must confirm {label}.")
+    preview_path = str(logo_quality.get("lockupPreviewPath", "")).strip()
+    if not preview_path:
+        issues.append("Logo quality metadata must record lockupPreviewPath.")
+    elif not (root / preview_path).exists():
+        issues.append(f"Logo lockup preview path does not exist: {preview_path}")
     logo_provenance_for_source = (logo_artifact or {}).get("provenance", "")
     if (
         manifest.get("mode") == "deep"
@@ -925,14 +956,68 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
         issues.append("Deep runs must resolve designSource.type before completion. Use generated when creating a generated design direction.")
     logo_requires_imagegen = deep_run and provenance not in {"provided", "licensed"}
     vector_primary_requested = logo_quality.get("vectorPrimaryUserRequested") is True
+    if logo_requires_imagegen and logo_quality.get("imagegenCompleteLogoLockupAttempted") is not True:
+        issues.append("Logo quality metadata must confirm imagegenCompleteLogoLockupAttempted.")
+    if logo_requires_imagegen and quality_number(logo_quality.get("imagegenLogoCandidateCount")) < 3:
+        issues.append("Logo quality metadata must record 3+ imagegen complete logo lockup candidates.")
     if logo_requires_imagegen and logo_path.suffix.lower() == ".svg" and not vector_primary_requested:
         issues.append("Deep generated-design runs must not use SVG as the primary logo. Use a PNG/WebP primary logo and register SVG only as a secondary export unless vectorPrimaryUserRequested is true.")
+    logo_rel_path = str((logo_artifact or {}).get("path", "")).replace("\\", "/").lower()
+    brand = manifest.get("brand", {})
+    if not isinstance(brand, dict):
+        brand = {}
+    brand_logo = str(brand.get("logo", "")).replace("\\", "/").strip()
+    brand_logo_lower = brand_logo.lower()
+    if logo_requires_imagegen and not vector_primary_requested:
+        if not brand_logo:
+            issues.append("Generated-design deep runs must set brand.logo to assets/logo.png.")
+        elif brand_logo_lower != logo_rel_path:
+            issues.append("brand.logo must match the registered primary logo artifact path.")
+        if brand_logo_lower.endswith(".svg"):
+            issues.append("Generated-design deep runs must not set brand.logo to an SVG primary logo.")
+        if brand_logo_lower.endswith("logo-mark.png") or brand_logo_lower.endswith("logo-mark.webp") or "logo-mark" in Path(brand_logo_lower).stem:
+            issues.append("brand.logo cannot point at a mark-only file such as logo-mark.")
+        if logo_rel_path.endswith("logo-mark.png") or logo_rel_path.endswith("logo-mark.webp") or "logo-mark" in Path(logo_rel_path).stem:
+            issues.append("Primary logo artifact cannot point at a mark-only file such as logo-mark; register the complete lockup at assets/logo.png.")
+        if logo_rel_path and logo_rel_path != "assets/logo.png":
+            issues.append("Generated-design deep runs must register the primary logo artifact path as assets/logo.png.")
+        if logo_path.suffix.lower() not in BITMAP_EXTS:
+            issues.append("Generated-design deep runs must use a bitmap primary logo file such as PNG or WebP.")
+        else:
+            dimensions = bitmap_dimensions(logo_path)
+            if not dimensions:
+                warnings.append("Could not inspect primary logo bitmap dimensions; install Pillow or regenerate the logo with a readable bitmap.")
+            else:
+                width, height = dimensions
+                if width < 300 or height < 80:
+                    issues.append(f"Primary logo bitmap is too small for a paid offer identity: {width}x{height}.")
+                if width / max(height, 1) < 1.6:
+                    issues.append(f"Primary logo bitmap must be a horizontal lockup, not a square/icon-like canvas: {width}x{height}.")
     primary_format = str(logo_quality.get("primaryFormat", "")).lower().strip()
     if logo_requires_imagegen and not vector_primary_requested and primary_format not in {"png", "webp", "jpg", "jpeg"}:
         issues.append("Logo quality metadata must record bitmap primaryFormat for generated-design deep runs.")
     imagegen_blocker = str(logo_quality.get("imagegenNotUsedReason", "")).strip()
     if logo_requires_imagegen and not vector_primary_requested and not imagegen_blocker and provenance not in {"imagegen", "imagegen-composite"}:
         issues.append("Deep generated-design runs must register the primary logo with provenance: imagegen or imagegen-composite.")
+    generation_tool = str(logo_quality.get("generationTool", "")).strip().lower()
+    if logo_requires_imagegen and "imagegen-complete-logo" not in generation_tool:
+        issues.append("Logo generationTool must record imagegen-complete-logo attempts before any fallback compositor.")
+    if provenance == "imagegen" and logo_quality.get("imagegenCompleteLogoAccepted") is not True:
+        issues.append("Imagegen logos must confirm imagegenCompleteLogoAccepted.")
+    if provenance == "imagegen-composite":
+        wordmark_source = str(logo_quality.get("wordmarkSource", "")).strip().lower()
+        wordmark_method = str(logo_quality.get("wordmarkCompositeMethod", "")).strip().lower()
+        fallback_reason = str(logo_quality.get("fallbackWordmarkCompositeReason", "")).strip()
+        if "professional-wordmark-compositor" not in generation_tool:
+            issues.append("Imagegen-composite logos must record generationTool with professional-wordmark-compositor after complete-logo attempts fail.")
+        if logo_quality.get("imagegenCompleteLogoAccepted") is True:
+            issues.append("Imagegen-composite logos should only be used when complete imagegen logo candidates failed exact text.")
+        if not fallback_reason:
+            issues.append("Imagegen-composite logos must record fallbackWordmarkCompositeReason.")
+        if wordmark_source != "professional-wordmark-compositor":
+            issues.append("Imagegen-composite logos must record wordmarkSource: professional-wordmark-compositor.")
+        if wordmark_method != "scripted-professional-compositor":
+            issues.append("Imagegen-composite logos must record wordmarkCompositeMethod: scripted-professional-compositor.")
     if logo_requires_imagegen and imagegen_blocker and (logo_artifact or {}).get("status") == "complete":
         issues.append("Logo cannot be complete when quality.logo.imagegenNotUsedReason is set.")
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+- Hardens the logo recipe so imagegen must first generate complete logo lockup candidates with symbol plus exact wordmark before any mark-only fallback is allowed.
+- Requires final `assets/logo.png` to be a professional horizontal lockup with exact offer-name preservation, typography, kerning, mark scale, spacing, and nav/cover preview checks.
+- Adds validator checks so `logo-mark` files, rough text composites, and missing professional lockup metadata cannot pass as the primary logo.
+
 ## 0.6.0
 
 - Adds explicit imagegen visual worker dispatch after offer architecture, design, logo, product outline, and `visual-asset-plan.md` exist.

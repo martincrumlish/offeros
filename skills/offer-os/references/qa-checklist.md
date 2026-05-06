@@ -46,7 +46,7 @@ Check:
 - no mobile horizontal overflow
 - text is readable
 - buttons are consistent
-- logo is not a one-pass placeholder or icon-only mark; it includes the readable offer name, concept count, small-size check, one-color check, and bitmap preview are recorded
+- logo is not a one-pass placeholder, icon-only mark, illustrative/page-curl/app-icon mark, or rough text composite; imagegen complete-lockup candidates were attempted first, it includes the exact readable offer name, professional wordmark typography/kerning checks, concept count, small-size check, one-color check, and bitmap lockup preview are recorded
 - generated graphics fit their containers
 - image provenance is recorded honestly
 - SVG/PIL/CSS fallbacks are not mislabeled as imagegen outputs

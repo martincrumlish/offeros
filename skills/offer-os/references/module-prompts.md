@@ -61,7 +61,7 @@ Avoid treating the sales page as the master image pool. Artifact-specific visual
 
 Purpose: create a usable identity system across all offer assets.
 
-Production rule: follow the Logo Recipe in `references/exact-build-recipes.md`. The primary logo for a deep generated-design run is `assets/logo.png`, built from an imagegen brand mark and saved as a complete logo lockup with the readable offer name. Register it with `provenance: "imagegen"` only if imagegen produced the final readable lockup directly; otherwise use `provenance: "imagegen-composite"`. No primary SVG and no icon-only primary logo.
+Production rule: follow the Logo Recipe in `references/exact-build-recipes.md`. The primary logo for a deep generated-design run is `assets/logo.png`, created first through imagegen complete logo lockup candidates with symbol plus exact readable offer-name wordmark. Use a text-free imagegen symbol plus professional wordmark compositor only as a fallback after complete-lockup attempts fail exact text. Register it with `provenance: "imagegen"` only if imagegen produced the final readable lockup directly; otherwise use `provenance: "imagegen-composite"`. No primary SVG, no icon-only primary logo, no illustrative mark, and no rough "mark plus default text" composite.
 
 Output:
 
@@ -71,11 +71,11 @@ Output:
 4. Identity system: color, typography, icon, pattern/texture, image rules, product badge rules.
 5. Brand voice: tone, sentence style, words to use, words to avoid, claims style, CTA style.
 6. Usage rules: sales page, PDF, ads, emails, VSL, dashboard.
-7. `imagegen` prompt for the brand mark or complete logo, plus the exact text-composite plan for the final readable logo lockup.
+7. `imagegen` prompts for 3 complete logo lockup candidates, plus the fallback text-free symbol prompt and professional wordmark-compositor plan only if exact text fails.
 8. Optional secondary vector export prompt only if the user requested vector output.
-9. Logo QA: nav-size preview, one-color check, bitmap export/preview, and `quality.logo` metadata.
+9. Logo QA: nav-size preview, one-color check, exact-name preservation check, wordmark kerning/spacing check, bitmap export/preview, and `quality.logo` metadata.
 
-Avoid abstract swooshes, generic marks, fragile details, and visual ideas that cannot extend to product assets. In deep generated-design runs, do not use a hand-coded SVG, HTML/CSS render, or PIL text graphic as the primary complete logo. The primary logo must be a bitmap file such as `.png` or `.webp`, must include the exact readable offer name, and must use imagegen for the brand mark; SVG is secondary only unless the user explicitly requests vector-only delivery.
+Avoid abstract swooshes, generic marks, fragile details, page-curl/folded-paper graphics, app-icon marks, illustrative cover-art marks, and visual ideas that cannot extend to product assets. In deep generated-design runs, do not use a hand-coded SVG, HTML/CSS render, or PIL text graphic as the primary complete logo. The primary logo must be a horizontal bitmap lockup such as `.png` or `.webp`, must include the exact readable offer name, must use imagegen for complete lockup candidates before any symbol-only fallback, and must pass professional wordmark composition checks; SVG is secondary only unless the user explicitly requests vector-only delivery.
 
 ## Sales Copy
 

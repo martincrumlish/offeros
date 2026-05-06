@@ -34,45 +34,100 @@ Use this recipe for every deep generated-design run.
 1. Read `offer-os.json`, `offer-architecture.md`, and `design.md`.
 2. Write 3 logo concepts in `design.md` under `## Logo Concepts`. Each concept must include: concept name, visual idea, buyer/category signal, reason to select/reject.
 3. Select 1 concept and write the reason in `design.md` under `## Selected Logo Concept`.
-4. Call the `imagegen` skill/tool for the selected concept. The imagegen call must create the distinctive brand mark or a complete logo image. Do not create the primary logo with SVG, HTML/CSS, PIL, canvas, screenshots, icon fonts, or CSS text alone.
-5. Use this prompt structure for the `imagegen` call:
+4. Call the `imagegen` skill/tool for the selected concept to generate at least 3 complete logo lockup candidates. The first logo task is not a mark-only task. It must ask imagegen for a complete commercial logo with a symbol and exact wordmark in one bitmap. Do not create the primary logo with SVG, HTML/CSS, PIL, canvas, screenshots, icon fonts, or CSS text alone.
+5. Use this prompt structure for each complete-lockup `imagegen` call:
 
 ```text
 Use case: logo-brand
-Asset type: distinctive bitmap brand mark for a complete logo lockup
+Asset type: complete bitmap logo lockup, symbol plus exact wordmark
 Offer name: [exact offer name]
 Audience: [specific audience]
 Positioning: [one-sentence promise/mechanism]
 Visual direction: [selected concept from design.md]
-Style: premium, simple, high-contrast, commercial, usable in a website header, product cover, ads, and dashboard
-Composition: centered brand mark on a plain background, generous padding, strong silhouette, legible at small size
-Text handling: prefer no text in the generated mark. If exact text is included, use only "[exact offer name]"; no tiny text, no slogans, no secondary lines.
-Avoid: SVG/vector-code look, clip art, stock icons, mockup scenes, watermarks, fake UI, illegible letters, extra words, gradients that destroy small-size clarity
-Output: finished bitmap brand mark suitable to combine into assets/logo.png
+Style: flat, premium, simple, high-contrast, commercial identity logo, usable at 24px in a website header and at large size on a product cover
+Composition: complete horizontal logo lockup on a plain background; simple symbol on the left; professionally designed wordmark on the right; strong silhouette; 1-2 main symbol shapes; minimal internal detail
+Text handling: include the exact offer name "[exact offer name]" once as the wordmark. Do not insert spaces, split camel-case names, change capitalization, add slogans, add tiny text, or add secondary lines.
+Avoid: mark-only output, icon-only output, illustration, app icon, map pin unless absolutely core to the concept, page curl, folded paper, 3D, shadows, photorealism, mockup scenes, tiny UI diagrams, busy funnel layers, clip art, stock icons, watermarks, fake UI, illegible letters, extra words, gradients that destroy small-size clarity
+Output: finished complete logo lockup suitable to save as assets/logo.png
 ```
 
-6. Inspect the image output. If the offer name is misspelled, malformed, or not legible, do one retry with a simpler prompt. If text still fails, use the text-free imagegen brand mark and composite the final logo lockup yourself: imagegen mark on the left, exact rendered offer-name wordmark on the right, transparent or plain background, saved as `assets/logo.png`. Do not ship the icon/mark alone as the primary logo.
-7. Move or copy the selected imagegen output into the project as `assets/logo-mark.png` when a composite is needed. Build `assets/logo.png` as the complete horizontal logo lockup. The final primary logo must include the readable offer name in the bitmap itself.
-8. Set `brand.logo` in `offer-os.json` to `assets/logo.png`.
-9. Register the logo artifact. Use `imagegen` only when the final `assets/logo.png` came directly from imagegen with the offer name readable. Use `imagegen-composite` when `assets/logo.png` combines an imagegen brand mark with exact rendered wordmark text:
+6. Inspect the complete logo candidates against this logo-lockup acceptance contract:
+   - exact offer name appears once, readable, unbroken, and with the same capitalization as `offer-os.json.offerName`
+   - wordmark looks integrated and designed, not default typed text pasted beside a mark
+   - symbol is a simple flat logo symbol, not an illustration or rough cover graphic
+   - no page curl, folded paper, 3D lighting, photoreal texture, mockup, or scene
+   - no tiny UI/detail that disappears at nav size
+   - usable at 24px in a header
+   - usable in one color
+   - visually connected to the selected logo concept, not a generic icon
+7. If one complete logo candidate passes every item, crop or place it onto a horizontal logo canvas if needed, save it as `assets/logo.png`, set provenance to `imagegen`, and record `quality.logo.imagegenCompleteLogoAccepted = true`. The final `assets/logo.png` must be a horizontal lockup file, not a square raw imagegen canvas.
+8. If all complete logo candidates fail because imagegen mangled the exact wordmark, do a second imagegen round for a text-free logo-grade symbol only. Use this prompt structure:
+
+```text
+Use case: logo-symbol-fallback
+Asset type: text-free bitmap brand symbol for a complete logo lockup
+Offer name context: [exact offer name]
+Audience: [specific audience]
+Positioning: [one-sentence promise/mechanism]
+Visual direction: [selected concept from design.md]
+Style: flat, premium, simple, high-contrast, commercial identity symbol, usable at 24px in a website header and at large size on a product cover
+Composition: centered standalone symbol on a plain background, generous padding, strong silhouette, 1-2 main shapes, minimal internal detail
+Text handling: no text, no letters, no slogans, no tiny labels
+Avoid: illustration, app icon, map pin unless absolutely core to the concept, page curl, folded paper, 3D, shadows, photorealism, mockup scenes, tiny UI diagrams, busy funnel layers, clip art, stock icons, watermarks, fake UI, gradients that destroy small-size clarity
+Output: finished text-free bitmap symbol suitable to combine into assets/logo.png
+```
+
+9. Inspect the fallback symbol against this symbol acceptance contract:
+   - simple flat symbol, not an illustration or rough cover graphic
+   - no page curl, folded paper, 3D lighting, photoreal texture, mockup, or scene
+   - no tiny UI/detail that disappears at nav size
+   - usable at 24px in a header
+   - usable in one color
+   - visually connected to the selected logo concept, not a generic icon
+10. If the fallback symbol fails any item, do not use it. Retry imagegen with a simpler prompt. Do not composite a bad symbol with text and call it complete.
+11. If the fallback symbol passes, build the final lockup with a professional wordmark compositor, not a rough "mark plus default text" image:
+   - preserve the exact offer name string from `offer-os.json.offerName`; do not insert spaces, split camel-case names, change capitalization, or create accidental two-word spacing
+   - use the typography system from `design.md`; if none exists, choose one professional display wordmark font and record the choice in `design.md`
+   - use a real scalable font available on the machine or bundled into the project; do not use a default bitmap font or browser-default font
+   - adjust weight, optical alignment, tracking, and mark-to-wordmark spacing intentionally
+   - mark height must be visually balanced with the wordmark, usually 0.85-1.15x the wordmark cap height for header use
+   - export as a horizontal lockup on transparent or plain background, not a square icon canvas
+   - create a nav-size and cover-size preview at `output/qa/logo-lockup-preview.png`
+12. Move or copy the fallback symbol imagegen output into the project as `assets/logo-mark.png` only when the complete-lockup attempts failed exact text. Build `assets/logo.png` as the complete horizontal logo lockup. The final primary logo must include the readable offer name in the bitmap itself and must not look like a rough text paste-up.
+13. Set `brand.logo` in `offer-os.json` to `assets/logo.png`.
+14. Register the logo artifact. Use `imagegen` only when the final `assets/logo.png` came directly from imagegen as a complete readable lockup. Use `imagegen-composite` only when complete-lockup imagegen attempts failed exact text and `assets/logo.png` combines an imagegen fallback symbol with exact rendered professional wordmark text:
 
 ```powershell
 .\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\register_artifact.py --id logo --title "Primary Logo" --type image --category Brand --path assets/logo.png --provenance imagegen-composite --buyer-value 4 --usability 4 --trust 4
 ```
 
-10. Set `quality.logo`:
+15. Set `quality.logo`:
 
 ```json
 {
   "conceptCount": 3,
   "selectedConcept": "[concept name]",
   "primaryFormat": "png",
-  "generationTool": "imagegen+text-composite",
+  "generationTool": "imagegen-complete-logo-attempts+imagegen-symbol+professional-wordmark-compositor",
   "imagegenNotUsedReason": "",
+  "imagegenCompleteLogoLockupAttempted": true,
+  "imagegenLogoCandidateCount": 3,
+  "imagegenCompleteLogoAccepted": false,
+  "fallbackWordmarkCompositeReason": "complete imagegen logo candidates failed exact-name text check",
   "brandMarkSource": "imagegen",
-  "wordmarkSource": "rendered-text-composite",
+  "wordmarkSource": "professional-wordmark-compositor",
+  "wordmarkCompositeMethod": "scripted-professional-compositor",
   "logoLockup": true,
   "includesReadableOfferName": true,
+  "exactOfferNamePreserved": true,
+  "markIsLogoSymbol": true,
+  "markNotIllustration": true,
+  "markOneColorUsable": true,
+  "wordmarkTypographyChecked": true,
+  "wordmarkKerningChecked": true,
+  "professionalLockupApproved": true,
+  "lockupPreviewChecked": true,
+  "lockupPreviewPath": "output/qa/logo-lockup-preview.png",
   "vectorPrimaryUserRequested": false,
   "smallSizeChecked": true,
   "oneColorChecked": true,
@@ -84,10 +139,17 @@ Output: finished bitmap brand mark suitable to combine into assets/logo.png
 Stop conditions:
 
 - If the primary logo path is `.svg`, stop and rebuild the logo.
+- If the primary `logo` artifact points to `assets/logo-mark.png` or any mark-only file, stop and rebuild the logo.
 - If the primary logo is an icon or mark without the readable offer name, stop and rebuild the logo lockup.
+- If imagegen was not first used for complete logo lockup candidates, stop and run the required complete-logo imagegen step.
+- If `quality.logo.imagegenLogoCandidateCount` is less than `3`, stop and generate more complete-lockup candidates.
+- If `quality.logo.imagegenCompleteLogoAccepted` is false and `quality.logo.fallbackWordmarkCompositeReason` is empty, stop and document why the fallback compositor was used.
+- If the imagegen complete logo or fallback symbol is illustrative, page-curl/folded-paper, 3D, app-icon-like, a rough cover graphic, or too detailed for nav use, stop and regenerate it.
+- If the wordmark is just default text pasted beside the mark, has awkward spacing, splits the exact offer name incorrectly, or looks like a rough composite, stop and rebuild the lockup.
 - If provenance is not `imagegen` or `imagegen-composite`, stop and rebuild the logo.
 - If `quality.logo.brandMarkSource` is not `imagegen`, stop and rebuild the logo.
-- If `quality.logo.logoLockup` or `quality.logo.includesReadableOfferName` is not `true`, stop and rebuild the logo.
+- If `quality.logo.logoLockup`, `quality.logo.includesReadableOfferName`, `quality.logo.imagegenCompleteLogoLockupAttempted`, `quality.logo.exactOfferNamePreserved`, `quality.logo.markNotIllustration`, `quality.logo.wordmarkTypographyChecked`, `quality.logo.wordmarkKerningChecked`, or `quality.logo.professionalLockupApproved` is not `true`, stop and rebuild the logo.
+- If `output/qa/logo-lockup-preview.png` does not exist, create the preview and inspect it before marking the logo complete.
 - If `assets/logo.png` does not exist, do not register `logo` as complete.
 - If imagegen is unavailable, set `quality.logo.imagegenNotUsedReason`, mark `logo` as `needs_revision`, and do not set project status to complete.
 

@@ -29,7 +29,7 @@ Record provenance for every visual artifact in `offer-os.json`.
 
 Deep mode should include at least:
 
-- one brand/logo asset with clear production status
+- one professional logo lockup made from imagegen complete-lockup candidates first, exact readable wordmark, and lockup preview
 - one hero or product image that sells the offer visually
 - three ad images with actual creative direction
 - 6+ PDF-specific visuals/treatments, with 4+ not reused from the sales page
@@ -110,7 +110,9 @@ Minimum logo prerequisites:
 - small-size and one-color checks
 - bitmap preview/export for QA
 
-In deep generated-design runs, the primary logo artifact should be an `imagegen` or `imagegen-composite` `.png` or `.webp` logo lockup that includes the readable offer name. The imagegen brand mark alone can be saved as `assets/logo-mark.png`, but it is not the primary logo. A code-vector SVG can be registered only as a secondary export or draft unless the user explicitly requested vector-only delivery. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
+In deep generated-design runs, the primary logo artifact should be an `imagegen` or `imagegen-composite` `.png` or `.webp` horizontal logo lockup that includes the readable offer name. Start with imagegen complete logo lockup candidates. The imagegen brand mark alone can be saved as `assets/logo-mark.png` only as a fallback after complete-lockup attempts fail exact text; it is not the primary logo. A code-vector SVG can be registered only as a secondary export or draft unless the user explicitly requested vector-only delivery. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
+
+The mark must be a simple logo-grade symbol, not an illustration, page-curl/folded-paper image, app icon, mockup, or rough cover graphic. The final `assets/logo.png` must preserve the exact offer name and pass typography, kerning, mark scale, and spacing checks. A bad mark with text composited beside it is still a failed logo.
 
 ### Sales Page Structure
 

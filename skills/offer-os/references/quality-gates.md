@@ -109,13 +109,17 @@ Must include:
 - 3 concept directions considered before final production
 - a selected concept with buyer/category rationale
 - primary final logo lockup as `.png` or `.webp` that includes the readable offer name and uses the `imagegen` skill/tool for the brand mark in deep generated-design runs
+- imagegen complete logo lockup attempts before any symbol-only fallback
+- logo symbol that is simple, flat, one-color usable, and not an illustration, app icon, page-curl/folded-paper graphic, mockup, or rough cover image
+- professional wordmark composition that preserves the exact offer name, does not insert accidental spaces, and has checked typography, kerning, mark scale, and spacing
+- nav-size and cover-size lockup preview at `output/qa/logo-lockup-preview.png`
 - optional secondary SVG/vector export only when requested or explicitly useful
 - bitmap preview/export for dashboard and QA review
 - small-size navigation check
 - one-color legibility check
 - `quality.logo` metadata
 
-Fails if the primary logo is not an `imagegen` or `imagegen-composite` bitmap in a deep generated-design run unless the user supplied the logo, explicitly requested vector-only delivery, or imagegen was blocked and the blocker is recorded. Also fails if the logo is icon-only, lacks the readable offer name, or is only a hand-coded SVG made from generic text, boxes, lines, or initials and is still marked complete.
+Fails if the primary logo is not an `imagegen` or `imagegen-composite` horizontal bitmap in a deep generated-design run unless the user supplied the logo, explicitly requested vector-only delivery, or imagegen was blocked and the blocker is recorded. Also fails if complete logo lockup candidates were not attempted first, if the logo is icon-only, lacks the readable offer name, points at a mark-only file, uses an illustrative/page-curl/app-icon mark, breaks the exact offer name into the wrong spacing, looks like default text pasted beside a mark, or is only a hand-coded SVG made from generic text, boxes, lines, or initials and is still marked complete.
 
 ## Copy Gate
 
@@ -301,7 +305,7 @@ Revision is mandatory when any appear:
 - ads are repetitive, noncompliant, or visually unclear
 - ad angle cards repeat boilerplate instead of unique strategy
 - visual assets claim image generation but were actually SVG/PIL/CSS placeholders
-- logo is a generic one-pass SVG marked complete without concept and small-size QA
+- logo is a generic one-pass SVG, icon-only mark, illustrative/page-curl mark, or rough text composite marked complete without professional lockup QA
 - emails lack sequence logic, send timing, preview text, campaign role, or repeat boilerplate body copy
 - VSL deck lacks a persuasive sales arc, repeats one layout, exposes stage labels, or is only a contact sheet
 - VSL primary deck is HTML instead of PPTX
