@@ -105,7 +105,23 @@ Outline the PDF product before writing page graphics or VSL. Define:
 - product completion outcome
 - final CTA or next step
 
-## 7. Sales Copy
+## 7. Visual Asset Plan
+
+Follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md` before creating sales-page graphics, PDF pages, ads, VSL slides, or dashboard previews.
+
+Required result:
+
+- `visual-asset-plan.md`
+- separate visual inventories for sales page, PDF product, VSL deck, ads, and dashboard
+- 6+ PDF visuals/treatments, with 4+ not reused from the sales page
+- 12+ VSL visuals/treatments, with 8+ not reused from the sales page
+- 3+ ad-specific imagegen creatives
+- `quality.images.hasArtifactSpecificPlan = true`
+- `quality.images.visualReusePolicy = "artifact-specific-v1"`
+
+Register `visual-asset-plan`.
+
+## 8. Sales Copy
 
 Follow the Sales Page Recipe in `references/exact-build-recipes.md` before writing `index.html`.
 
@@ -117,7 +133,7 @@ Required result:
 
 Register `sales-copy`.
 
-## 8. Sales Page
+## 9. Sales Page
 
 Follow the Sales Page Recipe in `references/exact-build-recipes.md`.
 
@@ -145,24 +161,26 @@ Verify:
 
 Register `sales-page`.
 
-## 9. Supporting Graphics
+## 10. Supporting Graphics
 
 Generate assets in sequence:
 
 1. logo
-2. product bundle
-3. hero/VSL thumbnail
-4. mechanism/framework visual
-5. before/after visual
-6. PDF cover or product pages
-7. ad images
-8. deck graphics
+2. visual asset plan
+3. product bundle
+4. hero/VSL thumbnail
+5. mechanism/framework visual
+6. before/after visual
+7. PDF-specific cover/product/tool visuals
+8. VSL-specific slide visuals/treatments
+9. ad-specific imagegen creatives
+10. deck/dashboard preview graphics
 
 Register each useful image.
 
-Record provenance for every visual artifact. If an asset is hand-coded SVG, PIL, HTML/CSS, or a screenshot, label it honestly. If the run asks for generated images, use imagegen for hero/product/ad bitmaps unless blocked and record the blocker in `quality.images.imagegenNotUsedReason`.
+Record provenance for every visual artifact. If an asset is hand-coded SVG, PIL, HTML/CSS, or a screenshot, label it honestly. If the run asks for generated images, use imagegen for hero/product/ad bitmaps unless blocked and record the blocker in `quality.images.imagegenNotUsedReason`. Do not use only sales-page visuals for the PDF or VSL.
 
-## 10. PDF Product
+## 11. PDF Product
 
 Follow the PDF Product Recipe in `references/exact-build-recipes.md`. Create a buyer-ready PDF under `output/pdf/`. Include an editable source file when useful.
 
@@ -172,7 +190,7 @@ Use the PDF skill for generation/render checks when needed.
 
 Register `pdf-product-source` and `pdf-product`.
 
-## 11. Facebook Ads
+## 12. Facebook Ads
 
 Create `facebook-ads.html` or `facebook-ads.md` with:
 
@@ -186,7 +204,7 @@ Create `facebook-ads.html` or `facebook-ads.md` with:
 
 Register ad copy and each ad image.
 
-## 12. Launch Emails
+## 13. Launch Emails
 
 Follow the Email Sequence Recipe in `references/exact-build-recipes.md`. Create `emails.html` with a copy-ready sequence. Deep mode should prefer at least 7 emails unless the launch clearly needs fewer.
 
@@ -194,7 +212,7 @@ Every email needs send timing, subject line, preview text, campaign role, body c
 
 Register `email-sequence`.
 
-## 13. VSL Deck
+## 14. VSL Deck
 
 Follow the VSL Deck Recipe in `references/exact-build-recipes.md`.
 
@@ -206,6 +224,7 @@ Required result:
 - no layout above 35% usage
 - no visible internal stage labels
 - 12+ unique visual assets/treatments
+- 8+ VSL-specific visuals/treatments not reused from the sales page
 - no non-logo bitmap repeated on more than 25% of slides
 - speaker notes of at least 25 words per slide
 - HTML/contact-sheet only after the PPTX exists and only registered as `vsl-preview`
@@ -214,7 +233,7 @@ Required result:
 
 Register `vsl-deck` and `vsl-preview`.
 
-## 14. Delivery Dashboard
+## 15. Delivery Dashboard
 
 Generate `delivery-dashboard.html` from the manifest with the standard modal template, then improve theme styling manually if the offer needs richer presentation. Preserve the modal/iframe structure.
 
@@ -226,7 +245,7 @@ Register `delivery-dashboard`.
 
 Do not write a dashboard from scratch unless the user explicitly asks for a different layout. If you need a different visual feel, change theme variables and card styling while keeping the generated modal/iframe interaction model.
 
-## 15. QA
+## 16. QA
 
 Run validation:
 

@@ -1,7 +1,7 @@
 {
   "name": "offer-os",
-  "version": "0.4.0",
-  "description": "Build deep commercial offer systems in Codex: offer architecture, design direction, logo/images, long-form copy, coded sales pages, customer-ready PDF products, ads, emails, VSL decks, delivery dashboards, and QA.",
+  "version": "0.5.0",
+  "description": "Build deep commercial offer systems in Codex: offer architecture, design direction, logo/images, artifact-specific visual plans, long-form copy, coded sales pages, customer-ready PDF products, ads, emails, VSL decks, delivery dashboards, and QA.",
   "author": {
     "name": "OfferOS",
     "email": "martincrumlish@users.noreply.github.com",
@@ -24,7 +24,7 @@
   "interface": {
     "displayName": "OfferOS",
     "shortDescription": "Build complete offer systems",
-    "longDescription": "OfferOS orchestrates Codex through a deep full offer build: strategy, design, logo and visuals, long-form sales copy, coded sales page, customer-ready PDF product, ad assets, email sequence, VSL deck, delivery dashboard, and QA gates.",
+    "longDescription": "OfferOS orchestrates Codex through a deep full offer build: strategy, design, logo and artifact-specific visuals, long-form sales copy, coded sales page, customer-ready PDF product, ad assets, email sequence, VSL deck, delivery dashboard, and QA gates.",
     "developerName": "OfferOS",
     "category": "Productivity",
     "capabilities": [

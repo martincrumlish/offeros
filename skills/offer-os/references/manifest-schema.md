@@ -109,6 +109,7 @@ A deep run should register:
 - `offer-architecture`
 - `design-guide`
 - `logo`
+- `visual-asset-plan`
 - `sales-copy`
 - `sales-page`
 - `pdf-product-source`
@@ -138,6 +139,8 @@ For deep mode, include module-level quality metadata when applicable:
       "maxPageArchetypeShare": 0.25,
       "completedExampleCount": 3,
       "blankTemplateCount": 3,
+      "visualAssetCount": 6,
+      "pdfSpecificVisualAssetCount": 4,
       "genericActionSurfaceLabelsRemoved": true,
       "hasCompletedExamples": true,
       "hasBlankTemplates": true,
@@ -165,6 +168,7 @@ For deep mode, include module-level quality metadata when applicable:
       "maxLayoutShare": 0.29,
       "visualAssetCount": 8,
       "uniqueVisualAssetCount": 12,
+      "vslSpecificVisualAssetCount": 8,
       "maxRepeatedBitmapShare": 0.21,
       "visualReuseChecked": true,
       "primaryFormat": "pptx",
@@ -203,7 +207,19 @@ For deep mode, include module-level quality metadata when applicable:
       "hasIframePreview": true
     },
     "images": {
+      "hasArtifactSpecificPlan": true,
+      "visualPlanPath": "visual-asset-plan.md",
+      "visualReusePolicy": "artifact-specific-v1",
       "imagegenCount": 5,
+      "salesPageVisualCount": 4,
+      "pdfVisualCount": 6,
+      "pdfSpecificVisualCount": 4,
+      "vslVisualCount": 12,
+      "vslSpecificVisualCount": 8,
+      "adImageCount": 3,
+      "pdfUsesOnlySalesPageImages": false,
+      "vslUsesOnlySalesPageImages": false,
+      "salesPageReuseOnly": false,
       "fallbackCount": 2,
       "notes": ""
     }

@@ -29,15 +29,16 @@ Create these outputs for a full run:
 2. offer architecture
 3. `design.md`
 4. primary `assets/logo.png`/`.webp` imagegen-based logo lockup with readable offer name
-5. long-form sales copy
-6. coded sales page
-7. supporting images
-8. customer-ready PDF product
-9. Facebook ads and ad images
-10. launch emails
-11. VSL deck
-12. delivery dashboard
-13. QA notes
+5. `visual-asset-plan.md` with separate image/visual inventories for sales page, PDF, VSL, ads, and dashboard
+6. long-form sales copy
+7. coded sales page
+8. supporting images
+9. customer-ready PDF product
+10. Facebook ads and ad images
+11. launch emails
+12. VSL deck
+13. delivery dashboard
+14. QA notes
 
 Every artifact must be a finished working file where possible. Avoid "strategy-only" substitutes for files the user asked to use, publish, record, or give to customers.
 
@@ -62,6 +63,7 @@ Build from these source patterns instead of inventing replacements:
 - Sales page: load `assets/templates/sales-page/section-map.md` and start from `assets/templates/sales-page/page-skeleton.html`. Fill every required `data-offeros-section`; preserve the direct-response hero and buy-box offer-stack contracts exactly, then add/remove only optional sub-blocks inside those sections.
 - Sales page type: load `references/sales-page-types.md` before sales copy and choose a page type. Use `direct-response-long-form-vsl` by default for complete low-ticket, cold-traffic, or internet-marketing offers. Record the selected type in `quality.salesPage.pageType`.
 - Logo: create a real logo direction before producing the final asset. In deep generated-design runs, use the `imagegen` skill/tool to create the brand mark, then save `assets/logo.png` as a complete logo lockup that includes the readable offer name. SVG may be a secondary export, but do not mark an icon-only mark, code-vector SVG, HTML/CSS render, or PIL-only raster as the complete primary logo.
+- Visual assets: create `visual-asset-plan.md` before sales-page graphics, PDF, ads, VSL, or dashboard production. Split visuals by artifact. PDF and VSL need their own supporting visuals/treatments; do not reuse only sales-page imagery as the visual pool.
 - PDF product: follow the PDF Product Recipe. For $30-$99 paid offers, extracted PDF text below 4,000 words or a product that is mostly repeated explanation/blank lines is a failed product, not a warning.
 - Emails: follow the Email Sequence Recipe. Every launch email must include send timing, subject, preview text, campaign role, body copy, and CTA. Repeated boilerplate paragraphs across emails are a failure.
 - Dashboard: generate `delivery-dashboard.html` with `scripts/generate_delivery_dashboard.py`. After generation, edit theme variables, logo, imagery, and copy only. Preserve `data-offeros-dashboard="v2-modal"`, modal markup, iframe/image preview behavior, and artifact `data-path`/`data-preview` cards.
@@ -81,16 +83,17 @@ Follow this order unless the user explicitly requests a narrower module:
 4. Brand/name refinement
 5. Primary imagegen-based logo lockup with readable offer name
 6. PDF product outline and offer stack
-7. Sales copy
-8. Sales page build
-9. Real supporting page graphics with provenance recorded
-10. PDF product creation and rendered visual check
-11. Ads and ad images
-12. Email sequence
-13. VSL deck
-14. Delivery dashboard
-15. Technical QA pass
-16. Commercial value audit
+7. Artifact-specific `visual-asset-plan.md`
+8. Sales copy
+9. Sales page build
+10. Real supporting page graphics with provenance recorded
+11. PDF-specific visuals and PDF product creation/rendered visual check
+12. Ads and ad-specific imagegen images
+13. Email sequence
+14. VSL-specific visuals and VSL deck
+15. Delivery dashboard
+16. Technical QA pass
+17. Commercial value audit
 
 Do not build downstream visual assets before upstream design/brand decisions exist. If an upstream asset is missing, create the smallest practical version first.
 

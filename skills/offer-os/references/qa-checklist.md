@@ -50,6 +50,8 @@ Check:
 - generated graphics fit their containers
 - image provenance is recorded honestly
 - SVG/PIL/CSS fallbacks are not mislabeled as imagegen outputs
+- `visual-asset-plan.md` exists and splits visuals by sales page, PDF, VSL, ads, and dashboard
+- PDF and VSL visuals are not only reused sales-page images
 - dashboard previews work
 - dashboard uses the standard v2 modal/iframe template
 - VSL preview loads at desktop and mobile widths with no horizontal overflow
@@ -71,6 +73,7 @@ Check:
 - completed examples and blank buyer-fillable templates exist for the core tool
 - buyer-action pages use named tools/templates instead of repeated "Action Surface" boxes
 - page archetypes vary across the guide/workbook; the PDF is not one repeated page layout
+- PDF has 6+ visuals/treatments, including 4+ PDF-specific visuals/treatments
 - rendered pages/screenshots were inspected visually
 
 ## Deck QA
@@ -88,6 +91,7 @@ Check:
 - deck is presentation-ready, not just a contact-sheet grid
 - deck uses varied layouts; no single layout family dominates
 - deck uses 12+ unique visual assets/treatments and does not repeat the same few large images as filler
+- deck uses 8+ VSL-specific visuals/treatments instead of only sales-page imagery
 - visible slide copy is buyer-facing everywhere, with no internal labels such as "Agitate", "Stage: Problem", or "CTA"
 - speaker notes are usable narration guidance, not author reminders
 - placeholder visual blocks were replaced or clearly recorded as drafts

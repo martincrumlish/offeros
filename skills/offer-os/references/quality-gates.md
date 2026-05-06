@@ -79,6 +79,24 @@ Fails if:
 - ad images are mostly text blocks rather than persuasive creative
 - the logo is a disposable placeholder and is not marked as draft/fallback
 
+## Visual Asset Plan Gate
+
+Deep generated-design runs must create `visual-asset-plan.md` before artifact production. The plan must split visuals by artifact instead of treating sales-page imagery as the default pool.
+
+Must include:
+
+- global brand assets
+- 4+ sales-page visuals
+- 6+ PDF visuals/treatments, with 4+ PDF-specific and not reused from the sales page
+- 12+ VSL visuals/treatments, with 8+ VSL-specific and not reused from the sales page
+- 3+ ad-specific imagegen creatives
+- dashboard preview/thumbnail choices
+- explicit reuse rules
+- `quality.images.hasArtifactSpecificPlan = true`
+- `quality.images.visualReusePolicy = "artifact-specific-v1"`
+
+Fails if the PDF or VSL visuals are only sales-page images, if ads are just crops/text-card variants of page art, or if the plan does not specify artifact-specific visual jobs and file paths.
+
 ## Logo Gate
 
 A deep-mode logo must be treated as an identity asset, not a quick decoration.
@@ -152,6 +170,7 @@ Must include:
 - worksheets/checklists/templates/examples
 - implementation plan
 - professional layout
+- PDF-specific visuals/treatments from the visual asset plan
 
 Deep-mode minimums:
 
@@ -163,6 +182,7 @@ Deep-mode minimums:
 - At least 8 named buyer tools/templates for paid products up to $29 and 10+ for $30-$99 products.
 - At least 7 distinct page archetypes, with no single archetype above 35% of pages.
 - At least two completed examples and two blank fill-in versions for core worksheets/templates.
+- At least 6 PDF visuals/treatments, including 4+ not reused from the sales page.
 - Rendered page previews or screenshots proving that pages are not clipped, blank, or unreadable.
 
 Fails if it is an outline, ebook shell, generic advice document, thin article, short checklist, repeated "Action Surface" box pages, identical page layouts, or lacks practical buyer value.
@@ -206,6 +226,7 @@ Deep-mode VSL requirements:
 - At least 8 visual treatments and no single layout family above 35% of slides.
 - Real visuals, diagrams, screenshots, generated frames, or product previews on key slides.
 - At least 12 unique visual assets or distinct diagram treatments.
+- At least 8 VSL-specific visual assets or treatments not reused from the sales page.
 - No single large non-logo bitmap repeated on more than 25% of slides.
 - PPTX bitmap images preserve aspect ratio using contain/cover/crop sizing. Images must not be stretched into arbitrary boxes.
 - Speaker notes or narration guidance.
@@ -273,6 +294,7 @@ Revision is mandatory when any appear:
 - PDF is below the minimum page/action-surface depth for the price
 - PDF extracted text is below the price-point target
 - PDF repeats the same page layout or visible "Action Surface" box instead of named tools/templates
+- PDF lacks PDF-specific visuals/treatments and only reuses sales-page imagery
 - ads are repetitive, noncompliant, or visually unclear
 - ad angle cards repeat boilerplate instead of unique strategy
 - visual assets claim image generation but were actually SVG/PIL/CSS placeholders
@@ -281,6 +303,7 @@ Revision is mandatory when any appear:
 - VSL deck lacks a persuasive sales arc, repeats one layout, exposes stage labels, or is only a contact sheet
 - VSL primary deck is HTML instead of PPTX
 - VSL deck recycles the same few large images across many slides
+- VSL deck relies only on sales-page imagery instead of VSL-specific visuals/treatments
 - VSL PPTX images are stretched or compressed instead of aspect-preserved with contain/cover/crop sizing
 - VSL preview overflows on mobile or the dashboard tries to iframe the PPTX
 - dashboard does not use the standard modal/iframe template

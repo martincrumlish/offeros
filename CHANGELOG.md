@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+- Adds a required `visual-asset-plan.md` artifact before sales-page graphics, PDF, ads, VSL, and dashboard production.
+- Splits visual budgets by artifact so PDF products and VSL decks need their own supporting visuals/treatments instead of reusing only sales-page imagery.
+- Requires deep runs to plan 6+ PDF visuals/treatments with 4+ PDF-specific, 12+ VSL visuals/treatments with 8+ VSL-specific, and 3+ ad-specific imagegen creatives.
+- Adds manifest metadata and validator checks for artifact-specific visual plans, PDF-specific visuals, VSL-specific visuals, and sales-page-reuse-only failures.
+
 ## 0.4.0
 
 - Replaces loose logo wording with a hard logo-lockup recipe: imagegen brand mark plus readable offer-name bitmap, no icon-only primary logo.

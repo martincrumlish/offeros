@@ -37,6 +37,25 @@ Output:
 
 Avoid mood-board words unless they become implementation rules.
 
+## Visual Asset Plan
+
+Purpose: define artifact-specific visuals before production so PDF, VSL, and ads are not built from leftover sales-page images.
+
+Production rule: follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md`. Create `visual-asset-plan.md` after the logo/product outline and before sales-page graphics, PDF rendering, ad images, VSL deck, or dashboard.
+
+Output:
+
+1. Global brand assets: logo lockup, brand mark, product bundle/mockup, reusable pattern/frame.
+2. Sales page visuals: 4+ visuals with conversion job and file path.
+3. PDF product visuals: 6+ visuals/treatments, including 4+ PDF-specific visuals that are not reused from the sales page.
+4. VSL deck visuals: 12+ visuals/treatments, including 8+ VSL-specific visuals that are not reused from the sales page.
+5. Ad visuals: 3+ ad-specific imagegen creatives.
+6. Dashboard visuals: previews/thumbnails for core assets.
+7. Reuse rules: what can be reused, where, and why.
+8. `quality.images` metadata.
+
+Avoid treating the sales page as the master image pool. Artifact-specific visuals should be created from the artifact's job: PDF usability, VSL attention/narration, ad interruption, dashboard browsing.
+
 ## Logo And Brand
 
 Purpose: create a usable identity system across all offer assets.
@@ -106,8 +125,9 @@ Output:
 3. Page-by-page plan: title, job, content, layout, visuals, fields, CTA/prompt.
 4. Core content: section copy, examples, checklists, worksheets, templates, scoring models, implementation steps.
 5. Design spec: cover, typography, colors, callouts, tables, worksheets, page furniture.
-6. Exported PDF and source file.
-7. Depth metadata: page count, action-surface count, named tool count, page archetype count, completed example count, blank template count, render check.
+6. PDF-specific visuals/treatments from `visual-asset-plan.md`: cover, dividers, matrices, completed examples, blank templates, checklists, implementation maps.
+7. Exported PDF and source file.
+8. Depth metadata: page count, action-surface count, named tool count, page archetype count, completed example count, blank template count, PDF-specific visual count, render check.
 
 Avoid blog-post content, filler introductions, generic tips, vague worksheet prompts, repeated "Action Surface" boxes, identical page layouts, and no clear next step. A paid workbook must contain named tools, completed examples, matching blank templates, and distinct page archetypes.
 
@@ -154,7 +174,7 @@ Output:
 2. Narrative arc: hook, problem, stakes, failed alternatives, insight, mechanism, proof, offer, stack, risk reversal, CTA.
 3. Layout palette: at least 8 visual treatments and max share for the most-used layout.
 4. Slide-by-slide plan for 20 to 30 slides: buyer-facing title, internal job, on-slide text, speaker notes, visual direction, motion notes, assets.
-5. Visual asset plan: 12+ unique visual assets or distinct diagram treatments, no non-logo bitmap repeated on more than 25% of slides, and no recycling the same 3 images as filler.
+5. Visual asset plan from `visual-asset-plan.md`: 12+ unique visual assets or distinct diagram treatments, 8+ VSL-specific visuals not reused from the sales page, no non-logo bitmap repeated on more than 25% of slides, and no recycling the same 3 images as filler.
 6. Quality metadata: slide count, layout count, max layout share, speaker notes, visible stage labels removed, notes are narration, offer reveal, price, guarantee, objections, presentation-ready status.
 
 Create the primary `vsl-deck` as a PowerPoint `.pptx`. Create HTML/contact-sheet output only as `vsl-preview`. Avoid repeated one-layout card grids. A contact sheet is a preview artifact, not the VSL deck.

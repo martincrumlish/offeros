@@ -7,14 +7,16 @@ Generate assets in dependency order. Earlier assets define constraints for later
 1. Offer/page direction
 2. Design guide
 3. Logo or wordmark
-4. Sales page structure
-5. Sales page graphics
-6. Product bundle
-7. PDF product visuals
-8. VSL frames
-9. Ads and social creative
-10. Delivery dashboard
-11. Secondary exports and variants
+4. Product outline and offer stack
+5. `visual-asset-plan.md`
+6. Sales page structure
+7. Sales page graphics
+8. Product bundle
+9. PDF product visuals
+10. VSL frames
+11. Ads and social creative
+12. Delivery dashboard
+13. Secondary exports and variants
 
 ## Provenance Requirements
 
@@ -30,8 +32,39 @@ Deep mode should include at least:
 - one brand/logo asset with clear production status
 - one hero or product image that sells the offer visually
 - three ad images with actual creative direction
-- product/PDF preview imagery
+- 6+ PDF-specific visuals/treatments, with 4+ not reused from the sales page
+- 12+ VSL visual assets/treatments, with 8+ not reused from the sales page
 - deck or VSL preview imagery
+
+## Visual Asset Plan
+
+Create `visual-asset-plan.md` before building sales-page graphics, the PDF product, ad images, the VSL deck, or the delivery dashboard.
+
+The plan must split visuals into:
+
+- global brand assets
+- sales page visuals
+- PDF product visuals
+- VSL deck visuals
+- ad visuals
+- dashboard visuals
+- reuse rules
+
+Do not treat sales-page graphics as the default image library for every artifact. Each artifact has its own job:
+
+- Sales page visuals sell belief and the offer stack.
+- PDF visuals help the buyer use the product: covers, module dividers, matrices, completed examples, blank worksheets, checklists, and implementation maps.
+- VSL visuals help a spoken pitch hold attention: pattern interrupts, problem maps, comparison tables, mechanism diagrams, product reveal, stack, value, guarantee, objection, and CTA visuals.
+- Ad visuals interrupt the feed and should be generated specifically for the ad angle.
+
+Minimum deep-mode budgets:
+
+- sales page: 4+ visual slots
+- PDF product: 6+ visuals/treatments, with 4+ PDF-specific
+- VSL deck: 12+ visuals/treatments, with 8+ VSL-specific
+- ads: 3+ ad-specific imagegen creatives
+
+Register `visual-asset-plan` and set `quality.images.hasArtifactSpecificPlan = true`. Record whether each visual is shared or artifact-specific.
 
 ## Dependencies
 

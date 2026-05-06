@@ -27,6 +27,7 @@ DEEP_REQUIRED_IDS = [
     "offer-architecture",
     "design-guide",
     "logo",
+    "visual-asset-plan",
     "sales-copy",
     "sales-page",
     "pdf-product-source",
@@ -661,6 +662,12 @@ def validate_pdf(root: Path, manifest: dict, by_id: dict[str, dict], issues: lis
         issues.append(f"PDF completed example count below target: {completed_example_count or 'missing'} found, {min_example_pairs}+ expected.")
     if blank_template_count < min_example_pairs:
         issues.append(f"PDF blank template count below target: {blank_template_count or 'missing'} found, {min_example_pairs}+ expected.")
+    pdf_visual_count = quality_number(pdf_quality.get("visualAssetCount"))
+    pdf_specific_visual_count = quality_number(pdf_quality.get("pdfSpecificVisualAssetCount"))
+    if pdf_visual_count < 6:
+        issues.append(f"PDF visual asset/treatment count below target: {pdf_visual_count or 'missing'} found, 6+ expected.")
+    if pdf_specific_visual_count < 4:
+        issues.append(f"PDF-specific visual asset/treatment count below target: {pdf_specific_visual_count or 'missing'} found, 4+ expected.")
     if pdf_quality.get("genericActionSurfaceLabelsRemoved") is not True:
         issues.append("PDF quality metadata must confirm genericActionSurfaceLabelsRemoved.")
     if pdf_quality.get("hasCompletedExamples") is not True:
@@ -1055,6 +1062,9 @@ def validate_vsl(root: Path, manifest: dict, by_id: dict[str, dict], issues: lis
     unique_visual_count = quality_number(vsl_quality.get("uniqueVisualAssetCount"))
     if unique_visual_count < 12:
         issues.append(f"VSL unique visual asset/treatment count below target: {unique_visual_count or 'missing'} found, 12+ expected.")
+    vsl_specific_visual_count = quality_number(vsl_quality.get("vslSpecificVisualAssetCount"))
+    if vsl_specific_visual_count < 8:
+        issues.append(f"VSL-specific visual asset/treatment count below target: {vsl_specific_visual_count or 'missing'} found, 8+ expected.")
     max_repeated_bitmap_share = quality_float(vsl_quality.get("maxRepeatedBitmapShare"))
     if "maxRepeatedBitmapShare" not in vsl_quality:
         issues.append("VSL quality metadata must record maxRepeatedBitmapShare.")
@@ -1168,6 +1178,63 @@ def validate_dashboard(root: Path, manifest: dict, by_id: dict[str, dict], issue
         issues.append("Dashboard quality metadata must confirm hasIframePreview.")
 
 
+def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    plan_artifact = by_id.get("visual-asset-plan")
+    plan_path = artifact_path(root, plan_artifact)
+    if not plan_path or not plan_path.exists():
+        issues.append("Visual asset plan missing; create visual-asset-plan.md before PDF, ads, VSL, and dashboard production.")
+        return
+
+    text = text_for(plan_path)
+    required_headings = [
+        "# Visual Asset Plan",
+        "## Global Brand Assets",
+        "## Sales Page Visuals",
+        "## PDF Product Visuals",
+        "## VSL Deck Visuals",
+        "## Ad Visuals",
+        "## Dashboard Visuals",
+        "## Reuse Rules",
+    ]
+    missing_headings = [heading for heading in required_headings if heading.lower() not in text.lower()]
+    if missing_headings:
+        issues.append("Visual asset plan missing required headings: " + ", ".join(missing_headings))
+
+    image_quality = manifest.get("quality", {}).get("images", {})
+    if not isinstance(image_quality, dict):
+        image_quality = {}
+    if image_quality.get("hasArtifactSpecificPlan") is not True:
+        issues.append("Image quality metadata must confirm hasArtifactSpecificPlan.")
+    plan_meta_path = str(image_quality.get("visualPlanPath", "")).strip()
+    if plan_meta_path and not (root / plan_meta_path).exists():
+        issues.append(f"Image quality metadata visualPlanPath does not exist: {plan_meta_path}")
+    elif not plan_meta_path:
+        issues.append("Image quality metadata must record visualPlanPath.")
+    if image_quality.get("visualReusePolicy") != "artifact-specific-v1":
+        issues.append("Image quality metadata must record visualReusePolicy: artifact-specific-v1.")
+
+    required_counts = {
+        "salesPageVisualCount": 4,
+        "pdfVisualCount": 6,
+        "pdfSpecificVisualCount": 4,
+        "vslVisualCount": 12,
+        "vslSpecificVisualCount": 8,
+        "adImageCount": 3,
+    }
+    for field, minimum in required_counts.items():
+        value = quality_number(image_quality.get(field))
+        if value < minimum:
+            issues.append(f"Image quality metadata {field} below target: {value or 'missing'} found, {minimum}+ expected.")
+
+    for field, label in {
+        "pdfUsesOnlySalesPageImages": "PDF visuals cannot be only reused sales-page images.",
+        "vslUsesOnlySalesPageImages": "VSL visuals cannot be only reused sales-page images.",
+        "salesPageReuseOnly": "Visual system cannot be sales-page-reuse-only.",
+    }.items():
+        if image_quality.get(field) is True:
+            issues.append(label)
+
+
 def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], warnings: list[str]) -> None:
     imagegen_count = 0
     real_bitmap_count = 0
@@ -1258,6 +1325,7 @@ def main() -> int:
             warnings.append(f"Artifact is not complete: {artifact.get('id', rel_path)} ({artifact.get('status')})")
 
     if deep_required:
+        validate_visual_asset_plan(root, manifest, by_id, issues, warnings)
         validate_images(manifest, artifacts, issues, warnings)
         validate_logo(root, manifest, by_id, issues, warnings)
         validate_ads(root, by_id, issues, warnings)

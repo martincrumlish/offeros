@@ -19,6 +19,7 @@ Use this controller for every deep run. This is the highest-level recipe and it 
 5. Browser QA must fail the build if any captured page has horizontal overflow or broken images.
 6. Write `qa-notes.md` from live build variables and validation results. Do not hard-code page counts, CTA counts, warnings, or pass/fail claims.
 7. Copy the final build script into the output project before handoff.
+8. Create `visual-asset-plan.md` before building sales-page graphics, the PDF product, ads, or the VSL deck. Reusing sales-page images as the default visual pool fails deep mode.
 
 Stop conditions:
 
@@ -90,6 +91,60 @@ Stop conditions:
 - If `assets/logo.png` does not exist, do not register `logo` as complete.
 - If imagegen is unavailable, set `quality.logo.imagegenNotUsedReason`, mark `logo` as `needs_revision`, and do not set project status to complete.
 
+## Visual Asset Plan Recipe
+
+Use this recipe for every deep generated-design run after the logo and product outline exist and before creating sales-page graphics, PDF pages, ad images, VSL slides, or the dashboard.
+
+1. Create `visual-asset-plan.md`.
+2. Divide the plan into these exact headings:
+   - `# Visual Asset Plan`
+   - `## Global Brand Assets`
+   - `## Sales Page Visuals`
+   - `## PDF Product Visuals`
+   - `## VSL Deck Visuals`
+   - `## Ad Visuals`
+   - `## Dashboard Visuals`
+   - `## Reuse Rules`
+3. For every planned visual, list: artifact target, file path, visual job, source/provenance, generation prompt or production method, reuse permission, and whether it is specific to that artifact or shared.
+4. Use these minimum visual budgets in deep mode:
+   - Global/shared: logo lockup, brand mark, product bundle/mockup, and one reusable texture/pattern or brand frame.
+   - Sales page: 4+ page-specific visuals: hero/VSL thumbnail, mechanism/framework, before/after or failed-alternative visual, proof/demo or product-stack visual.
+   - PDF product: 6+ PDF visuals/treatments, with 4+ not reused from the sales page. Include cover art, at least one module/divider treatment, one decision matrix, one completed example visual, one blank worksheet/template visual, and one implementation/checklist visual.
+   - VSL deck: 12+ unique visual assets or distinct diagram treatments, with 8+ not reused from the sales page. Include pattern interrupt, problem map, failed-alternatives comparison, mechanism diagram, product reveal, offer stack, price/value contrast, guarantee, objection, and final CTA visuals.
+   - Ads: 3+ ad-specific imagegen creatives. Do not crop sales-page art and call it ad creative.
+   - Dashboard: logo, product bundle/preview, and thumbnail/preview choices for the main assets.
+5. Register `visual-asset-plan` in `offer-os.json`:
+
+```powershell
+.\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\register_artifact.py --id visual-asset-plan --title "Visual Asset Plan" --type document --category Strategy --path visual-asset-plan.md --provenance manual --buyer-value 4 --usability 4 --trust 4
+```
+
+6. Set `quality.images`:
+
+```json
+{
+  "hasArtifactSpecificPlan": true,
+  "visualPlanPath": "visual-asset-plan.md",
+  "visualReusePolicy": "artifact-specific-v1",
+  "salesPageVisualCount": 4,
+  "pdfVisualCount": 6,
+  "pdfSpecificVisualCount": 4,
+  "vslVisualCount": 12,
+  "vslSpecificVisualCount": 8,
+  "adImageCount": 3,
+  "pdfUsesOnlySalesPageImages": false,
+  "vslUsesOnlySalesPageImages": false,
+  "salesPageReuseOnly": false
+}
+```
+
+Stop conditions:
+
+- If `visual-asset-plan.md` does not exist, stop before creating PDF, ads, or VSL.
+- If the PDF visuals are only sales-page images, create PDF-specific visuals/treatments before building the PDF.
+- If the VSL visuals are only sales-page images or the same few bitmaps repeated, create slide-specific visuals/treatments before generating the PPTX.
+- If ad images are crops or text-card variants of sales-page visuals, create ad-specific imagegen creatives.
+
 ## Sales Page Recipe
 
 Use this recipe for every complete paid front-end offer unless the user explicitly asks for a different page type.
@@ -157,25 +212,26 @@ Use this recipe for every paid front-end offer.
    - matching blank worksheets/templates
    - page archetype list
    - how the buyer uses the product in one sitting or one implementation cycle
-3. Build a real product, not an ebook with repeated worksheet boxes. Every buyer-action page must have a specific name and job, such as "Funnel Fit Matrix", "Traffic Source Reality Check", "Buyer Awareness Mapper", "Offer Path Selector", or "Final Funnel Blueprint". Do not use the generic visible label "Action Surface" as a repeated page heading or box title.
-4. Use at least 7 distinct page archetypes in deep mode: cover, quick start, guide lesson, comparison/decision matrix, completed example, blank worksheet, checklist, implementation plan, script/swipe, scoring/audit, or resource index. No single page archetype may exceed 35% of the PDF.
-5. Create an editable source file under `output/pdf/`.
-6. Create the customer PDF under `output/pdf/`.
-7. For offers up to $29, the product must have at least:
+3. Read `visual-asset-plan.md` and fulfill the `## PDF Product Visuals` section before rendering the PDF. PDF visuals are not limited to sales-page images. Create 6+ PDF visuals/treatments, including 4+ that are specific to the PDF product and not reused from the sales page.
+4. Build a real product, not an ebook with repeated worksheet boxes. Every buyer-action page must have a specific name and job, such as "Funnel Fit Matrix", "Traffic Source Reality Check", "Buyer Awareness Mapper", "Offer Path Selector", or "Final Funnel Blueprint". Do not use the generic visible label "Action Surface" as a repeated page heading or box title.
+5. Use at least 7 distinct page archetypes in deep mode: cover, quick start, guide lesson, comparison/decision matrix, completed example, blank worksheet, checklist, implementation plan, script/swipe, scoring/audit, or resource index. No single page archetype may exceed 35% of the PDF.
+6. Create an editable source file under `output/pdf/`.
+7. Create the customer PDF under `output/pdf/`.
+8. For offers up to $29, the product must have at least:
    - 22 pages
    - 3,500 extracted words unless the user explicitly approved a highly visual workbook
    - 8 buyer-action surfaces
    - 8 named buyer tools/templates
    - 2 completed examples and matching blank templates for core tools
-8. For $30-$99 offers, the product must have at least:
+9. For $30-$99 offers, the product must have at least:
    - 25 pages
    - 4,000 extracted words unless the user explicitly approved a highly visual workbook
    - 8 buyer-action surfaces
    - 10 named buyer tools/templates
    - 3 completed examples and matching blank templates for core tools
-9. Use buyer-action surfaces: audits, calculators, cards, examples, worksheets, templates, scripts, checklists, implementation plans, and debriefs.
-10. Render representative pages from every page archetype to `output/pdf/render-check/`.
-11. Set `quality.pdf.pageCount`, `actionSurfaceCount`, `namedToolCount`, `pageArchetypeCount`, `maxPageArchetypeShare`, `completedExampleCount`, `blankTemplateCount`, `genericActionSurfaceLabelsRemoved`, `hasCompletedExamples`, `hasBlankTemplates`, and `renderChecked` from the generated artifact, not from memory.
+10. Use buyer-action surfaces: audits, calculators, cards, examples, worksheets, templates, scripts, checklists, implementation plans, and debriefs.
+11. Render representative pages from every page archetype to `output/pdf/render-check/`.
+12. Set `quality.pdf.pageCount`, `actionSurfaceCount`, `namedToolCount`, `pageArchetypeCount`, `maxPageArchetypeShare`, `completedExampleCount`, `blankTemplateCount`, `visualAssetCount`, `pdfSpecificVisualAssetCount`, `genericActionSurfaceLabelsRemoved`, `hasCompletedExamples`, `hasBlankTemplates`, and `renderChecked` from the generated artifact, not from memory.
 
 Stop conditions:
 
@@ -183,6 +239,7 @@ Stop conditions:
 - If most pages reuse the same heading/body/"worksheet box" layout, rebuild with distinct page archetypes.
 - If the phrase "Action Surface" appears as repeated buyer-facing page furniture, rebuild with named tools/templates.
 - If the PDF has page count but lacks named tools, completed examples, and matching blank templates, rebuild before QA.
+- If `quality.pdf.visualAssetCount` is below 6 or `quality.pdf.pdfSpecificVisualAssetCount` is below 4, create PDF-specific visuals/treatments and rebuild.
 - If extracted text is below the price-point target, revise before QA.
 - If page count or QA notes disagree with the actual PDF, revise before handoff.
 
@@ -233,8 +290,9 @@ Use this recipe for every VSL deck.
 7. Visible slide copy must be buyer-facing. Do not put `Hook`, `Problem`, `Agitate`, `Market`, `Mechanism`, `Proof`, `Offer`, `CTA`, `Objection`, `Close`, `Stage: Problem`, `Problem:`, or similar internal labels anywhere on a slide, including badges, footers, eyebrows, and small captions.
 8. Speaker notes must be recording notes of at least 25 words per slide. Do not use notes such as `Explain mechanism`, `Show proof`, or `Agitate`.
 9. Key slides must include visuals, diagrams, generated frames, screenshots, or product previews. Do not use dark placeholder rectangles with labels as finished visuals.
-10. Create a visual asset plan before generating the PPTX:
+10. Read `visual-asset-plan.md` and fulfill the `## VSL Deck Visuals` section before generating the PPTX:
    - 12+ unique visual assets or clearly distinct diagram treatments across a 20-30 slide deck.
+   - 8+ VSL visuals/treatments must be specific to the VSL deck and not reused from the sales page.
    - No single non-logo bitmap may appear on more than 25% of slides.
    - Do not recycle the same 3 hero/product images across the deck. A repeated theme is allowed; repeated bitmap filler is not.
    - Product bundle imagery may appear on product reveal, offer stack, value, and CTA slides only.
@@ -260,7 +318,7 @@ addPptxImage(slide, "assets/logo.png", 5.15, 4.55, 3.0, 1.7, "contain");
 
 12. Create HTML/contact-sheet only after the PPTX exists. Save it as `output/presentation/vsl-contact-sheet.png` or `output/presentation/vsl-preview.html`.
 13. Register `vsl-deck` as the `.pptx`; set its `preview` to browser-safe `output/presentation/vsl-preview.html` or an image contact sheet, never to the `.pptx` itself.
-14. Set `quality.vsl.maxLayoutShare`, `notesAreNarration`, `visibleStageLabelsRemoved`, `layoutDiversityChecked`, `visualPlaceholdersRemoved`, `visualAssetCount`, `uniqueVisualAssetCount`, `maxRepeatedBitmapShare`, `visualReuseChecked`, and `layoutAudit`.
+14. Set `quality.vsl.maxLayoutShare`, `notesAreNarration`, `visibleStageLabelsRemoved`, `layoutDiversityChecked`, `visualPlaceholdersRemoved`, `visualAssetCount`, `uniqueVisualAssetCount`, `vslSpecificVisualAssetCount`, `maxRepeatedBitmapShare`, `visualReuseChecked`, and `layoutAudit`.
 15. Browser-test `output/presentation/vsl-preview.html` at desktop and about 390px mobile width. The build must fail if the preview has horizontal overflow or broken images.
 
 Stop conditions:
@@ -269,7 +327,7 @@ Stop conditions:
 - If stage labels are visible as slide titles, revise before QA.
 - If one layout dominates the deck, revise before QA.
 - If the same large bitmap appears on more than 25% of slides, revise the visual plan before QA.
-- If the deck uses fewer than 12 unique visual assets/treatments, revise before QA.
+- If the deck uses fewer than 12 unique visual assets/treatments or fewer than 8 VSL-specific visuals/treatments, revise before QA.
 - If notes are author labels instead of narration, revise before QA.
 - If any PPTX bitmap appears in a box with a different aspect ratio and no PowerPoint `sizing`/crop metadata, revise the generator before QA.
 - If the dashboard iframe preview points at the `.pptx`, revise manifest preview metadata before QA.
