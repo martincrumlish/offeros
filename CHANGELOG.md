@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.1
+
+- Makes SVG a hard failure for generated OfferOS visual assets, including logos, brand assets, ad images, page art, PDF art, VSL art, and diagram fallbacks.
+- Removes secondary/vector SVG export allowances from the logo workflow.
+- Adds validator and self-test coverage for registered `.svg` artifacts in deep OfferOS runs.
+- Updates provenance guidance to use PNG/WebP/JPG bitmaps, HTML/CSS blocks, or rendered PNG diagrams instead of SVG files.
+
 ## 0.10.0
 
 - Adds a canonical `direct-response-long-form-v1` framework for paid front-end sales pages: message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo, before/after, product, offer stack, guarantee, objections, and close.

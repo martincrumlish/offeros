@@ -49,7 +49,6 @@ ALLOWED_PROVENANCE = {
     "provided",
     "licensed",
     "screenshot",
-    "code-vector",
     "html-css",
     "pil-generated",
     "manual",
@@ -1202,7 +1201,6 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
     if (
         manifest.get("mode") == "deep"
         and logo_provenance_for_source not in {"provided", "licensed"}
-        and logo_quality.get("vectorPrimaryUserRequested") is not True
         and str(logo_quality.get("brandMarkSource", "")).strip().lower() != "imagegen"
     ):
         issues.append("Logo quality metadata must record brandMarkSource: imagegen for deep generated-design runs.")
@@ -1213,26 +1211,27 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
     if deep_run and design_type in {"", "unresolved"}:
         issues.append("Deep runs must resolve designSource.type before completion. Use generated when creating a generated design direction.")
     logo_requires_imagegen = deep_run and provenance not in {"provided", "licensed"}
-    vector_primary_requested = logo_quality.get("vectorPrimaryUserRequested") is True
     if logo_requires_imagegen and logo_quality.get("imagegenCompleteLogoLockupAttempted") is not True:
         issues.append("Logo quality metadata must confirm imagegenCompleteLogoLockupAttempted.")
     if logo_requires_imagegen and quality_number(logo_quality.get("imagegenLogoCandidateCount")) < 3:
         issues.append("Logo quality metadata must record 3+ imagegen complete logo lockup candidates.")
-    if logo_requires_imagegen and logo_path.suffix.lower() == ".svg" and not vector_primary_requested:
-        issues.append("Deep generated-design runs must not use SVG as the primary logo. Use a PNG/WebP primary logo and register SVG only as a secondary export unless vectorPrimaryUserRequested is true.")
+    if logo_path.suffix.lower() == ".svg":
+        issues.append("OfferOS generated runs must not create or register SVG logo files. Rebuild the logo as PNG/WebP.")
+    if logo_quality.get("svgAssetCreated") is not False:
+        issues.append("Logo quality metadata must confirm svgAssetCreated: false.")
     logo_rel_path = str((logo_artifact or {}).get("path", "")).replace("\\", "/").lower()
     brand = manifest.get("brand", {})
     if not isinstance(brand, dict):
         brand = {}
     brand_logo = str(brand.get("logo", "")).replace("\\", "/").strip()
     brand_logo_lower = brand_logo.lower()
-    if logo_requires_imagegen and not vector_primary_requested:
+    if logo_requires_imagegen:
         if not brand_logo:
             issues.append("Generated-design deep runs must set brand.logo to assets/logo.png.")
         elif brand_logo_lower != logo_rel_path:
             issues.append("brand.logo must match the registered primary logo artifact path.")
         if brand_logo_lower.endswith(".svg"):
-            issues.append("Generated-design deep runs must not set brand.logo to an SVG primary logo.")
+            issues.append("Generated-design deep runs must not set brand.logo to an SVG file.")
         if brand_logo_lower.endswith("logo-mark.png") or brand_logo_lower.endswith("logo-mark.webp") or "logo-mark" in Path(brand_logo_lower).stem:
             issues.append("brand.logo cannot point at a mark-only file such as logo-mark.")
         if logo_rel_path.endswith("logo-mark.png") or logo_rel_path.endswith("logo-mark.webp") or "logo-mark" in Path(logo_rel_path).stem:
@@ -1252,10 +1251,10 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
                 if width / max(height, 1) < 1.6:
                     issues.append(f"Primary logo bitmap must be a horizontal lockup, not a square/icon-like canvas: {width}x{height}.")
     primary_format = str(logo_quality.get("primaryFormat", "")).lower().strip()
-    if logo_requires_imagegen and not vector_primary_requested and primary_format not in {"png", "webp", "jpg", "jpeg"}:
+    if logo_requires_imagegen and primary_format not in {"png", "webp", "jpg", "jpeg"}:
         issues.append("Logo quality metadata must record bitmap primaryFormat for generated-design deep runs.")
     imagegen_blocker = str(logo_quality.get("imagegenNotUsedReason", "")).strip()
-    if logo_requires_imagegen and not vector_primary_requested and not imagegen_blocker and provenance not in {"imagegen", "imagegen-composite"}:
+    if logo_requires_imagegen and not imagegen_blocker and provenance not in {"imagegen", "imagegen-composite"}:
         issues.append("Deep generated-design runs must register the primary logo with provenance: imagegen or imagegen-composite.")
     generation_tool = str(logo_quality.get("generationTool", "")).strip().lower()
     if logo_requires_imagegen and "imagegen-complete-logo" not in generation_tool:
@@ -1278,19 +1277,6 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
             issues.append("Imagegen-composite logos must record wordmarkCompositeMethod: scripted-professional-compositor.")
     if logo_requires_imagegen and imagegen_blocker and (logo_artifact or {}).get("status") == "complete":
         issues.append("Logo cannot be complete when quality.logo.imagegenNotUsedReason is set.")
-
-    if logo_path.suffix.lower() == ".svg" and provenance == "code-vector":
-        if not all(
-            [
-                quality_number(logo_quality.get("conceptCount")) >= 3,
-                logo_quality.get("smallSizeChecked") is True,
-                logo_quality.get("oneColorChecked") is True,
-                logo_quality.get("exportedPng") is True,
-                logo_quality.get("critiquePassed") is True,
-            ]
-        ):
-            issues.append("Code-vector SVG logo is marked complete without the required concept/refinement/small-size QA path.")
-
 
 def validate_ads(root: Path, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
     ads_artifact = by_id.get("facebook-ads")
@@ -1697,6 +1683,11 @@ def main() -> int:
         if not rel_path:
             issues.append(f"Artifact missing path: {artifact.get('id', 'unknown')}")
             continue
+        if deep_required and Path(rel_path).suffix.lower() == ".svg":
+            issues.append(
+                f"Deep OfferOS runs must not create or register SVG artifacts. "
+                f"Rebuild as PNG/WebP/JPG or HTML/CSS without .svg: {artifact.get('id', rel_path)} ({rel_path})"
+            )
         path = root / rel_path
         if not path.exists():
             issues.append(f"Missing artifact file: {rel_path}")

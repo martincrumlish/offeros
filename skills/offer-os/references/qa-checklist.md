@@ -50,7 +50,8 @@ Check:
 - logo is not a one-pass placeholder, icon-only mark, illustrative/page-curl/app-icon mark, or rough text composite; imagegen complete-lockup candidates were attempted first, it includes the exact readable offer name, professional wordmark typography/kerning checks, concept count, small-size check, one-color check, and bitmap lockup preview are recorded
 - generated graphics fit their containers
 - image provenance is recorded honestly
-- SVG/PIL/CSS fallbacks are not mislabeled as imagegen outputs
+- no SVG files were created or registered as generated visual artifacts
+- PIL/CSS fallbacks are not mislabeled as imagegen outputs
 - `visual-asset-plan.md` exists after the copy blueprint, records `visualPlanStage: post-content-blueprint`, uses `salesPageImageSystem: mixed-direct-response-v1`, and splits visuals by sales page, PDF, VSL, ads, and dashboard
 - sales-page visuals have `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, and `textRule`, and are not all mockup-style unless the user requested that
 - PDF and VSL visuals are not only reused sales-page images

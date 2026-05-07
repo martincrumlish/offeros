@@ -34,7 +34,7 @@ Use this recipe for every deep generated-design run.
 1. Read `offer-os.json`, `offer-architecture.md`, and `design.md`.
 2. Write 3 logo concepts in `design.md` under `## Logo Concepts`. Each concept must include: concept name, visual idea, buyer/category signal, reason to select/reject.
 3. Select 1 concept and write the reason in `design.md` under `## Selected Logo Concept`.
-4. Call the `imagegen` skill/tool for the selected concept to generate at least 3 complete logo lockup candidates. The first logo task is not a mark-only task. It must ask imagegen for a complete commercial logo with a symbol and exact wordmark in one bitmap. Do not create the primary logo with SVG, HTML/CSS, PIL, canvas, screenshots, icon fonts, or CSS text alone.
+4. Call the `imagegen` skill/tool for the selected concept to generate at least 3 complete logo lockup candidates. The first logo task is not a mark-only task. It must ask imagegen for a complete commercial logo with a symbol and exact wordmark in one bitmap. Do not create any logo or brand asset as SVG. Do not create the primary logo with HTML/CSS, PIL, canvas, screenshots, icon fonts, or CSS text alone.
 5. Use this prompt structure for each complete-lockup `imagegen` call:
 
 ```text
@@ -128,7 +128,7 @@ Output: finished text-free bitmap symbol suitable to combine into assets/logo.pn
   "professionalLockupApproved": true,
   "lockupPreviewChecked": true,
   "lockupPreviewPath": "output/qa/logo-lockup-preview.png",
-  "vectorPrimaryUserRequested": false,
+  "svgAssetCreated": false,
   "smallSizeChecked": true,
   "oneColorChecked": true,
   "exportedPng": true,
@@ -138,7 +138,7 @@ Output: finished text-free bitmap symbol suitable to combine into assets/logo.pn
 
 Stop conditions:
 
-- If the primary logo path is `.svg`, stop and rebuild the logo.
+- If any generated logo, brand, ad, page, PDF, VSL, or visual artifact path is `.svg`, stop and rebuild it as PNG/WebP/JPG or HTML/CSS with no SVG file.
 - If the primary `logo` artifact points to `assets/logo-mark.png` or any mark-only file, stop and rebuild the logo.
 - If the primary logo is an icon or mark without the readable offer name, stop and rebuild the logo lockup.
 - If imagegen was not first used for complete logo lockup candidates, stop and run the required complete-logo imagegen step.
@@ -147,6 +147,7 @@ Stop conditions:
 - If the imagegen complete logo or fallback symbol is illustrative, page-curl/folded-paper, 3D, app-icon-like, a rough cover graphic, or too detailed for nav use, stop and regenerate it.
 - If the wordmark is just default text pasted beside the mark, has awkward spacing, splits the exact offer name incorrectly, or looks like a rough composite, stop and rebuild the lockup.
 - If provenance is not `imagegen` or `imagegen-composite`, stop and rebuild the logo.
+- If `quality.logo.svgAssetCreated` is not false, stop and remove the SVG path from the generated artifact set.
 - If `quality.logo.brandMarkSource` is not `imagegen`, stop and rebuild the logo.
 - If `quality.logo.logoLockup`, `quality.logo.includesReadableOfferName`, `quality.logo.imagegenCompleteLogoLockupAttempted`, `quality.logo.exactOfferNamePreserved`, `quality.logo.markNotIllustration`, `quality.logo.wordmarkTypographyChecked`, `quality.logo.wordmarkKerningChecked`, or `quality.logo.professionalLockupApproved` is not `true`, stop and rebuild the logo.
 - If `output/qa/logo-lockup-preview.png` does not exist, create the preview and inspect it before marking the logo complete.

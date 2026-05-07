@@ -65,15 +65,15 @@ Allowed provenance values:
 - `provided`: supplied by the user.
 - `licensed`: externally sourced with permission/license.
 - `screenshot`: captured from a real page, deck, PDF, or product artifact.
-- `code-vector`: hand-coded SVG/vector diagram.
 - `html-css`: browser-rendered HTML/CSS visual.
 - `pil-generated`: programmatic raster text/shape graphic.
 
-Deep mode requires real bitmap image assets for hero/product/ad imagery when the user asks for generated design direction, generated images, ad images, or supporting images. `code-vector`, `html-css`, and `pil-generated` can support diagrams, but they do not count as AI image generation.
+Deep mode requires real bitmap image assets for hero/product/ad imagery when the user asks for generated design direction, generated images, ad images, or supporting images. `html-css` and `pil-generated` can support diagrams, but they do not count as AI image generation. SVG files are not allowed generated visual assets or fallbacks.
 
 Fails if:
 
-- an SVG, PIL card, CSS block, or screenshot is described as a generated image
+- an SVG file is created or registered as a generated visual artifact
+- a PIL card, CSS block, or screenshot is described as a generated image
 - the manifest omits provenance for image artifacts
 - all visual assets are code-generated diagrams with no real bitmap hero/product/ad imagery
 - ad images are mostly text blocks rather than persuasive creative
@@ -120,13 +120,13 @@ Must include:
 - logo symbol that is simple, flat, one-color usable, and not an illustration, app icon, page-curl/folded-paper graphic, mockup, or rough cover image
 - professional wordmark composition that preserves the exact offer name, does not insert accidental spaces, and has checked typography, kerning, mark scale, and spacing
 - nav-size and cover-size lockup preview at `output/qa/logo-lockup-preview.png`
-- optional secondary SVG/vector export only when requested or explicitly useful
+- no SVG/vector logo export; generated logo output is PNG/WebP bitmap only
 - bitmap preview/export for dashboard and QA review
 - small-size navigation check
 - one-color legibility check
 - `quality.logo` metadata
 
-Fails if the primary logo is not an `imagegen` or `imagegen-composite` horizontal bitmap in a deep generated-design run unless the user supplied the logo, explicitly requested vector-only delivery, or imagegen was blocked and the blocker is recorded. Also fails if complete logo lockup candidates were not attempted first, if the logo is icon-only, lacks the readable offer name, points at a mark-only file, uses an illustrative/page-curl/app-icon mark, breaks the exact offer name into the wrong spacing, looks like default text pasted beside a mark, or is only a hand-coded SVG made from generic text, boxes, lines, or initials and is still marked complete.
+Fails if the primary logo is not an `imagegen` or `imagegen-composite` horizontal bitmap in a deep generated-design run unless the user supplied the logo or imagegen was blocked and the blocker is recorded. Also fails if any generated SVG logo/brand file exists, if complete logo lockup candidates were not attempted first, if the logo is icon-only, lacks the readable offer name, points at a mark-only file, uses an illustrative/page-curl/app-icon mark, breaks the exact offer name into the wrong spacing, or looks like default text pasted beside a mark.
 
 ## Copy Gate
 
@@ -311,8 +311,9 @@ Revision is mandatory when any appear:
 - PDF lacks PDF-specific visuals/treatments and only reuses sales-page imagery
 - ads are repetitive, noncompliant, or visually unclear
 - ad angle cards repeat boilerplate instead of unique strategy
-- visual assets claim image generation but were actually SVG/PIL/CSS placeholders
-- logo is a generic one-pass SVG, icon-only mark, illustrative/page-curl mark, or rough text composite marked complete without professional lockup QA
+- visual assets claim image generation but were actually PIL/CSS placeholders
+- any generated SVG visual artifact is created or registered
+- logo is a generic icon-only mark, illustrative/page-curl mark, or rough text composite marked complete without professional lockup QA
 - emails lack sequence logic, send timing, preview text, campaign role, or repeat boilerplate body copy
 - VSL deck lacks a persuasive sales arc, repeats one layout, exposes stage labels, or is only a contact sheet
 - VSL primary deck is HTML instead of PPTX

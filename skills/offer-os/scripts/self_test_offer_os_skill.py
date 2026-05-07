@@ -68,7 +68,7 @@ SOURCE_CHECKS = [
             "Call the `imagegen` skill/tool",
             "3 complete logo lockup candidates",
             "The first logo task is not a mark-only task.",
-            "Do not create the primary logo with SVG",
+            "Do not create any logo or brand asset as SVG",
             "assets/logo.png",
             "--provenance imagegen-composite",
             "includesReadableOfferName",
@@ -82,7 +82,7 @@ SOURCE_CHECKS = [
             "logo-mark.png",
             "output/qa/logo-lockup-preview.png",
             "logoLockup",
-            "If the primary logo path is `.svg`, stop and rebuild the logo.",
+            "If any generated logo, brand, ad, page, PDF, VSL, or visual artifact path is `.svg`",
             "If imagegen was not first used for complete logo lockup candidates",
             "If the wordmark is just default text pasted beside the mark",
             "If provenance is not `imagegen` or `imagegen-composite`, stop and rebuild the logo.",
@@ -100,7 +100,7 @@ SOURCE_CHECKS = [
             "`quality.logo.imagegenCompleteLogoLockupAttempted = true`",
             "`quality.logo.exactOfferNamePreserved = true`",
             "`quality.logo.professionalLockupApproved = true`",
-            "Do not create or register a primary SVG logo.",
+            "Do not create or register any SVG logo file.",
         ],
     },
     {
@@ -199,7 +199,9 @@ SOURCE_CHECKS = [
         "id": "validator_blocks_known_regressions",
         "path": "scripts/validate_offer_outputs.py",
         "needles": [
-            "Deep generated-design runs must not use SVG as the primary logo",
+            "Deep OfferOS runs must not create or register SVG artifacts.",
+            "OfferOS generated runs must not create or register SVG logo files.",
+            "Logo quality metadata must confirm svgAssetCreated: false.",
             "Deep generated-design runs must register the primary logo with provenance: imagegen or imagegen-composite.",
             "includesReadableOfferName",
             "exactOfferNamePreserved",
@@ -274,7 +276,7 @@ SOURCE_CHECKS = [
 
 
 EXPECTED_BAD_WORKSPACE_ISSUES = [
-    "must not use SVG as the primary logo",
+    "must not create or register SVG",
     "provenance: imagegen",
     "valid pageType",
     "Sales page contains repeated boilerplate copy",
@@ -408,6 +410,22 @@ def synthetic_product_page_regression() -> dict:
     }
 
 
+def synthetic_svg_artifact_regression() -> dict:
+    expected = [
+        "Deep OfferOS runs must not create or register SVG artifacts.",
+    ]
+    workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-svg-artifact"
+    payload = run_validator(workspace)
+    issue_text = "\n".join(payload.get("issues", []))
+    missing = [item for item in expected if item not in issue_text]
+    return {
+        "id": "synthetic_svg_artifact_regression",
+        "ok": payload.get("returncode") != 0 and not missing,
+        "missingExpectedIssues": missing,
+        "issueCount": payload.get("issueCount"),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-test OfferOS skill source and known regression workspaces.")
     parser.add_argument("--bad-workspace", action="append", default=[], help="Known-bad generated output that must fail validator checks.")
@@ -419,6 +437,7 @@ def main() -> int:
         synthetic_visual_plan_regression(),
         synthetic_two_column_hero_regression(),
         synthetic_product_page_regression(),
+        synthetic_svg_artifact_regression(),
     ]
     ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results) and all(item["ok"] for item in synthetic_results)
 

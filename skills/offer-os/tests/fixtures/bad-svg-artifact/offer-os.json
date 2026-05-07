@@ -1,0 +1,29 @@
+{
+  "schema": "offer-os/v1",
+  "mode": "deep",
+  "offerName": "Bad SVG Artifact",
+  "audience": "test buyers",
+  "price": "$27",
+  "designSource": {
+    "type": "generated"
+  },
+  "brand": {
+    "logo": "assets/logo.svg"
+  },
+  "artifacts": [
+    {
+      "id": "logo",
+      "title": "Logo",
+      "type": "image",
+      "category": "Brand",
+      "path": "assets/logo.svg",
+      "status": "complete",
+      "provenance": "manual"
+    }
+  ],
+  "quality": {
+    "logo": {
+      "svgAssetCreated": true
+    }
+  }
+}

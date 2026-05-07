@@ -62,7 +62,7 @@
   "preview": "index.html",
   "description": "Coded sales page for the offer.",
   "status": "complete",
-  "provenance": "imagegen|imagegen-composite|provided|licensed|screenshot|code-vector|html-css|pil-generated|manual|generated-by-code",
+  "provenance": "imagegen|imagegen-composite|provided|licensed|screenshot|html-css|pil-generated|manual|generated-by-code",
   "quality": {
     "buyerValue": 5,
     "usability": 5,
@@ -79,7 +79,6 @@ Use `provenance` for all images and previews. Use honest labels:
 - `provided`: supplied by user
 - `licensed`: licensed external asset
 - `screenshot`: rendered screenshot from a real artifact
-- `code-vector`: hand-coded SVG/vector
 - `html-css`: rendered HTML/CSS visual
 - `pil-generated`: programmatic text/shape image
 - `manual`: hand-authored document/page/deck
@@ -170,7 +169,7 @@ For deep mode, include module-level quality metadata when applicable:
       "professionalLockupApproved": true,
       "lockupPreviewChecked": true,
       "lockupPreviewPath": "output/qa/logo-lockup-preview.png",
-      "vectorPrimaryUserRequested": false,
+      "svgAssetCreated": false,
       "smallSizeChecked": true,
       "oneColorChecked": true,
       "exportedPng": true,

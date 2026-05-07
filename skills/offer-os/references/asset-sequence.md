@@ -24,9 +24,9 @@ Generate assets in dependency order. Earlier assets define constraints for later
 Record provenance for every visual artifact in `offer-os.json`.
 
 - Use `imagegen` for bitmap hero, product, and ad imagery when the user asks for generated images, a generated design direction, or ad images.
-- Use `code-vector` for hand-coded SVG diagrams only when a vector diagram is the right artifact.
+- Do not use SVG files for generated diagrams or visuals. Use HTML/CSS blocks, canvas, or rendered PNG diagrams when a structured diagram is needed.
 - Use `html-css`, `pil-generated`, or `screenshot` only when that is the honest source.
-- Do not describe SVGs, PIL text cards, CSS panels, or screenshots as "generated images." They can be useful fallbacks, but they must be labeled as such.
+- Do not describe PIL text cards, CSS panels, rendered diagrams, or screenshots as "generated images." They can be useful fallbacks, but they must be labeled as such. SVG files are not an allowed fallback in OfferOS deep generated-design runs.
 
 Deep mode should include at least:
 
@@ -121,7 +121,7 @@ Minimum logo prerequisites:
 - small-size and one-color checks
 - bitmap preview/export for QA
 
-In deep generated-design runs, the primary logo artifact should be an `imagegen` or `imagegen-composite` `.png` or `.webp` horizontal logo lockup that includes the readable offer name. Start with imagegen complete logo lockup candidates. The imagegen brand mark alone can be saved as `assets/logo-mark.png` only as a fallback after complete-lockup attempts fail exact text; it is not the primary logo. A code-vector SVG can be registered only as a secondary export or draft unless the user explicitly requested vector-only delivery. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
+In deep generated-design runs, the primary logo artifact must be an `imagegen` or `imagegen-composite` `.png` or `.webp` horizontal logo lockup that includes the readable offer name. Start with imagegen complete logo lockup candidates. The imagegen brand mark alone can be saved as `assets/logo-mark.png` only as a fallback after complete-lockup attempts fail exact text; it is not the primary logo. Do not create or register SVG logo files, even as secondary exports or drafts. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
 
 The mark must be a simple logo-grade symbol, not an illustration, page-curl/folded-paper image, app icon, mockup, or rough cover graphic. The final `assets/logo.png` must preserve the exact offer name and pass typography, kerning, mark scale, and spacing checks. A bad mark with text composited beside it is still a failed logo.
 

@@ -14,7 +14,7 @@ The final system should feel like a real launch package:
 - The sales page has direct-response structure, strong hero hierarchy, VSL area, pricing, stack, objections, and repeated CTAs.
 - The page is coded, responsive, and visually checked.
 - The PDF product is useful enough to sell or deliver.
-- Ads include market diagnosis, angles, hooks, copy, creative concepts, and honest image provenance. When generated imagery is requested, the ad images come from `imagegen`, not SVG/PIL/text-card substitutes.
+- Ads include market diagnosis, angles, hooks, copy, creative concepts, and honest image provenance. When generated imagery is requested, the ad images come from `imagegen`, not PIL/text-card substitutes, and not SVG files.
 - Emails use a launch arc and direct-response logic.
 - The VSL deck is paced for narration with low text.
 - The dashboard previews assets instead of dumping links.
@@ -47,7 +47,8 @@ Revise when you see:
 - page sections that do not have conversion jobs
 - VSL slides that summarize instead of persuade
 - dashboard cards that only navigate away
-- artifacts labeled as generated images when they are hand-coded SVGs, screenshots, or PIL text cards
+- artifacts labeled as generated images when they are screenshots or PIL text cards
+- any generated SVG visual artifact
 - a QA report that passes technical checks while ignoring buyer value
 
 ## Calibration Rule

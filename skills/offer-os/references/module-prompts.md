@@ -62,7 +62,7 @@ Default sales-page image system: `mixed-direct-response-v1`. Use product/dashboa
 
 Purpose: create a usable identity system across all offer assets.
 
-Production rule: follow the Logo Recipe in `references/exact-build-recipes.md`. The primary logo for a deep generated-design run is `assets/logo.png`, created first through imagegen complete logo lockup candidates with symbol plus exact readable offer-name wordmark. Use a text-free imagegen symbol plus professional wordmark compositor only as a fallback after complete-lockup attempts fail exact text. Register it with `provenance: "imagegen"` only if imagegen produced the final readable lockup directly; otherwise use `provenance: "imagegen-composite"`. No primary SVG, no icon-only primary logo, no illustrative mark, and no rough "mark plus default text" composite.
+Production rule: follow the Logo Recipe in `references/exact-build-recipes.md`. The primary logo for a deep generated-design run is `assets/logo.png`, created first through imagegen complete logo lockup candidates with symbol plus exact readable offer-name wordmark. Use a text-free imagegen symbol plus professional wordmark compositor only as a fallback after complete-lockup attempts fail exact text. Register it with `provenance: "imagegen"` only if imagegen produced the final readable lockup directly; otherwise use `provenance: "imagegen-composite"`. No SVG logo files at all, no icon-only primary logo, no illustrative mark, and no rough "mark plus default text" composite.
 
 Output:
 
@@ -73,10 +73,10 @@ Output:
 5. Brand voice: tone, sentence style, words to use, words to avoid, claims style, CTA style.
 6. Usage rules: sales page, PDF, ads, emails, VSL, dashboard.
 7. `imagegen` prompts for 3 complete logo lockup candidates, plus the fallback text-free symbol prompt and professional wordmark-compositor plan only if exact text fails.
-8. Optional secondary vector export prompt only if the user requested vector output.
+8. No vector/SVG export prompt. Generated OfferOS logo output is PNG/WebP bitmap only.
 9. Logo QA: nav-size preview, one-color check, exact-name preservation check, wordmark kerning/spacing check, bitmap export/preview, and `quality.logo` metadata.
 
-Avoid abstract swooshes, generic marks, fragile details, page-curl/folded-paper graphics, app-icon marks, illustrative cover-art marks, and visual ideas that cannot extend to product assets. In deep generated-design runs, do not use a hand-coded SVG, HTML/CSS render, or PIL text graphic as the primary complete logo. The primary logo must be a horizontal bitmap lockup such as `.png` or `.webp`, must include the exact readable offer name, must use imagegen for complete lockup candidates before any symbol-only fallback, and must pass professional wordmark composition checks; SVG is secondary only unless the user explicitly requests vector-only delivery.
+Avoid abstract swooshes, generic marks, fragile details, page-curl/folded-paper graphics, app-icon marks, illustrative cover-art marks, and visual ideas that cannot extend to product assets. In deep generated-design runs, do not use a hand-coded SVG, HTML/CSS render, or PIL text graphic as the primary complete logo. The primary logo must be a horizontal bitmap lockup such as `.png` or `.webp`, must include the exact readable offer name, must use imagegen for complete lockup candidates before any symbol-only fallback, and must pass professional wordmark composition checks. Do not create or register SVG logo assets.
 
 ## Sales Copy
 
@@ -115,7 +115,7 @@ The coded page must use real copy and assets. Do not leave placeholders unless t
 
 Use the direct-response section contract from `assets/templates/sales-page/section-map.md`. Keep `data-offeros-section` markers for required sections. For `direct-response-long-form-vsl`, build from `assets/templates/sales-page/page-skeleton.html` and preserve the locked `offeros-stacked-vsl-v2` hero: centered copy stack, large 16:9 `.oo-vsl-frame` hero video below the headline, thumbnail, play button, caption, price strip below the video, CTA to `#buy`, trust row, proof/demo before the buy box, bundle image, deliverable checklist, normally/today value row, large stack CTA, and guarantee/access reassurance. Do not ship a short branded product page, polished feature page, two-column SaaS hero, dashboard/product mockup hero, tiny right-side VSL card, proof-after-price-only page, or generic card stack in place of the long-form sales page.
 
-If the page uses SVG/CSS diagrams as temporary visuals, mark them as fallbacks and do not describe them as generated images.
+If the page uses HTML/CSS diagrams as temporary visuals, mark them as fallbacks and do not describe them as generated images. Do not create SVG diagram files.
 
 ## PDF Product
 

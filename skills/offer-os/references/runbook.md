@@ -92,7 +92,7 @@ Required result:
 - `quality.logo.exactOfferNamePreserved = true`
 - `quality.logo.professionalLockupApproved = true`
 
-Do not create or register a primary SVG logo. Do not create an icon-only mark, illustrative mark, rough text composite, PIL/HTML/CSS raster fallback, or text-only graphic and call it complete.
+Do not create or register any SVG logo file. Do not create an icon-only mark, illustrative mark, rough text composite, PIL/HTML/CSS raster fallback, or text-only graphic and call it complete.
 
 Update `offer-os.json`:
 
@@ -199,7 +199,7 @@ Generate assets in sequence:
 
 Register each useful image.
 
-Record provenance for every visual artifact. If an asset is hand-coded SVG, PIL, HTML/CSS, or a screenshot, label it honestly. If the run asks for generated images, use imagegen for hero/product/ad bitmaps unless blocked and record the blocker in `quality.images.imagegenNotUsedReason`. Do not use only sales-page visuals for the PDF or VSL.
+Record provenance for every visual artifact. If an asset is PIL, HTML/CSS, or a screenshot, label it honestly. If the run asks for generated images, use imagegen for hero/product/ad bitmaps unless blocked and record the blocker in `quality.images.imagegenNotUsedReason`. Do not create or register SVG visual files. Do not use only sales-page visuals for the PDF or VSL.
 
 ## 11. PDF Product
 
