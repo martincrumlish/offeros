@@ -54,7 +54,7 @@ Check:
 - no SVG files were created or registered as generated visual artifacts
 - PIL/CSS fallbacks are not mislabeled as imagegen outputs
 - `visual-asset-plan.md` exists after the copy blueprint, records `visualPlanStage: post-content-blueprint`, uses `salesPageImageSystem: mixed-direct-response-v1`, and splits visuals by sales page, PDF, VSL, ads, and dashboard
-- sales-page visuals have `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, and `textRule`, and are not all mockup-style unless the user requested that
+- sales-page visuals have `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, and `textRule`, are not all mockup-style unless the user requested that, and primary creative slots are imagegen/imagegen-composite or provided/licensed rather than PIL/HTML/CSS/generated-by-code placeholders
 - PDF and VSL visuals are not only reused sales-page images
 - dashboard previews work
 - dashboard uses the standard v2 modal/iframe template

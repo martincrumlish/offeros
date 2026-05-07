@@ -23,10 +23,11 @@ Generate assets in dependency order. Earlier assets define constraints for later
 
 Record provenance for every visual artifact in `offer-os.json`.
 
-- Use `imagegen` for bitmap hero, product, and ad imagery when the user asks for generated images, a generated design direction, or ad images.
+- Use `imagegen` for bitmap hero, product, offer-stack, product-bundle, buyer-situation, and ad imagery when the user asks for generated images, a generated design direction, or ad images.
 - Do not use SVG files for generated diagrams or visuals. Use HTML/CSS blocks, canvas, or rendered PNG diagrams when a structured diagram is needed.
-- Use `html-css`, `pil-generated`, or `screenshot` only when that is the honest source.
-- Do not describe PIL text cards, CSS panels, rendered diagrams, or screenshots as "generated images." They can be useful fallbacks, but they must be labeled as such. SVG files are not an allowed fallback in OfferOS deep generated-design runs.
+- Use `html-css`, `pil-generated`, `generated-by-code`, or `screenshot` only when that is the honest source for a real diagram, worksheet preview, rendered page preview, or QA artifact.
+- Do not use HTML/CSS, Pillow, canvas, screenshots, or generated-by-code PNGs as substitutes for primary conversion visuals. In deep generated-design runs, product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives must be `imagegen` or `imagegen-composite` unless the user provided/licensed the asset.
+- Do not describe PIL text cards, CSS panels, rendered diagrams, or screenshots as "generated images." They can be useful diagram/preview fallbacks, but they must be labeled as such. SVG files are not an allowed fallback in OfferOS deep generated-design runs.
 
 Deep mode should include at least:
 
@@ -56,7 +57,7 @@ Record `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, and
 
 Do not treat sales-page graphics as the default image library for every artifact. Each artifact has its own job:
 
-- Sales page visuals sell belief and the offer stack. They must be tied to real copy anchors and use a mixed direct-response system, not an all-mockup image set by default.
+- Sales page visuals sell belief and the offer stack. They must be tied to real copy anchors and use a mixed direct-response system, not an all-mockup image set by default. Primary conversion visuals in the sales page must come from imagegen/imagegen-composite or a provided/licensed asset; coded PNG placeholders do not satisfy the slot.
 - PDF visuals help the buyer use the product: covers, module dividers, matrices, completed examples, blank worksheets, checklists, and implementation maps.
 - VSL visuals help a spoken pitch hold attention: pattern interrupts, problem maps, comparison tables, mechanism diagrams, product reveal, stack, value, guarantee, objection, and CTA visuals.
 - Ad visuals interrupt the feed and should be generated specifically for the ad angle.
@@ -141,6 +142,8 @@ Required before page-specific graphics, VSL visuals, ad angles, and checkout gra
 Required before dashboard, product mockups, VSL product reveal, offer stack graphics, and ads that show the deliverable.
 
 The product bundle should show the buyer what they get. If it is a coded diagram, call it a diagram. If it is a generated bitmap mockup, save the prompt/provenance in the manifest.
+
+In deep generated-design runs, the actual product-bundle or offer-stack visual used on the sales page must be generated with the `imagegen` skill/tool or composed from imagegen output. A Pillow/CSS/canvas/generated-by-code PNG can be used as a temporary wireframe or diagram only; it must be registered as `needs_revision` and cannot satisfy `data-offeros-product-bundle` or primary product mockup requirements.
 
 ## Fast Path
 

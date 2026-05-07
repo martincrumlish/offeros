@@ -223,6 +223,7 @@ SOURCE_CHECKS = [
             "Primary logo bitmap must be a horizontal lockup",
             "Sales page contains repeated boilerplate copy",
             "Visual asset plan missing",
+            "PIL/HTML/CSS/code-generated PNGs cannot satisfy product bundle",
             "hasArtifactSpecificPlan",
             "visualPlanStage: post-content-blueprint",
             "copyBlueprintUsed",
@@ -455,6 +456,23 @@ def synthetic_logo_drift_regression() -> dict:
     }
 
 
+def synthetic_code_rendered_creative_regression() -> dict:
+    expected = [
+        "Generated-design deep runs must create primary conversion visuals with imagegen/imagegen-composite",
+        "PIL/HTML/CSS/code-generated PNGs cannot satisfy product bundle",
+    ]
+    workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-code-rendered-creative"
+    payload = run_validator(workspace)
+    issue_text = "\n".join(payload.get("issues", []))
+    missing = [item for item in expected if item not in issue_text]
+    return {
+        "id": "synthetic_code_rendered_creative_regression",
+        "ok": payload.get("returncode") != 0 and not missing,
+        "missingExpectedIssues": missing,
+        "issueCount": payload.get("issueCount"),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-test OfferOS skill source and known regression workspaces.")
     parser.add_argument("--bad-workspace", action="append", default=[], help="Known-bad generated output that must fail validator checks.")
@@ -468,6 +486,7 @@ def main() -> int:
         synthetic_product_page_regression(),
         synthetic_svg_artifact_regression(),
         synthetic_logo_drift_regression(),
+        synthetic_code_rendered_creative_regression(),
     ]
     ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results) and all(item["ok"] for item in synthetic_results)
 

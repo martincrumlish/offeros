@@ -199,6 +199,8 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - use `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `structured-panel`, or restrained `buyer-situation-photo` for mechanism, failed alternatives, proof/demo, objections, feature specifics, and problem/agitation sections
    - do not make every sales-page image a polished fake UI/product mockup unless `mockupHeavyUserRequested: true`
    - avoid busy fake UI, hallucinated dashboards, illegible tiny text, decorative abstract mockups, and visuals that do not support a specific copy claim
+   - set `source/provenance: imagegen` or `imagegen-composite` for `hero-vsl-frame`, `product-mockup`, `offer-stack-bundle`, `buyer-situation-photo`, and `ad-creative` rows unless the asset is user-provided or licensed
+   - do not set `productionMethod`, `source/provenance`, or fallback notes for those rows to `Pillow`, `PIL`, `html-css`, `canvas`, `screenshot`, `generated-by-code`, or `manual`; those methods are allowed only for diagrams, worksheets, matrices, previews, QA screenshots, and real screenshots of built artifacts
 8. Use these minimum visual budgets in deep mode:
    - Global/shared: logo lockup, brand mark, product bundle/mockup, and one reusable texture/pattern or brand frame.
    - Sales page: 4+ page-specific visuals anchored to copy sections: hero/VSL thumbnail, mechanism/framework, failed-alternative or before/after visual, proof/demo or product-stack visual.
@@ -247,6 +249,7 @@ Stop conditions:
 - If `quality.images.salesPageImageSystem` is not `mixed-direct-response-v1` and the user did not explicitly request another image system, rebuild the plan.
 - If any sales-page visual lacks `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, or `textRule`, rebuild the plan.
 - If every sales-page visual is a mockup-style visual and `mockupHeavyUserRequested` is not `true`, revise to a mixed direct-response visual system.
+- If a product bundle, offer-stack bundle, product mockup, hero/VSL thumbnail, buyer-situation photo, or ad creative is planned as PIL/HTML/CSS/canvas/screenshot/generated-by-code/manual, stop and replace it with an imagegen/imagegen-composite job or a provided/licensed asset.
 - If the user explicitly allowed agents and no imagegen visual workers were dispatched, record the reason in `quality.images.agentDispatchNotUsedReason`.
 - If the PDF visuals are only sales-page images, create PDF-specific visuals/treatments before building the PDF.
 - If the VSL visuals are only sales-page images or the same few bitmaps repeated, create slide-specific visuals/treatments before generating the PPTX.

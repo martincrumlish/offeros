@@ -58,6 +58,8 @@ Output:
 
 Default sales-page image system: `mixed-direct-response-v1`. Use product/dashboard/offer-stack mockups where they sell the product or stack. Use diagrams, comparison visuals, proof/demo visuals, structured panels, screenshots, or restrained buyer-situation imagery for mechanism, failed alternatives, proof, objections, and feature specifics. Avoid treating the sales page as the master image pool. Avoid all-mockup sales pages unless the user explicitly requested mockup-heavy.
 
+Primary creative source rule: in deep generated-design runs, `hero-vsl-frame`, `product-mockup`, `offer-stack-bundle`, `buyer-situation-photo`, and `ad-creative` outputs must be created with the `imagegen` skill/tool or composed from imagegen output. Do not make those assets as Pillow, HTML/CSS, canvas, screenshot, generated-by-code, or manual PNG placeholders. Those methods are only for diagrams, matrices, worksheet previews, real screenshots of built artifacts, or QA evidence.
+
 ## Logo And Brand
 
 Purpose: create a usable identity system across all offer assets.

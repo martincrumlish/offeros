@@ -86,6 +86,8 @@ Use `provenance` for all images and previews. Use honest labels:
 
 Do not use words like "generated image", "AI-generated", or "imagegen" in an artifact title or description unless provenance is `imagegen` or `imagegen-composite`.
 
+For deep generated-design runs, primary conversion visuals must not use `html-css`, `pil-generated`, `generated-by-code`, `manual`, or `screenshot` provenance. Product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives require `imagegen` or `imagegen-composite` unless the asset is genuinely `provided` or `licensed`.
+
 ## Artifact Types
 
 Use these values:

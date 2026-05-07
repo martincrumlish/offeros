@@ -1,0 +1,27 @@
+{
+  "schema": "offer-os.v1",
+  "mode": "deep",
+  "offerName": "Code Rendered Creative",
+  "audience": "test buyers",
+  "price": "$27",
+  "designSource": {
+    "type": "generated"
+  },
+  "modules": [],
+  "artifacts": [
+    {
+      "id": "product-bundle",
+      "title": "Product Bundle",
+      "type": "image",
+      "category": "Images",
+      "path": "assets/images/product-bundle.png",
+      "provenance": "pil-generated",
+      "status": "complete"
+    }
+  ],
+  "quality": {
+    "images": {
+      "imagegenNotUsedReason": ""
+    }
+  }
+}

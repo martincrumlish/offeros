@@ -67,13 +67,15 @@ Allowed provenance values:
 - `screenshot`: captured from a real page, deck, PDF, or product artifact.
 - `html-css`: browser-rendered HTML/CSS visual.
 - `pil-generated`: programmatic raster text/shape graphic.
+- `generated-by-code`: deterministic script output.
 
-Deep mode requires real bitmap image assets for hero/product/ad imagery when the user asks for generated design direction, generated images, ad images, or supporting images. `html-css` and `pil-generated` can support diagrams, but they do not count as AI image generation. SVG files are not allowed generated visual assets or fallbacks.
+These values are not interchangeable. Deep mode requires real imagegen/imagegen-composite bitmap assets for primary conversion visuals when the user asks for generated design direction, generated images, ad images, or supporting images. Product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives must be `imagegen` or `imagegen-composite` unless the user provided/licensed the asset. `html-css`, `pil-generated`, `generated-by-code`, `manual`, and `screenshot` can support diagrams, worksheets, rendered previews, QA evidence, or real artifact screenshots, but they do not count as AI image generation and cannot satisfy those primary creative slots. SVG files are not allowed generated visual assets or fallbacks.
 
 Fails if:
 
 - an SVG file is created or registered as a generated visual artifact
 - a PIL card, CSS block, or screenshot is described as a generated image
+- a product bundle, offer-stack bundle, product mockup, hero/VSL thumbnail, buyer-situation photo, or ad creative is made as a PIL/HTML/CSS/canvas/screenshot/generated-by-code/manual PNG instead of imagegen/imagegen-composite
 - the manifest omits provenance for image artifacts
 - all visual assets are code-generated diagrams with no real bitmap hero/product/ad imagery
 - ad images are mostly text blocks rather than persuasive creative

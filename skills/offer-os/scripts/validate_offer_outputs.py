@@ -55,6 +55,38 @@ ALLOWED_PROVENANCE = {
     "generated-by-code",
 }
 
+IMAGEGEN_CREATIVE_PROVENANCE = {
+    "imagegen",
+    "imagegen-composite",
+    "provided",
+    "licensed",
+}
+
+CODE_RENDERED_PROVENANCE = {
+    "html-css",
+    "pil-generated",
+    "generated-by-code",
+    "manual",
+    "screenshot",
+}
+
+IMAGEGEN_REQUIRED_CREATIVE_TERMS = {
+    "product-bundle",
+    "product bundle",
+    "offer-stack-bundle",
+    "offer stack bundle",
+    "product-mockup",
+    "product mockup",
+    "hero-vsl-frame",
+    "hero vsl frame",
+    "hero-thumbnail",
+    "hero thumbnail",
+    "vsl-thumbnail",
+    "vsl thumbnail",
+    "buyer-situation-photo",
+    "buyer situation photo",
+}
+
 MAJOR_ARTIFACTS = [
     "sales-page",
     "pdf-product",
@@ -126,6 +158,14 @@ MOCKUP_VISUAL_KINDS = {
     "product-mockup",
     "dashboard-mockup",
     "offer-stack-bundle",
+}
+
+IMAGEGEN_REQUIRED_VISUAL_KINDS = {
+    "hero-vsl-frame",
+    "product-mockup",
+    "offer-stack-bundle",
+    "buyer-situation-photo",
+    "ad-creative",
 }
 
 REQUIRED_COPY_HEADINGS = [
@@ -399,6 +439,23 @@ def contains_expected_price(html_text: str, price: float) -> bool:
 def generated_claim(artifact: dict) -> bool:
     text = f"{artifact.get('title', '')} {artifact.get('description', '')}".lower()
     return any(term in text for term in ["generated image", "ai-generated", "imagegen", "generated product", "generated tactical"])
+
+
+def artifact_identity_text(artifact: dict) -> str:
+    return " ".join(
+        str(artifact.get(key, ""))
+        for key in ["id", "title", "path", "preview", "category", "description"]
+    ).lower()
+
+
+def is_imagegen_required_creative(artifact: dict) -> bool:
+    artifact_id = str(artifact.get("id", "")).lower()
+    category = str(artifact.get("category", "")).lower()
+    artifact_type = str(artifact.get("type", "")).lower()
+    if artifact_id.startswith("facebook-ad-image") or (category == "ads" and artifact_type == "image"):
+        return True
+    identity = artifact_identity_text(artifact)
+    return any(term in identity for term in IMAGEGEN_REQUIRED_CREATIVE_TERMS)
 
 
 def quality_number(value) -> int:
@@ -1620,10 +1677,29 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         if image_quality.get("mockupHeavyUserRequested") is not True:
             issues.append("Sales-page visual plan is all mockup/UI-style visuals; use mixed-direct-response-v1 unless mockupHeavyUserRequested is true.")
 
+    code_rendered_rows = []
+    for line in text.splitlines():
+        lower_line = line.lower()
+        matched_kind = next((kind for kind in IMAGEGEN_REQUIRED_VISUAL_KINDS if kind in lower_line), "")
+        if not matched_kind:
+            continue
+        if any(provenance in lower_line for provenance in CODE_RENDERED_PROVENANCE):
+            code_rendered_rows.append(f"{matched_kind}: {line.strip()[:140]}")
+    if code_rendered_rows:
+        issues.append(
+            "Imagegen-required creative visuals cannot use PIL/HTML/CSS/code/screenshot fallback provenance: "
+            + "; ".join(code_rendered_rows[:5])
+        )
+
+    ad_visuals = markdown_section(text, "## Ad Visuals")
+    if ad_visuals and len(re.findall(r"\bsource/provenance\s*:\s*`?imagegen(?:-composite)?`?", ad_visuals, flags=re.I)) < 3:
+        issues.append("Ad visual plan must include 3+ ad rows with source/provenance: imagegen or imagegen-composite.")
+
 
 def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], warnings: list[str]) -> None:
     imagegen_count = 0
     real_bitmap_count = 0
+    deep_generated_design = manifest.get("mode") == "deep" and manifest.get("designSource", {}).get("type") == "generated"
     for artifact in artifacts:
         rel_path = artifact.get("path", "")
         suffix = Path(rel_path).suffix.lower()
@@ -1637,11 +1713,17 @@ def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], wa
             issues.append(f"Image artifact has invalid provenance '{provenance}': {artifact.get('id', rel_path)}")
         if generated_claim(artifact) and provenance not in {"imagegen", "imagegen-composite"}:
             issues.append(f"Artifact claims generated imagery without imagegen/imagegen-composite provenance: {artifact.get('id', rel_path)}")
+        if deep_generated_design and is_imagegen_required_creative(artifact) and provenance not in IMAGEGEN_CREATIVE_PROVENANCE:
+            issues.append(
+                "Generated-design deep runs must create primary conversion visuals with imagegen/imagegen-composite "
+                f"(or provided/licensed source), not {provenance or 'missing'}: {artifact.get('id', rel_path)} ({rel_path}). "
+                "PIL/HTML/CSS/code-generated PNGs cannot satisfy product bundle, hero/VSL thumbnail, product mockup, or ad creative requirements."
+            )
         if provenance in {"imagegen", "imagegen-composite"}:
             imagegen_count += 1
             if suffix == ".svg":
                 issues.append(f"Imagegen artifact should be bitmap, not SVG: {artifact.get('id', rel_path)}")
-        if provenance in {"imagegen", "provided", "licensed"} and suffix in BITMAP_EXTS:
+        if provenance in {"imagegen", "imagegen-composite", "provided", "licensed"} and suffix in BITMAP_EXTS:
             real_bitmap_count += 1
 
     image_quality = manifest.get("quality", {}).get("images", {})

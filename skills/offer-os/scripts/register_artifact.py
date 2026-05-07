@@ -24,7 +24,12 @@ def main() -> int:
     parser.add_argument(
         "--provenance",
         default="",
-        help="Image/source provenance: imagegen, imagegen-composite, provided, licensed, screenshot, html-css, pil-generated, manual, or generated-by-code. Do not register generated SVG artifacts.",
+        help=(
+            "Image/source provenance: imagegen, imagegen-composite, provided, licensed, screenshot, "
+            "html-css, pil-generated, manual, or generated-by-code. Deep generated-design primary "
+            "conversion visuals (product bundle, offer stack, hero/VSL thumbnail, product mockup, ads) "
+            "must be imagegen/imagegen-composite unless provided/licensed. Do not register generated SVG artifacts."
+        ),
     )
     parser.add_argument("--buyer-value", type=int, default=0, help="Commercial audit score 1-5.")
     parser.add_argument("--usability", type=int, default=0, help="Commercial audit score 1-5.")

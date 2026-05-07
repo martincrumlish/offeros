@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.3
+
+- Closes the code-rendered PNG loophole for primary conversion visuals.
+- Requires generated-design deep runs to use `imagegen` or `imagegen-composite` for product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives unless the asset is provided or licensed.
+- Keeps PIL/HTML/CSS/canvas/generated-by-code PNGs limited to diagrams, worksheets, previews, real screenshots, and QA evidence.
+- Adds validator and self-test coverage for a Pillow-generated `product-bundle.png` being incorrectly treated as a finished creative asset.
+
 ## 0.10.2
 
 - Adds a brand-lock step after logo selection so `assets/logo.png` is the only downstream logo reference.
