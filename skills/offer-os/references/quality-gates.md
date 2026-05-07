@@ -116,6 +116,7 @@ Must include:
 - 3 concept directions considered before final production
 - a selected concept with buyer/category rationale
 - primary final logo lockup as `.png` or `.webp` that includes the readable offer name and uses the `imagegen` skill/tool for the brand mark in deep generated-design runs
+- brand lock metadata confirming `assets/logo.png` is the only downstream logo reference and rejected candidates are excluded
 - imagegen complete logo lockup attempts before any symbol-only fallback
 - logo symbol that is simple, flat, one-color usable, and not an illustration, app icon, page-curl/folded-paper graphic, mockup, or rough cover image
 - professional wordmark composition that preserves the exact offer name, does not insert accidental spaces, and has checked typography, kerning, mark scale, and spacing
@@ -127,6 +128,8 @@ Must include:
 - `quality.logo` metadata
 
 Fails if the primary logo is not an `imagegen` or `imagegen-composite` horizontal bitmap in a deep generated-design run unless the user supplied the logo or imagegen was blocked and the blocker is recorded. Also fails if any generated SVG logo/brand file exists, if complete logo lockup candidates were not attempted first, if the logo is icon-only, lacks the readable offer name, points at a mark-only file, uses an illustrative/page-curl/app-icon mark, breaks the exact offer name into the wrong spacing, or looks like default text pasted beside a mark.
+
+Fails if downstream product, ad, page, PDF, VSL, or dashboard image prompts ask imagegen to generate or redraw the logo/wordmark. The build must use the frozen `assets/logo.png` file and deterministic placement/compositing.
 
 ## Copy Gate
 

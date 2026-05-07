@@ -1192,6 +1192,12 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
     }.items():
         if logo_quality.get(key) is not True:
             issues.append(f"Logo quality metadata must confirm {label}.")
+    if logo_quality.get("finalLogoLocked") is not True:
+        issues.append("Logo quality metadata must confirm finalLogoLocked.")
+    if logo_quality.get("rejectedLogoConceptsExcluded") is not True:
+        issues.append("Logo quality metadata must confirm rejectedLogoConceptsExcluded.")
+    if str(logo_quality.get("downstreamLogoReference", "")).replace("\\", "/") != "assets/logo.png":
+        issues.append("Logo quality metadata must record downstreamLogoReference: assets/logo.png.")
     preview_path = str(logo_quality.get("lockupPreviewPath", "")).strip()
     if not preview_path:
         issues.append("Logo quality metadata must record lockupPreviewPath.")
@@ -1515,6 +1521,7 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         return
 
     text = text_for(plan_path)
+    lower_text = text.lower()
     required_headings = [
         "# Visual Asset Plan",
         "## Visual Plan Metadata",
@@ -1529,6 +1536,10 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
     missing_headings = [heading for heading in required_headings if heading.lower() not in text.lower()]
     if missing_headings:
         issues.append("Visual asset plan missing required headings: " + ", ".join(missing_headings))
+    if re.search(r"\b(?:generate|redraw|create|render|include|place)\b.{0,80}\b(?:logo|wordmark)\b", lower_text, flags=re.I | re.S):
+        issues.append("Visual asset plan must not ask imagegen to generate/redraw/place logos or wordmarks; use frozen assets/logo.png by deterministic compositing.")
+    if re.search(r"\b(?:rejected|alternate|alternative|candidate)\b.{0,50}\b(?:logo|lockup|mark)\b", lower_text, flags=re.I | re.S):
+        issues.append("Visual asset plan must not reference rejected or alternate logo candidates for downstream assets.")
 
     sales_copy = by_id.get("sales-copy")
     sales_copy_path = artifact_path(root, sales_copy)

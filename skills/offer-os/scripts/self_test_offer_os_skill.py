@@ -74,6 +74,9 @@ SOURCE_CHECKS = [
             "includesReadableOfferName",
             "imagegenCompleteLogoLockupAttempted",
             "imagegenLogoCandidateCount",
+            "finalLogoLocked",
+            "downstreamLogoReference",
+            "rejectedLogoConceptsExcluded",
             "exactOfferNamePreserved",
             "markNotIllustration",
             "wordmarkTypographyChecked",
@@ -100,6 +103,9 @@ SOURCE_CHECKS = [
             "`quality.logo.imagegenCompleteLogoLockupAttempted = true`",
             "`quality.logo.exactOfferNamePreserved = true`",
             "`quality.logo.professionalLockupApproved = true`",
+            "`quality.logo.finalLogoLocked = true`",
+            "`quality.logo.downstreamLogoReference = \"assets/logo.png\"`",
+            "`quality.logo.rejectedLogoConceptsExcluded = true`",
             "Do not create or register any SVG logo file.",
         ],
     },
@@ -202,6 +208,9 @@ SOURCE_CHECKS = [
             "Deep OfferOS runs must not create or register SVG artifacts.",
             "OfferOS generated runs must not create or register SVG logo files.",
             "Logo quality metadata must confirm svgAssetCreated: false.",
+            "Logo quality metadata must confirm finalLogoLocked.",
+            "Logo quality metadata must record downstreamLogoReference: assets/logo.png.",
+            "Visual asset plan must not ask imagegen to generate/redraw/place logos or wordmarks",
             "Deep generated-design runs must register the primary logo with provenance: imagegen or imagegen-composite.",
             "includesReadableOfferName",
             "exactOfferNamePreserved",
@@ -260,7 +269,7 @@ SOURCE_CHECKS = [
         "path": "references/agent-dispatch.md",
         "needles": [
             "### Imagegen Visual Workers",
-            "after the initial offer architecture, `design.md`, selected logo concept, `assets/logo.png`, `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist",
+            "after the initial offer architecture, `design.md`, final selected logo lockup, `assets/logo.png`, `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist",
             "copyAnchor",
             "visualKind",
             "mixed-direct-response-v1",
@@ -426,6 +435,26 @@ def synthetic_svg_artifact_regression() -> dict:
     }
 
 
+def synthetic_logo_drift_regression() -> dict:
+    expected = [
+        "Logo quality metadata must confirm finalLogoLocked.",
+        "Logo quality metadata must record downstreamLogoReference: assets/logo.png.",
+        "Logo quality metadata must confirm rejectedLogoConceptsExcluded.",
+        "Visual asset plan must not ask imagegen to generate/redraw/place logos or wordmarks",
+        "Visual asset plan must not reference rejected or alternate logo candidates",
+    ]
+    workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-logo-drift"
+    payload = run_validator(workspace)
+    issue_text = "\n".join(payload.get("issues", []))
+    missing = [item for item in expected if item not in issue_text]
+    return {
+        "id": "synthetic_logo_drift_regression",
+        "ok": payload.get("returncode") != 0 and not missing,
+        "missingExpectedIssues": missing,
+        "issueCount": payload.get("issueCount"),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-test OfferOS skill source and known regression workspaces.")
     parser.add_argument("--bad-workspace", action="append", default=[], help="Known-bad generated output that must fail validator checks.")
@@ -438,6 +467,7 @@ def main() -> int:
         synthetic_two_column_hero_regression(),
         synthetic_product_page_regression(),
         synthetic_svg_artifact_regression(),
+        synthetic_logo_drift_regression(),
     ]
     ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results) and all(item["ok"] for item in synthetic_results)
 

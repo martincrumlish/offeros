@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.2
+
+- Adds a brand-lock step after logo selection so `assets/logo.png` is the only downstream logo reference.
+- Forbids downstream imagegen prompts from generating, redrawing, reinterpreting, or placing new logos/wordmarks in product, ad, PDF, VSL, dashboard, or page images.
+- Excludes rejected logo concepts/candidates from visual worker context and visual asset plans.
+- Adds validator and self-test coverage for logo drift in downstream asset plans.
+
 ## 0.10.1
 
 - Makes SVG a hard failure for generated OfferOS visual assets, including logos, brand assets, ad images, page art, PDF art, VSL art, and diagram fallbacks.

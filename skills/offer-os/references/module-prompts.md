@@ -64,11 +64,13 @@ Purpose: create a usable identity system across all offer assets.
 
 Production rule: follow the Logo Recipe in `references/exact-build-recipes.md`. The primary logo for a deep generated-design run is `assets/logo.png`, created first through imagegen complete logo lockup candidates with symbol plus exact readable offer-name wordmark. Use a text-free imagegen symbol plus professional wordmark compositor only as a fallback after complete-lockup attempts fail exact text. Register it with `provenance: "imagegen"` only if imagegen produced the final readable lockup directly; otherwise use `provenance: "imagegen-composite"`. No SVG logo files at all, no icon-only primary logo, no illustrative mark, and no rough "mark plus default text" composite.
 
+After the final logo is accepted, freeze it. Later imagegen prompts must not generate, redraw, reinterpret, or place a new logo/wordmark. Downstream product, ad, PDF, VSL, dashboard, and page images must use `assets/logo.png` only, composited or placed by the build after image generation. Rejected logo concepts and rejected logo candidates are QA-only and must not be passed as references.
+
 Output:
 
 1. Brand position: promise, personality, buyer perception, category signal, differentiation.
 2. Three logo concepts: idea, shape language, category signal, why it fits the buyer, and why it was rejected or selected.
-3. Final logo direction: symbol/wordmark type, proportions, small-size behavior, one-color behavior, and production path.
+3. Final logo direction: symbol/wordmark type, proportions, small-size behavior, one-color behavior, production path, final selected lockup path `assets/logo.png`, and brand-lock status.
 4. Identity system: color, typography, icon, pattern/texture, image rules, product badge rules.
 5. Brand voice: tone, sentence style, words to use, words to avoid, claims style, CTA style.
 6. Usage rules: sales page, PDF, ads, emails, VSL, dashboard.
@@ -116,6 +118,8 @@ The coded page must use real copy and assets. Do not leave placeholders unless t
 Use the direct-response section contract from `assets/templates/sales-page/section-map.md`. Keep `data-offeros-section` markers for required sections. For `direct-response-long-form-vsl`, build from `assets/templates/sales-page/page-skeleton.html` and preserve the locked `offeros-stacked-vsl-v2` hero: centered copy stack, large 16:9 `.oo-vsl-frame` hero video below the headline, thumbnail, play button, caption, price strip below the video, CTA to `#buy`, trust row, proof/demo before the buy box, bundle image, deliverable checklist, normally/today value row, large stack CTA, and guarantee/access reassurance. Do not ship a short branded product page, polished feature page, two-column SaaS hero, dashboard/product mockup hero, tiny right-side VSL card, proof-after-price-only page, or generic card stack in place of the long-form sales page.
 
 If the page uses HTML/CSS diagrams as temporary visuals, mark them as fallbacks and do not describe them as generated images. Do not create SVG diagram files.
+
+Do not ask imagegen to render the logo inside sales-page graphics. If a sales-page visual needs brand presence, generate the image without a logo and place `assets/logo.png` in the HTML/CSS layer.
 
 ## PDF Product
 

@@ -148,6 +148,9 @@ For deep mode, include module-level quality metadata when applicable:
     "logo": {
       "conceptCount": 3,
       "selectedConcept": "wordmark plus mechanism badge",
+      "finalLogoLocked": true,
+      "downstreamLogoReference": "assets/logo.png",
+      "rejectedLogoConceptsExcluded": true,
       "primaryFormat": "png",
       "generationTool": "imagegen-complete-logo-attempts+imagegen-symbol+professional-wordmark-compositor",
       "imagegenNotUsedReason": "",

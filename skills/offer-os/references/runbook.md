@@ -91,8 +91,13 @@ Required result:
 - `quality.logo.imagegenCompleteLogoLockupAttempted = true`
 - `quality.logo.exactOfferNamePreserved = true`
 - `quality.logo.professionalLockupApproved = true`
+- `quality.logo.finalLogoLocked = true`
+- `quality.logo.downstreamLogoReference = "assets/logo.png"`
+- `quality.logo.rejectedLogoConceptsExcluded = true`
 
 Do not create or register any SVG logo file. Do not create an icon-only mark, illustrative mark, rough text composite, PIL/HTML/CSS raster fallback, or text-only graphic and call it complete.
+
+After logo approval, freeze the brand lockup. Downstream imagegen work must not generate new logos or use rejected logo concepts/candidates. If a visual needs a logo, place `assets/logo.png` with the build script, HTML/CSS, or PPTX tooling after the visual asset is generated.
 
 Update `offer-os.json`:
 

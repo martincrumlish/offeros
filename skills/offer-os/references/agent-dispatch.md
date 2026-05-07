@@ -27,7 +27,7 @@ Owns design resolver, image prompts, asset sequencing, and visual QA notes.
 
 ### Imagegen Visual Workers
 
-Use these workers only after the initial offer architecture, `design.md`, selected logo concept, `assets/logo.png`, `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist. At that point the workers have enough content anchors to create coherent visuals instead of inventing separate styles.
+Use these workers only after the initial offer architecture, `design.md`, final selected logo lockup, `assets/logo.png`, `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist. At that point the workers have enough content anchors to create coherent visuals instead of inventing separate styles.
 
 Dispatch them in parallel when the user has allowed agents and the run needs a full visual asset set:
 
@@ -42,8 +42,7 @@ Give every visual worker the same source references:
 - `design.md`
 - `copy.md`
 - `visual-asset-plan.md`
-- `assets/logo.png`
-- `assets/logo-mark.png` if present
+- frozen final `assets/logo.png` only
 - product outline/module list and PDF page archetypes
 - VSL slide plan
 - ad angle map
@@ -55,6 +54,9 @@ Tell every worker:
 - write only inside your assigned output folder and update only the visual rows you own if asked to edit `visual-asset-plan.md`
 - use the `imagegen` skill/tool for bitmap visuals when available
 - preserve the design system: palette, typography cues, image treatment, logo style, density, and texture rules
+- do not generate, redraw, reinterpret, or place a new logo/wordmark in imagegen outputs
+- if a visual needs the logo visible, leave space for it and let the main build composite or place the actual `assets/logo.png`
+- do not use rejected logo concepts, candidate images, or alternative marks as references
 - follow `salesPageImageSystem: mixed-direct-response-v1` unless the user explicitly requested another image system
 - use mockup-style visuals mainly for product reveal, offer stack, dashboard preview, and CTA bundle sections
 - use diagrams, comparisons, proof/demo visuals, structured panels, screenshots, or restrained buyer-situation imagery for mechanism, failed alternatives, proof, objections, and feature specifics
@@ -72,11 +74,11 @@ visualKind: [approved visualKind from visual-asset-plan.md]
 copyAnchor: [data-offeros-section or PDF/VSL/ad anchor]
 Visual job: [belief/action the visual must support]
 conversionJob: [conversion job from copy.md/slide plan/ad angle]
-Style references: design.md rules, logo lockup, brand mark, color palette, product mockup direction
+Style references: design.md rules, frozen assets/logo.png only, color palette, product mockup direction
 Composition: [specific layout, focal point, aspect ratio]
 Text rule: [no text | large exact text only | labels from plan only]
 Must feel: [commercial, useful, direct-response, buyer-specific]
-Avoid: generic stock look, unrelated metaphors, illegible text, fake UI unless requested, busy mockup filler, hallucinated dashboards, reusing sales-page image concepts as filler
+Avoid: generating or redrawing logos/wordmarks, using rejected logo concepts, generic stock look, unrelated metaphors, illegible text, fake UI unless requested, busy mockup filler, hallucinated dashboards, reusing sales-page image concepts as filler
 Output: [exact file path]
 ```
 

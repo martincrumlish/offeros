@@ -84,7 +84,7 @@ When agents are authorized, dispatch imagegen visual workers immediately after t
 - VSL visuals: `output/presentation/assets/`
 - ad visuals: `assets/ads/`
 
-Use the same `design.md`, `copy.md`, logo lockup, brand mark, and visual plan as references for every worker.
+Use the same `design.md`, `copy.md`, frozen final `assets/logo.png`, and visual plan as references for every worker. Do not give workers rejected logo concepts, rejected logo candidates, or `logo-mark` alternatives as style references.
 
 ## Dependencies
 
@@ -124,6 +124,13 @@ Minimum logo prerequisites:
 In deep generated-design runs, the primary logo artifact must be an `imagegen` or `imagegen-composite` `.png` or `.webp` horizontal logo lockup that includes the readable offer name. Start with imagegen complete logo lockup candidates. The imagegen brand mark alone can be saved as `assets/logo-mark.png` only as a fallback after complete-lockup attempts fail exact text; it is not the primary logo. Do not create or register SVG logo files, even as secondary exports or drafts. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
 
 The mark must be a simple logo-grade symbol, not an illustration, page-curl/folded-paper image, app icon, mockup, or rough cover graphic. The final `assets/logo.png` must preserve the exact offer name and pass typography, kerning, mark scale, and spacing checks. A bad mark with text composited beside it is still a failed logo.
+
+After the final logo is accepted, freeze the brand lockup:
+
+- `assets/logo.png` is the only downstream logo reference.
+- Rejected concept images and rejected candidate lockups are QA artifacts only and must not be used as imagegen references.
+- Do not ask imagegen to generate or redraw the logo in product mockups, ads, VSL visuals, PDF visuals, or page graphics.
+- If a visual needs the logo, leave a blank/safe logo area in the generated image and composite or place `assets/logo.png` later using the build script, HTML/CSS, or PPTX placement.
 
 ### Sales Copy Blueprint
 

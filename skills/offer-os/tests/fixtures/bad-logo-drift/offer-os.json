@@ -1,0 +1,83 @@
+{
+  "schema": "offer-os/v1",
+  "mode": "deep",
+  "offerName": "Logo Drift",
+  "audience": "test buyers",
+  "price": "$27",
+  "designSource": {
+    "type": "generated"
+  },
+  "brand": {
+    "logo": "assets/logo.png"
+  },
+  "artifacts": [
+    {
+      "id": "logo",
+      "title": "Primary Logo",
+      "type": "image",
+      "category": "Brand",
+      "path": "assets/logo.png",
+      "status": "complete",
+      "provenance": "imagegen"
+    },
+    {
+      "id": "visual-asset-plan",
+      "title": "Visual Asset Plan",
+      "type": "document",
+      "category": "Strategy",
+      "path": "visual-asset-plan.md",
+      "status": "complete",
+      "provenance": "manual"
+    }
+  ],
+  "quality": {
+    "logo": {
+      "conceptCount": 3,
+      "selectedConcept": "route badge",
+      "primaryFormat": "png",
+      "generationTool": "imagegen-complete-logo-attempts",
+      "imagegenNotUsedReason": "",
+      "imagegenCompleteLogoLockupAttempted": true,
+      "imagegenLogoCandidateCount": 3,
+      "imagegenCompleteLogoAccepted": true,
+      "fallbackWordmarkCompositeReason": "",
+      "brandMarkSource": "imagegen",
+      "wordmarkSource": "imagegen",
+      "wordmarkCompositeMethod": "",
+      "logoLockup": true,
+      "includesReadableOfferName": true,
+      "exactOfferNamePreserved": true,
+      "markIsLogoSymbol": true,
+      "markNotIllustration": true,
+      "markOneColorUsable": true,
+      "wordmarkTypographyChecked": true,
+      "wordmarkKerningChecked": true,
+      "professionalLockupApproved": true,
+      "lockupPreviewChecked": true,
+      "lockupPreviewPath": "output/qa/logo-lockup-preview.png",
+      "svgAssetCreated": false,
+      "smallSizeChecked": true,
+      "oneColorChecked": true,
+      "exportedPng": true,
+      "critiquePassed": true
+    },
+    "images": {
+      "hasArtifactSpecificPlan": true,
+      "visualPlanPath": "visual-asset-plan.md",
+      "visualPlanStage": "post-content-blueprint",
+      "copyBlueprintUsed": true,
+      "visualReusePolicy": "artifact-specific-v1",
+      "salesPageImageSystem": "mixed-direct-response-v1",
+      "mockupHeavyUserRequested": false,
+      "salesPageVisualCount": 4,
+      "pdfVisualCount": 6,
+      "pdfSpecificVisualCount": 4,
+      "vslVisualCount": 12,
+      "vslSpecificVisualCount": 8,
+      "adImageCount": 3,
+      "pdfUsesOnlySalesPageImages": false,
+      "vslUsesOnlySalesPageImages": false,
+      "salesPageReuseOnly": false
+    }
+  }
+}
