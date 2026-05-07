@@ -223,7 +223,11 @@ For deep mode, include module-level quality metadata when applicable:
     "images": {
       "hasArtifactSpecificPlan": true,
       "visualPlanPath": "visual-asset-plan.md",
+      "visualPlanStage": "post-content-blueprint",
+      "copyBlueprintUsed": true,
       "visualReusePolicy": "artifact-specific-v1",
+      "salesPageImageSystem": "mixed-direct-response-v1",
+      "mockupHeavyUserRequested": false,
       "agentDispatchUsed": true,
       "agentDispatchNotUsedReason": "",
       "imagegenCount": 5,

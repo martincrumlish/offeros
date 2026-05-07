@@ -1,7 +1,7 @@
 {
   "name": "offer-os",
-  "version": "0.7.0",
-  "description": "Build deep commercial offer systems in Codex: offer architecture, design direction, professional imagegen-based logo lockups/images, artifact-specific visual plans, imagegen visual worker dispatch, long-form copy, coded sales pages, customer-ready PDF products, ads, emails, VSL decks, delivery dashboards, and QA.",
+  "version": "0.8.0",
+  "description": "Build deep commercial offer systems in Codex: offer architecture, design direction, professional imagegen-based logo lockups/images, copy-blueprint-driven visual plans, imagegen visual worker dispatch, long-form copy, coded sales pages, customer-ready PDF products, ads, emails, VSL decks, delivery dashboards, and QA.",
   "author": {
     "name": "OfferOS",
     "email": "martincrumlish@users.noreply.github.com",
@@ -24,7 +24,7 @@
   "interface": {
     "displayName": "OfferOS",
     "shortDescription": "Build complete offer systems",
-    "longDescription": "OfferOS orchestrates Codex through a deep full offer build: strategy, design, professional imagegen-based logo lockups and artifact-specific visuals, imagegen visual worker dispatch when agents are authorized, long-form sales copy, coded sales page, customer-ready PDF product, ad assets, email sequence, VSL deck, delivery dashboard, and QA gates.",
+    "longDescription": "OfferOS orchestrates Codex through a deep full offer build: strategy, design, professional imagegen-based logo lockups, copy-blueprint-driven artifact visuals, imagegen visual worker dispatch when agents are authorized, long-form sales copy, coded sales page, customer-ready PDF product, ad assets, email sequence, VSL deck, delivery dashboard, and QA gates.",
     "developerName": "OfferOS",
     "category": "Productivity",
     "capabilities": [

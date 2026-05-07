@@ -34,14 +34,20 @@ output/playwright/
 ## Basic Prompt
 
 ```text
-Use OfferOS in deep mode to build a complete offer from this idea:
+Use OfferOS in deep mode to build a complete offer from this idea.
 
-[Describe the audience, problem, product idea, price point, and constraints.]
+Offer: [name]
+Price: [price point]
+Audience: [specific buyer]
+Problem: [pain/desire]
+Product: [what they get]
+Promise: [result or transformation]
+Tone/design preference: [optional]
 
 Dispatch agents where useful.
 ```
 
-OfferOS is designed to work from sparse input. Missing details should become explicit assumptions unless the gap materially changes the project.
+OfferOS is designed to work from sparse input. The prompt should describe the offer, not repeat internal operating rules. Missing details should become explicit assumptions unless the gap materially changes the project.
 
 ## Design Source Prompts
 
@@ -105,6 +111,12 @@ For weak sales-page structure:
 
 ```text
 The sales page is too short/product-page-like or reads as a wall of text. Select a page type from sales-page-types.md, default to direct-response-long-form-vsl, then rewrite copy.md and index.html to include the full problem, agitation, failed alternatives, mechanism, proof/demo, offer stack, price, guarantee, objection, and close arc. Keep VSL setup short, paragraphs under 55 words, and use tables/callouts/checklists instead of generic essay sections.
+```
+
+For weak or random sales-page visuals:
+
+```text
+The sales-page visuals are too random, busy, or mockup-heavy. Rebuild the visual plan after copy.md: use visualPlanStage post-content-blueprint, anchor each sales-page visual to a real copyAnchor/data-offeros-section, use salesPageImageSystem mixed-direct-response-v1, keep mockups mainly for product reveal/offer stack/dashboard, and use diagrams, comparisons, proof/demo visuals, structured panels, screenshots, or restrained buyer-situation imagery for mechanism, failed alternatives, proof, objections, and feature specifics.
 ```
 
 For weak PDF product:

@@ -41,21 +41,22 @@ Avoid mood-board words unless they become implementation rules.
 
 Purpose: define artifact-specific visuals before production so PDF, VSL, and ads are not built from leftover sales-page images.
 
-Production rule: follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md`. Create `visual-asset-plan.md` after the logo/product outline and before sales-page graphics, PDF rendering, ad images, VSL deck, or dashboard.
+Production rule: follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md`. Create `visual-asset-plan.md` v2 after the logo/product outline and after `copy.md` contains the section-by-section sales-page blueprint. Do not create page/PDF/VSL/ad visuals from a pre-copy mood board.
 
 Output:
 
-1. Global brand assets: logo lockup, brand mark, product bundle/mockup, reusable pattern/frame.
-2. Sales page visuals: 4+ visuals with conversion job and file path.
-3. PDF product visuals: 6+ visuals/treatments, including 4+ PDF-specific visuals that are not reused from the sales page.
-4. VSL deck visuals: 12+ visuals/treatments, including 8+ VSL-specific visuals that are not reused from the sales page.
-5. Ad visuals: 3+ ad-specific imagegen creatives.
-6. Dashboard visuals: previews/thumbnails for core assets.
-7. Reuse rules: what can be reused, where, and why.
-8. Agent dispatch plan: whether imagegen visual workers should be dispatched, worker ownership, output folders, and references.
-9. `quality.images` metadata.
+1. Visual metadata: `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, `salesPageImageSystem: mixed-direct-response-v1`, and `mockupHeavyUserRequested`.
+2. Global brand assets: logo lockup, brand mark, product bundle/mockup, reusable pattern/frame.
+3. Sales page visuals: 4+ visuals with `visualKind`, `copyAnchor`, conversion job, file path, aspect ratio, and text rule.
+4. PDF product visuals: 6+ visuals/treatments, including 4+ PDF-specific visuals that are not reused from the sales page.
+5. VSL deck visuals: 12+ visuals/treatments, including 8+ VSL-specific visuals that are not reused from the sales page.
+6. Ad visuals: 3+ ad-specific imagegen creatives.
+7. Dashboard visuals: previews/thumbnails for core assets.
+8. Reuse rules: what can be reused, where, and why.
+9. Agent dispatch plan: whether imagegen visual workers should be dispatched, worker ownership, output folders, and references.
+10. `quality.images` metadata.
 
-Avoid treating the sales page as the master image pool. Artifact-specific visuals should be created from the artifact's job: PDF usability, VSL attention/narration, ad interruption, dashboard browsing.
+Default sales-page image system: `mixed-direct-response-v1`. Use product/dashboard/offer-stack mockups where they sell the product or stack. Use diagrams, comparison visuals, proof/demo visuals, structured panels, screenshots, or restrained buyer-situation imagery for mechanism, failed alternatives, proof, objections, and feature specifics. Avoid treating the sales page as the master image pool. Avoid all-mockup sales pages unless the user explicitly requested mockup-heavy.
 
 ## Logo And Brand
 
@@ -90,7 +91,8 @@ Output:
 3. Headline set: 10 primary headlines, 10 subheads, 10 CTA labels, top 3 ranked.
 4. Long-form copy: hero, VSL setup, problem, agitation, failed alternatives, mechanism, product intro, value stack, proof/demo, who it is for/not for, bonuses, guarantee, pricing, FAQ, final CTA.
 5. Objection handling: price, time, trust, complexity, fit, prior failure, delay.
-6. Microcopy: form labels, checkout reassurance, helper text, confirmation copy.
+6. Section visual blueprint: `copyAnchor`, conversion job, suggested `visualKind`, visual role, CTA role, proof/objection handled, and text/no-text rule for every sales-page section.
+7. Microcopy: form labels, checkout reassurance, helper text, confirmation copy.
 
 Composition rules: write the page as section-specific sales copy, not a single essay. Keep normal paragraphs under 55 words, keep the VSL setup under 220 words, and use comparison rows, checklists, callouts, proof/demo blocks, and CTA blocks to make the page scannable. Avoid vague hype, unsupported superlatives, fake urgency, wall-of-text sections, blank-looking cards, and copy that could sell any offer.
 
@@ -103,7 +105,7 @@ Source pattern: follow the Sales Page Recipe in `references/exact-build-recipes.
 Output:
 
 1. Page strategy: selected page type, objective, buyer stage, conversion action, friction, trust approach.
-2. Section blueprint: section name, conversion job, content, layout, visual treatment, CTA, asset, mobile behavior.
+2. Section blueprint: section name, conversion job, content, layout, visual treatment, `copyAnchor`, `visualKind`, CTA, asset, mobile behavior.
 3. Component spec: header, manual-style direct-response hero, VSL, CTA blocks, proof, problem, mechanism, buy-box offer stack, pricing, guarantee, FAQ, footer.
 4. Depth check: visible word count, objection count, CTA count, unique offer-stack item copy, repeated-text scan.
 5. Implementation: responsive breakpoints, image sizes, performance, accessibility, form behavior, tracking events.

@@ -81,24 +81,31 @@ Fails if:
 
 ## Visual Asset Plan Gate
 
-Deep generated-design runs must create `visual-asset-plan.md` before artifact production. The plan must split visuals by artifact instead of treating sales-page imagery as the default pool.
+Deep generated-design runs must create `visual-asset-plan.md` v2 after `copy.md` contains the sales-page section blueprint and before artifact production. The plan must split visuals by artifact instead of treating sales-page imagery as the default pool.
 
 Must include:
 
+- `visualPlanStage: post-content-blueprint`
+- `copyBlueprintUsed: true`
+- `salesPageImageSystem: mixed-direct-response-v1`
 - global brand assets
-- 4+ sales-page visuals
+- 4+ sales-page visuals tied to real copy/page section anchors
 - 6+ PDF visuals/treatments, with 4+ PDF-specific and not reused from the sales page
 - 12+ VSL visuals/treatments, with 8+ VSL-specific and not reused from the sales page
 - 3+ ad-specific imagegen creatives
 - dashboard preview/thumbnail choices
+- allowed `visualKind` values and required `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, and `textRule` fields for sales-page visuals
 - explicit reuse rules
 - visual worker dispatch plan when agents are authorized
 - `quality.images.hasArtifactSpecificPlan = true`
+- `quality.images.visualPlanStage = "post-content-blueprint"`
+- `quality.images.copyBlueprintUsed = true`
 - `quality.images.visualReusePolicy = "artifact-specific-v1"`
+- `quality.images.salesPageImageSystem = "mixed-direct-response-v1"`
 
-Fails if the PDF or VSL visuals are only sales-page images, if ads are just crops/text-card variants of page art, or if the plan does not specify artifact-specific visual jobs and file paths.
+Fails if the plan was created before the copy blueprint, if sales-page visuals are not anchored to real page sections, if visual taxonomy fields are missing, if the PDF or VSL visuals are only sales-page images, if ads are just crops/text-card variants of page art, or if the plan does not specify artifact-specific visual jobs and file paths. Also fails if every sales-page visual is mockup/UI/product-bundle style unless the user explicitly requested a mockup-heavy aesthetic.
 
-When the user explicitly allowed agents, the build should dispatch imagegen visual workers after logo/style references exist. If it does not, record `quality.images.agentDispatchUsed = false` and a concrete `agentDispatchNotUsedReason`.
+When the user explicitly allowed agents, the build should dispatch imagegen visual workers after logo/style references, `copy.md`, and post-content-blueprint `visual-asset-plan.md` exist. If it does not, record `quality.images.agentDispatchUsed = false` and a concrete `agentDispatchNotUsedReason`.
 
 ## Logo Gate
 

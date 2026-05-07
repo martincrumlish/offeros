@@ -112,36 +112,44 @@ Outline the PDF product before writing page graphics or VSL. Define:
 - product completion outcome
 - final CTA or next step
 
-## 7. Visual Asset Plan
+## 7. Sales Copy
 
-Follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md` before creating sales-page graphics, PDF pages, ads, VSL slides, or dashboard previews.
+Follow the Sales Page Recipe in `references/exact-build-recipes.md` before writing `index.html` or creating sales-page graphics.
 
 Required result:
 
-- `visual-asset-plan.md`
+- `copy.md` with the required headings from the recipe
+- section-by-section sales-page blueprint with conversion job, visual block, suggested `visualKind`, `copyAnchor`, proof/objection handled, and CTA role
+- `quality.salesPage.pageType = "direct-response-long-form-vsl"` unless the user explicitly requested another page type
+- full copy, not an outline
+
+Register `sales-copy`.
+
+## 8. Visual Asset Plan
+
+Follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md` after `copy.md` has the section blueprint and before creating sales-page graphics, PDF pages, ads, VSL slides, or dashboard previews.
+
+Required result:
+
+- `visual-asset-plan.md` v2
+- `visualPlanStage: post-content-blueprint`
+- `copyBlueprintUsed: true`
+- `salesPageImageSystem: mixed-direct-response-v1`
+- sales-page visuals with `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, and `textRule`
 - separate visual inventories for sales page, PDF product, VSL deck, ads, and dashboard
 - 6+ PDF visuals/treatments, with 4+ not reused from the sales page
 - 12+ VSL visuals/treatments, with 8+ not reused from the sales page
 - 3+ ad-specific imagegen creatives
 - agent dispatch plan for visual workers when the user allowed agents
 - `quality.images.hasArtifactSpecificPlan = true`
+- `quality.images.visualPlanStage = "post-content-blueprint"`
+- `quality.images.copyBlueprintUsed = true`
 - `quality.images.visualReusePolicy = "artifact-specific-v1"`
+- `quality.images.salesPageImageSystem = "mixed-direct-response-v1"`
 
 Register `visual-asset-plan`.
 
-If the user has allowed agents, load `references/agent-dispatch.md` and dispatch imagegen visual workers immediately after registering the plan. Use separate workers for sales-page visuals, PDF visuals, VSL visuals, and ad images. Keep integration and QA in the main agent.
-
-## 8. Sales Copy
-
-Follow the Sales Page Recipe in `references/exact-build-recipes.md` before writing `index.html`.
-
-Required result:
-
-- `copy.md` with the required headings from the recipe
-- `quality.salesPage.pageType = "direct-response-long-form-vsl"` unless the user explicitly requested another page type
-- full copy, not an outline
-
-Register `sales-copy`.
+If the user has allowed agents, load `references/agent-dispatch.md` and dispatch imagegen visual workers immediately after registering the post-copy plan. Use separate workers for sales-page visuals, PDF visuals, VSL visuals, and ad images. Keep integration and QA in the main agent.
 
 ## 9. Sales Page
 

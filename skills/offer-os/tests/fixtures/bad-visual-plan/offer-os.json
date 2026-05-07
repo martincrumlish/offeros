@@ -1,0 +1,38 @@
+{
+  "schema": "offer-os/v1",
+  "mode": "deep",
+  "offerName": "Regression Offer",
+  "audience": "test buyers",
+  "modules": [],
+  "artifacts": [
+    {
+      "id": "visual-asset-plan",
+      "title": "Visual Asset Plan",
+      "type": "document",
+      "category": "Strategy",
+      "path": "visual-asset-plan.md",
+      "status": "complete",
+      "provenance": "manual"
+    }
+  ],
+  "quality": {
+    "images": {
+      "hasArtifactSpecificPlan": true,
+      "visualPlanPath": "visual-asset-plan.md",
+      "visualPlanStage": "pre-copy-mood-board",
+      "copyBlueprintUsed": false,
+      "visualReusePolicy": "artifact-specific-v1",
+      "salesPageImageSystem": "mockup-heavy-saas",
+      "mockupHeavyUserRequested": false,
+      "salesPageVisualCount": 4,
+      "pdfVisualCount": 6,
+      "pdfSpecificVisualCount": 4,
+      "vslVisualCount": 12,
+      "vslSpecificVisualCount": 8,
+      "adImageCount": 3,
+      "pdfUsesOnlySalesPageImages": false,
+      "vslUsesOnlySalesPageImages": false,
+      "salesPageReuseOnly": false
+    }
+  }
+}

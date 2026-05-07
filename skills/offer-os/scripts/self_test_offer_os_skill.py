@@ -29,7 +29,7 @@ SOURCE_CHECKS = [
             "Treat validator warnings as build failures in deep mode.",
             "VSL preview mobile",
             "qa-notes.md",
-            "Create `visual-asset-plan.md` before building sales-page graphics",
+            "Create `visual-asset-plan.md` v2 only after `copy.md` contains the sales-page section blueprint.",
         ],
     },
     {
@@ -38,6 +38,14 @@ SOURCE_CHECKS = [
         "needles": [
             "## Visual Asset Plan Recipe",
             "`# Visual Asset Plan`",
+            "`## Visual Plan Metadata`",
+            "visualPlanStage: post-content-blueprint",
+            "copyBlueprintUsed: true",
+            "salesPageImageSystem: mixed-direct-response-v1",
+            "visualKind",
+            "copyAnchor",
+            "mixed-direct-response-v1",
+            "busy fake UI",
             "`## PDF Product Visuals`",
             "`## VSL Deck Visuals`",
             "PDF product: 6+ PDF visuals/treatments",
@@ -182,6 +190,11 @@ SOURCE_CHECKS = [
             "Sales page contains repeated boilerplate copy",
             "Visual asset plan missing",
             "hasArtifactSpecificPlan",
+            "visualPlanStage: post-content-blueprint",
+            "copyBlueprintUsed",
+            "salesPageImageSystem: mixed-direct-response-v1",
+            "fields tied to copy sections",
+            "Sales-page visual plan is all mockup/UI-style visuals",
             "PDF-specific visual asset/treatment count below target",
             "VSL-specific visual asset/treatment count below target",
             "compositionContract",
@@ -213,7 +226,10 @@ SOURCE_CHECKS = [
         "path": "references/agent-dispatch.md",
         "needles": [
             "### Imagegen Visual Workers",
-            "after the initial offer architecture, `design.md`, selected logo concept, `assets/logo.png`, and `visual-asset-plan.md` exist",
+            "after the initial offer architecture, `design.md`, selected logo concept, `assets/logo.png`, `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist",
+            "copyAnchor",
+            "visualKind",
+            "mixed-direct-response-v1",
             "Page visual worker",
             "PDF visual worker",
             "VSL visual worker",
@@ -287,6 +303,28 @@ def bad_workspace_check(workspace: Path) -> dict:
     }
 
 
+def synthetic_visual_plan_regression() -> dict:
+    expected = [
+        "Visual asset plan v2 requires copy.md/sales-copy",
+        "Visual asset plan metadata must include visualPlanStage: post-content-blueprint.",
+        "Image quality metadata must record visualPlanStage: post-content-blueprint.",
+        "Image quality metadata must confirm copyBlueprintUsed.",
+        "Image quality metadata must record salesPageImageSystem: mixed-direct-response-v1.",
+        "Sales-page visual plan must include 4+ copyAnchor fields",
+        "Sales-page visual plan is all mockup/UI-style visuals",
+    ]
+    workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-visual-plan"
+    payload = run_validator(workspace)
+    issue_text = "\n".join(payload.get("issues", []))
+    missing = [item for item in expected if item not in issue_text]
+    return {
+        "id": "synthetic_visual_plan_regression",
+        "ok": payload.get("returncode") != 0 and not missing,
+        "missingExpectedIssues": missing,
+        "issueCount": payload.get("issueCount"),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-test OfferOS skill source and known regression workspaces.")
     parser.add_argument("--bad-workspace", action="append", default=[], help="Known-bad generated output that must fail validator checks.")
@@ -294,7 +332,8 @@ def main() -> int:
 
     source_results = source_check()
     bad_results = [bad_workspace_check(Path(item).resolve()) for item in args.bad_workspace]
-    ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results)
+    synthetic_results = [synthetic_visual_plan_regression()]
+    ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results) and all(item["ok"] for item in synthetic_results)
 
     print(
         json.dumps(
@@ -302,6 +341,7 @@ def main() -> int:
                 "ok": ok,
                 "sourceChecks": source_results,
                 "badWorkspaceChecks": bad_results,
+                "syntheticChecks": synthetic_results,
             },
             indent=2,
         )

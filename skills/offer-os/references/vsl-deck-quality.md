@@ -73,7 +73,7 @@ Key slides must include real visuals, diagrams, screenshots, generated frames, o
 
 Use the resolved design system, but vary composition, scale, contrast, and focal point. A consistent theme does not mean identical slide structure.
 
-Before building the PPTX, create a slide-by-slide visual asset plan from the `## VSL Deck Visuals` section of `visual-asset-plan.md`. A deep-mode 20-30 slide deck needs 12+ unique visual assets or distinct diagram treatments, including 8+ VSL-specific visuals that are not reused from the sales page. Reusing the same 3 generated images as slide filler fails the deck even if the copy changes.
+Before building the PPTX, create a slide-by-slide visual asset plan from the `## VSL Deck Visuals` section of post-content-blueprint `visual-asset-plan.md`. A deep-mode 20-30 slide deck needs 12+ unique visual assets or distinct diagram treatments, including 8+ VSL-specific visuals that are not reused from the sales page. Reusing the same 3 generated images as slide filler fails the deck even if the copy changes.
 
 No single non-logo bitmap should appear on more than 25% of slides. Product bundle imagery should appear only on product reveal, offer stack, price/value, and final CTA slides. Use diagrams, comparison tables, matrices, screenshots, product previews, and generated frames to create visual variety instead of stretching a small image set across the whole VSL.
 

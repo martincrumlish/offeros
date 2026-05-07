@@ -34,7 +34,7 @@ Deep-mode PDFs must also use distinct page archetypes. Use at least 7 archetypes
 
 Do not ship pages that repeat the same header/body/"Action Surface" box layout. Do not use "Action Surface" as repeated buyer-facing page furniture. Name the actual tool the buyer is using.
 
-PDF visuals must come from the PDF section of `visual-asset-plan.md`, not only from the sales page. Deep mode requires 6+ PDF visuals/treatments, with 4+ specific to the PDF product. Useful PDF visuals include cover art, module dividers, decision matrices, completed-example snapshots, blank worksheet layouts, checklists, scorecards, flow maps, and implementation plans.
+PDF visuals must come from the PDF section of post-content-blueprint `visual-asset-plan.md`, not only from the sales page. Deep mode requires 6+ PDF visuals/treatments, with 4+ specific to the PDF product. Useful PDF visuals include cover art, module dividers, decision matrices, completed-example snapshots, blank worksheet layouts, checklists, scorecards, flow maps, and implementation plans.
 
 If the product genuinely needs fewer pages or fewer extracted words because it is intentionally visual, explicitly record the user-approved reason in the QA notes and commercial audit. Do not silently call a short or low-substance PDF complete.
 

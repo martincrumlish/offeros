@@ -29,16 +29,17 @@ Create these outputs for a full run:
 2. offer architecture
 3. `design.md`
 4. primary `assets/logo.png`/`.webp` imagegen-based logo lockup with readable offer name
-5. `visual-asset-plan.md` with separate image/visual inventories for sales page, PDF, VSL, ads, and dashboard
-6. long-form sales copy
-7. coded sales page
-8. supporting images
-9. customer-ready PDF product
-10. Facebook ads and ad images
-11. launch emails
-12. VSL deck
-13. delivery dashboard
-14. QA notes
+5. PDF product outline and offer stack
+6. long-form sales copy with a section-by-section sales-page blueprint
+7. `visual-asset-plan.md` v2 anchored to copy sections, PDF page archetypes, VSL slide plan, and ad angles
+8. coded sales page
+9. supporting images
+10. customer-ready PDF product
+11. Facebook ads and ad images
+12. launch emails
+13. VSL deck
+14. delivery dashboard
+15. QA notes
 
 Every artifact must be a finished working file where possible. Avoid "strategy-only" substitutes for files the user asked to use, publish, record, or give to customers.
 
@@ -63,7 +64,7 @@ Build from these source patterns instead of inventing replacements:
 - Sales page: load `assets/templates/sales-page/section-map.md` and start from `assets/templates/sales-page/page-skeleton.html`. Fill every required `data-offeros-section`; preserve the direct-response hero and buy-box offer-stack contracts exactly, then add/remove only optional sub-blocks inside those sections.
 - Sales page type: load `references/sales-page-types.md` before sales copy and choose a page type. Use `direct-response-long-form-vsl` by default for complete low-ticket, cold-traffic, or internet-marketing offers. Record the selected type in `quality.salesPage.pageType`.
 - Logo: create a real logo direction before producing the final asset. In deep generated-design runs, use the `imagegen` skill/tool first to create 3 complete logo lockup candidates with symbol plus exact readable offer-name wordmark in the bitmap. Use a text-free imagegen symbol plus professional wordmark compositor only as a fallback after complete-lockup attempts fail exact text. Reject illustrative marks, page-curl/app-icon graphics, rough cover-art marks, and "mark plus default text" composites. SVG may be a secondary export, but do not mark an icon-only mark, code-vector SVG, HTML/CSS render, PIL-only raster, or rough typed text composite as the complete primary logo.
-- Visual assets: create `visual-asset-plan.md` before sales-page graphics, PDF, ads, VSL, or dashboard production. Split visuals by artifact. PDF and VSL need their own supporting visuals/treatments; do not reuse only sales-page imagery as the visual pool. When agents are authorized, dispatch imagegen visual workers after logo/style references exist.
+- Visual assets: create `visual-asset-plan.md` v2 only after `copy.md` includes the sales-page section blueprint. Split visuals by artifact and anchor every sales-page visual to a real copy section. Use `mixed-direct-response-v1` by default: mockups are appropriate for product bundle, offer stack, dashboard, and product reveal visuals; mechanism, failed alternatives, proof/demo, objections, and feature specifics should usually use diagrams, comparison visuals, screenshots, structured panels, or restrained supporting imagery. PDF and VSL need their own supporting visuals/treatments; do not reuse only sales-page imagery as the visual pool. When agents are authorized, dispatch imagegen visual workers after the content blueprint and visual plan exist.
 - PDF product: follow the PDF Product Recipe. For $30-$99 paid offers, extracted PDF text below 4,000 words or a product that is mostly repeated explanation/blank lines is a failed product, not a warning.
 - Emails: follow the Email Sequence Recipe. Every launch email must include send timing, subject, preview text, campaign role, body copy, and CTA. Repeated boilerplate paragraphs across emails are a failure.
 - Dashboard: generate `delivery-dashboard.html` with `scripts/generate_delivery_dashboard.py`. After generation, edit theme variables, logo, imagery, and copy only. Preserve `data-offeros-dashboard="v2-modal"`, modal markup, iframe/image preview behavior, and artifact `data-path`/`data-preview` cards.
@@ -83,10 +84,10 @@ Follow this order unless the user explicitly requests a narrower module:
 4. Brand/name refinement
 5. Primary imagegen-based logo lockup with readable offer name
 6. PDF product outline and offer stack
-7. Artifact-specific `visual-asset-plan.md`
-8. Sales copy
-9. Sales page build
-10. Real supporting page graphics with provenance recorded
+7. Sales copy with section-by-section copy blueprint
+8. Artifact-specific `visual-asset-plan.md` v2 anchored to the copy blueprint, PDF page archetypes, VSL slide plan, and ad angles
+9. Sales-page graphics with provenance recorded
+10. Sales page build
 11. PDF-specific visuals and PDF product creation/rendered visual check
 12. Ads and ad-specific imagegen images
 13. Email sequence
@@ -95,7 +96,7 @@ Follow this order unless the user explicitly requests a narrower module:
 16. Technical QA pass
 17. Commercial value audit
 
-Do not build downstream visual assets before upstream design/brand decisions exist. If an upstream asset is missing, create the smallest practical version first.
+Do not build downstream visual assets before upstream design/brand decisions and the relevant content blueprint exist. If an upstream asset is missing, create the smallest practical version first.
 
 ## Quality Gates
 
@@ -177,7 +178,7 @@ If a URL or screenshot is used, extract a practical design guide before building
 
 Use subagents only when the user explicitly allows delegation or asks to dispatch agents. Delegate concrete, bounded work that can run in parallel. Keep final integration and QA in the main agent.
 
-For full OfferOS runs with agent authorization, load `references/agent-dispatch.md`. After `offer-architecture.md`, `design.md`, the primary logo lockup, the product outline, and `visual-asset-plan.md` exist, dispatch parallel imagegen visual workers for page visuals, PDF visuals, VSL visuals, and ad creatives. Give each worker disjoint output ownership and the same style references so the assets share one visual system. Do not dispatch image workers before the initial logo/style direction exists.
+For full OfferOS runs with agent authorization, load `references/agent-dispatch.md`. After `offer-architecture.md`, `design.md`, the primary logo lockup, product outline, `copy.md` with the sales-page blueprint, and `visual-asset-plan.md` v2 exist, dispatch parallel imagegen visual workers for page visuals, PDF visuals, VSL visuals, and ad creatives. Give each worker disjoint output ownership and the same style references so the assets share one visual system. Do not dispatch image workers before the content blueprint exists.
 
 ## Completion Standard
 

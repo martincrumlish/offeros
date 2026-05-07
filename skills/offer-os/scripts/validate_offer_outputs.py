@@ -105,6 +105,30 @@ BANNED_VISIBLE_VSL_STAGE_LABELS = {
     "close",
 }
 
+ALLOWED_VISUAL_KINDS = {
+    "hero-vsl-frame",
+    "product-mockup",
+    "dashboard-mockup",
+    "offer-stack-bundle",
+    "mechanism-diagram",
+    "comparison-visual",
+    "proof-demo-visual",
+    "buyer-situation-photo",
+    "structured-panel",
+    "worksheet-preview",
+    "matrix-visual",
+    "checklist-visual",
+    "slide-pattern-interrupt",
+    "ad-creative",
+    "brand-frame",
+}
+
+MOCKUP_VISUAL_KINDS = {
+    "product-mockup",
+    "dashboard-mockup",
+    "offer-stack-bundle",
+}
+
 
 def load_json(path: Path) -> dict:
     if not path.exists():
@@ -119,6 +143,25 @@ def scan_text(path: Path) -> list[str]:
 
 def text_for(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def markdown_section(text: str, heading: str) -> str:
+    pattern = rf"(?ims)^\s*{re.escape(heading)}\s*$([\s\S]*?)(?=^\s*##\s+|\Z)"
+    match = re.search(pattern, text)
+    return match.group(1) if match else ""
+
+
+def field_values(text: str, field: str) -> list[str]:
+    pattern = rf"(?im)\b{re.escape(field)}\s*:\s*`?([^`\n|]+)"
+    return [item.strip().strip("\"' .").lower() for item in re.findall(pattern, text)]
+
+
+def normalize_copy_anchor(value: str) -> str:
+    value = value.strip().lower()
+    section_match = re.search(r"data-offeros-section\s*=\s*[\"']?([a-z0-9-]+)", value)
+    if section_match:
+        return section_match.group(1)
+    return re.sub(r"[^a-z0-9-]+", "", value)
 
 
 def numeric_price(value) -> float:
@@ -1273,6 +1316,7 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
     text = text_for(plan_path)
     required_headings = [
         "# Visual Asset Plan",
+        "## Visual Plan Metadata",
         "## Global Brand Assets",
         "## Sales Page Visuals",
         "## PDF Product Visuals",
@@ -1284,6 +1328,20 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
     missing_headings = [heading for heading in required_headings if heading.lower() not in text.lower()]
     if missing_headings:
         issues.append("Visual asset plan missing required headings: " + ", ".join(missing_headings))
+
+    sales_copy = by_id.get("sales-copy")
+    sales_copy_path = artifact_path(root, sales_copy)
+    if not sales_copy_path or not sales_copy_path.exists():
+        issues.append("Visual asset plan v2 requires copy.md/sales-copy with a section blueprint before visual planning.")
+
+    compact_plan = re.sub(r"\s+", "", text.lower())
+    for token, label in {
+        "visualplanstage:post-content-blueprint": "visualPlanStage: post-content-blueprint",
+        "copyblueprintused:true": "copyBlueprintUsed: true",
+        "salespageimagesystem:mixed-direct-response-v1": "salesPageImageSystem: mixed-direct-response-v1",
+    }.items():
+        if token not in compact_plan:
+            issues.append(f"Visual asset plan metadata must include {label}.")
 
     image_quality = manifest.get("quality", {}).get("images", {})
     if not isinstance(image_quality, dict):
@@ -1297,6 +1355,12 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         issues.append("Image quality metadata must record visualPlanPath.")
     if image_quality.get("visualReusePolicy") != "artifact-specific-v1":
         issues.append("Image quality metadata must record visualReusePolicy: artifact-specific-v1.")
+    if image_quality.get("visualPlanStage") != "post-content-blueprint":
+        issues.append("Image quality metadata must record visualPlanStage: post-content-blueprint.")
+    if image_quality.get("copyBlueprintUsed") is not True:
+        issues.append("Image quality metadata must confirm copyBlueprintUsed.")
+    if image_quality.get("salesPageImageSystem") != "mixed-direct-response-v1":
+        issues.append("Image quality metadata must record salesPageImageSystem: mixed-direct-response-v1.")
 
     required_counts = {
         "salesPageVisualCount": 4,
@@ -1318,6 +1382,31 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
     }.items():
         if image_quality.get(field) is True:
             issues.append(label)
+
+    sales_visuals = markdown_section(text, "## Sales Page Visuals")
+    visual_kinds = field_values(sales_visuals, "visualKind")
+    copy_anchors = [normalize_copy_anchor(item) for item in field_values(sales_visuals, "copyAnchor")]
+    required_sales_fields = {
+        "visualKind": visual_kinds,
+        "copyAnchor": copy_anchors,
+        "conversionJob": field_values(sales_visuals, "conversionJob"),
+        "artifactTarget": field_values(sales_visuals, "artifactTarget"),
+        "aspectRatio": field_values(sales_visuals, "aspectRatio"),
+        "textRule": field_values(sales_visuals, "textRule"),
+    }
+    for field, values in required_sales_fields.items():
+        if len(values) < 4:
+            issues.append(f"Sales-page visual plan must include 4+ {field} fields tied to copy sections.")
+    invalid_kinds = sorted({kind for kind in visual_kinds if kind not in ALLOWED_VISUAL_KINDS})
+    if invalid_kinds:
+        issues.append("Sales-page visual plan uses invalid visualKind values: " + ", ".join(invalid_kinds))
+    valid_anchors = set(REQUIRED_SALES_PAGE_SECTIONS)
+    invalid_anchors = sorted({anchor for anchor in copy_anchors if anchor and anchor not in valid_anchors})
+    if invalid_anchors:
+        issues.append("Sales-page visual plan copyAnchor values must match real data-offeros-section anchors: " + ", ".join(invalid_anchors))
+    if visual_kinds and all(kind in MOCKUP_VISUAL_KINDS or "mockup" in kind for kind in visual_kinds):
+        if image_quality.get("mockupHeavyUserRequested") is not True:
+            issues.append("Sales-page visual plan is all mockup/UI-style visuals; use mixed-direct-response-v1 unless mockupHeavyUserRequested is true.")
 
 
 def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], warnings: list[str]) -> None:

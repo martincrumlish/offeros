@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.0
+
+- Moves visual planning to a post-copy-blueprint stage so sales-page visuals are anchored to real direct-response sections instead of pre-copy mood-board prompts.
+- Adds the `mixed-direct-response-v1` sales-page image system with explicit `visualKind`, `copyAnchor`, conversion job, aspect ratio, and text-rule fields.
+- Hardens validation and self-tests against pre-copy visual plans, missing copy anchors, missing image taxonomy, and all-mockup sales-page visual plans.
+
 ## 0.7.0
 
 - Hardens the logo recipe so imagegen must first generate complete logo lockup candidates with symbol plus exact wordmark before any mark-only fallback is allowed.

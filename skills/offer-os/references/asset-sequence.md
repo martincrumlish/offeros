@@ -8,15 +8,16 @@ Generate assets in dependency order. Earlier assets define constraints for later
 2. Design guide
 3. Logo or wordmark
 4. Product outline and offer stack
-5. `visual-asset-plan.md`
-6. Sales page structure
+5. Sales copy and section-by-section copy blueprint
+6. `visual-asset-plan.md` v2 anchored to the copy blueprint
 7. Sales page graphics
-8. Product bundle
-9. PDF product visuals
-10. VSL frames
-11. Ads and social creative
-12. Delivery dashboard
-13. Secondary exports and variants
+8. Sales page structure/build
+9. Product bundle
+10. PDF product visuals
+11. VSL frames
+12. Ads and social creative
+13. Delivery dashboard
+14. Secondary exports and variants
 
 ## Provenance Requirements
 
@@ -38,10 +39,11 @@ Deep mode should include at least:
 
 ## Visual Asset Plan
 
-Create `visual-asset-plan.md` before building sales-page graphics, the PDF product, ad images, the VSL deck, or the delivery dashboard.
+Create `visual-asset-plan.md` v2 after `copy.md` includes the sales-page section blueprint and before building sales-page graphics, the PDF product, ad images, the VSL deck, or the delivery dashboard.
 
 The plan must split visuals into:
 
+- visual plan metadata
 - global brand assets
 - sales page visuals
 - PDF product visuals
@@ -50,12 +52,21 @@ The plan must split visuals into:
 - dashboard visuals
 - reuse rules
 
+Record `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, and `salesPageImageSystem: mixed-direct-response-v1`.
+
 Do not treat sales-page graphics as the default image library for every artifact. Each artifact has its own job:
 
-- Sales page visuals sell belief and the offer stack.
+- Sales page visuals sell belief and the offer stack. They must be tied to real copy anchors and use a mixed direct-response system, not an all-mockup image set by default.
 - PDF visuals help the buyer use the product: covers, module dividers, matrices, completed examples, blank worksheets, checklists, and implementation maps.
 - VSL visuals help a spoken pitch hold attention: pattern interrupts, problem maps, comparison tables, mechanism diagrams, product reveal, stack, value, guarantee, objection, and CTA visuals.
 - Ad visuals interrupt the feed and should be generated specifically for the ad angle.
+
+Sales-page visual kinds:
+
+- use `product-mockup`, `dashboard-mockup`, and `offer-stack-bundle` for product reveal, dashboard preview, offer stack, and CTA bundle visuals
+- use `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `structured-panel`, `buyer-situation-photo`, or `hero-vsl-frame` for mechanism, failed alternatives, proof/demo, objections, problem/agitation, and feature specifics
+- require `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, and `textRule` for every planned sales-page visual
+- avoid busy fake UI, random SaaS mockups, tiny hallucinated screen text, and decorative images that do not support a specific claim
 
 Minimum deep-mode budgets:
 
@@ -66,14 +77,14 @@ Minimum deep-mode budgets:
 
 Register `visual-asset-plan` and set `quality.images.hasArtifactSpecificPlan = true`. Record whether each visual is shared or artifact-specific.
 
-When agents are authorized, dispatch imagegen visual workers immediately after the plan exists and before artifact production. Give each worker disjoint ownership:
+When agents are authorized, dispatch imagegen visual workers immediately after the post-copy plan exists and before artifact production. Give each worker disjoint ownership:
 
 - page visuals: `assets/page/`
 - PDF visuals: `output/pdf/assets/`
 - VSL visuals: `output/presentation/assets/`
 - ad visuals: `assets/ads/`
 
-Use the same `design.md`, logo lockup, brand mark, and visual plan as references for every worker.
+Use the same `design.md`, `copy.md`, logo lockup, brand mark, and visual plan as references for every worker.
 
 ## Dependencies
 
@@ -114,9 +125,9 @@ In deep generated-design runs, the primary logo artifact should be an `imagegen`
 
 The mark must be a simple logo-grade symbol, not an illustration, page-curl/folded-paper image, app icon, mockup, or rough cover graphic. The final `assets/logo.png` must preserve the exact offer name and pass typography, kerning, mark scale, and spacing checks. A bad mark with text composited beside it is still a failed logo.
 
-### Sales Page Structure
+### Sales Copy Blueprint
 
-Required before page-specific graphics, VSL visuals, ad angles, and checkout graphics.
+Required before page-specific graphics, VSL visuals, ad angles, and checkout graphics. The copy blueprint defines the sales-page sections, objections, proof jobs, CTAs, visual blocks, `copyAnchor` values, and suggested `visualKind` values.
 
 ### Product Bundle
 

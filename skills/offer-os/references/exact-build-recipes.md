@@ -19,7 +19,7 @@ Use this controller for every deep run. This is the highest-level recipe and it 
 5. Browser QA must fail the build if any captured page has horizontal overflow or broken images.
 6. Write `qa-notes.md` from live build variables and validation results. Do not hard-code page counts, CTA counts, warnings, or pass/fail claims.
 7. Copy the final build script into the output project before handoff.
-8. Create `visual-asset-plan.md` before building sales-page graphics, the PDF product, ads, or the VSL deck. Reusing sales-page images as the default visual pool fails deep mode.
+8. Create `visual-asset-plan.md` v2 only after `copy.md` contains the sales-page section blueprint. Reusing sales-page images as the default visual pool fails deep mode.
 
 Stop conditions:
 
@@ -155,11 +155,12 @@ Stop conditions:
 
 ## Visual Asset Plan Recipe
 
-Use this recipe for every deep generated-design run after the logo and product outline exist and before creating sales-page graphics, PDF pages, ad images, VSL slides, or the dashboard.
+Use this recipe for every deep generated-design run after the logo, product outline, and `copy.md` sales-page blueprint exist and before creating sales-page graphics, PDF pages, ad images, VSL slides, or the dashboard. This is a post-content-blueprint plan, not a loose pre-copy mood board.
 
 1. Create `visual-asset-plan.md`.
 2. Divide the plan into these exact headings:
    - `# Visual Asset Plan`
+   - `## Visual Plan Metadata`
    - `## Global Brand Assets`
    - `## Sales Page Visuals`
    - `## PDF Product Visuals`
@@ -167,29 +168,46 @@ Use this recipe for every deep generated-design run after the logo and product o
    - `## Ad Visuals`
    - `## Dashboard Visuals`
    - `## Reuse Rules`
-3. For every planned visual, list: artifact target, file path, visual job, source/provenance, generation prompt or production method, reuse permission, and whether it is specific to that artifact or shared.
-4. Use these minimum visual budgets in deep mode:
+3. In `## Visual Plan Metadata`, record these exact fields:
+   - `visualPlanStage: post-content-blueprint`
+   - `copyBlueprintUsed: true`
+   - `salesPageImageSystem: mixed-direct-response-v1`
+   - `mockupHeavyUserRequested: false` unless the user explicitly requested mockup-heavy art direction
+   - `sourceBlueprints: copy.md, product blueprint/page archetypes, VSL slide plan, ad angle map`
+4. For every planned visual, list these exact fields: `artifactTarget`, `filePath`, `visualKind`, `copyAnchor`, `conversionJob`, `aspectRatio`, `textRule`, `source/provenance`, `reusePermission`, `artifactSpecific`, and `generationPrompt` or `productionMethod`.
+5. Use only these `visualKind` values unless the user supplied a specific visual system that requires an extra kind: `hero-vsl-frame`, `product-mockup`, `dashboard-mockup`, `offer-stack-bundle`, `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `buyer-situation-photo`, `structured-panel`, `worksheet-preview`, `matrix-visual`, `checklist-visual`, `slide-pattern-interrupt`, `ad-creative`, `brand-frame`.
+6. For `## Sales Page Visuals`, every row must include a `copyAnchor` matching a real sales-page section from `copy.md` and the page skeleton, such as `hero`, `vsl`, `failed-alternatives`, `mechanism`, `proof`, `product`, `offer-stack`, `pricing`, `guarantee`, or `faq`.
+7. Use `mixed-direct-response-v1` by default:
+   - use `product-mockup`, `dashboard-mockup`, or `offer-stack-bundle` mainly for product reveal, offer stack, dashboard preview, and CTA/product bundle sections
+   - use `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `structured-panel`, or restrained `buyer-situation-photo` for mechanism, failed alternatives, proof/demo, objections, feature specifics, and problem/agitation sections
+   - do not make every sales-page image a polished fake UI/product mockup unless `mockupHeavyUserRequested: true`
+   - avoid busy fake UI, hallucinated dashboards, illegible tiny text, decorative abstract mockups, and visuals that do not support a specific copy claim
+8. Use these minimum visual budgets in deep mode:
    - Global/shared: logo lockup, brand mark, product bundle/mockup, and one reusable texture/pattern or brand frame.
-   - Sales page: 4+ page-specific visuals: hero/VSL thumbnail, mechanism/framework, before/after or failed-alternative visual, proof/demo or product-stack visual.
+   - Sales page: 4+ page-specific visuals anchored to copy sections: hero/VSL thumbnail, mechanism/framework, failed-alternative or before/after visual, proof/demo or product-stack visual.
    - PDF product: 6+ PDF visuals/treatments, with 4+ not reused from the sales page. Include cover art, at least one module/divider treatment, one decision matrix, one completed example visual, one blank worksheet/template visual, and one implementation/checklist visual.
    - VSL deck: 12+ unique visual assets or distinct diagram treatments, with 8+ not reused from the sales page. Include pattern interrupt, problem map, failed-alternatives comparison, mechanism diagram, product reveal, offer stack, price/value contrast, guarantee, objection, and final CTA visuals.
    - Ads: 3+ ad-specific imagegen creatives. Do not crop sales-page art and call it ad creative.
    - Dashboard: logo, product bundle/preview, and thumbnail/preview choices for the main assets.
-5. If agents are authorized, load `references/agent-dispatch.md` and dispatch imagegen visual workers after this plan exists. Use separate workers for page visuals, PDF visuals, VSL visuals, and ad visuals. Each worker gets `offer-architecture.md`, `design.md`, `visual-asset-plan.md`, `assets/logo.png`, `assets/logo-mark.png` if present, and its assigned output folder. The main agent keeps ownership of integration, manifest registration, and QA.
-6. If agents are not authorized or not available, create the visuals locally and set `quality.images.agentDispatchUsed` to `false` with a short `agentDispatchNotUsedReason`.
-7. Register `visual-asset-plan` in `offer-os.json`:
+9. If agents are authorized, load `references/agent-dispatch.md` and dispatch imagegen visual workers after this plan exists. Use separate workers for page visuals, PDF visuals, VSL visuals, and ad visuals. Each worker gets `offer-architecture.md`, `design.md`, `copy.md`, `visual-asset-plan.md`, `assets/logo.png`, `assets/logo-mark.png` if present, the product blueprint/page archetypes, VSL slide plan, ad angle map, and its assigned output folder. The main agent keeps ownership of integration, manifest registration, and QA.
+10. If agents are not authorized or not available, create the visuals locally and set `quality.images.agentDispatchUsed` to `false` with a short `agentDispatchNotUsedReason`.
+11. Register `visual-asset-plan` in `offer-os.json`:
 
 ```powershell
 .\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\register_artifact.py --id visual-asset-plan --title "Visual Asset Plan" --type document --category Strategy --path visual-asset-plan.md --provenance manual --buyer-value 4 --usability 4 --trust 4
 ```
 
-8. Set `quality.images`:
+12. Set `quality.images`:
 
 ```json
 {
   "hasArtifactSpecificPlan": true,
   "visualPlanPath": "visual-asset-plan.md",
+  "visualPlanStage": "post-content-blueprint",
+  "copyBlueprintUsed": true,
   "visualReusePolicy": "artifact-specific-v1",
+  "salesPageImageSystem": "mixed-direct-response-v1",
+  "mockupHeavyUserRequested": false,
   "agentDispatchUsed": true,
   "agentDispatchNotUsedReason": "",
   "salesPageVisualCount": 4,
@@ -207,6 +225,11 @@ Use this recipe for every deep generated-design run after the logo and product o
 Stop conditions:
 
 - If `visual-asset-plan.md` does not exist, stop before creating PDF, ads, or VSL.
+- If `copy.md` with the sales-page section blueprint does not exist, stop before creating `visual-asset-plan.md`.
+- If `quality.images.visualPlanStage` is not `post-content-blueprint` or `quality.images.copyBlueprintUsed` is not `true`, rebuild the plan after copy.
+- If `quality.images.salesPageImageSystem` is not `mixed-direct-response-v1` and the user did not explicitly request another image system, rebuild the plan.
+- If any sales-page visual lacks `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, or `textRule`, rebuild the plan.
+- If every sales-page visual is a mockup-style visual and `mockupHeavyUserRequested` is not `true`, revise to a mixed direct-response visual system.
 - If the user explicitly allowed agents and no imagegen visual workers were dispatched, record the reason in `quality.images.agentDispatchNotUsedReason`.
 - If the PDF visuals are only sales-page images, create PDF-specific visuals/treatments before building the PDF.
 - If the VSL visuals are only sales-page images or the same few bitmaps repeated, create slide-specific visuals/treatments before generating the PPTX.
@@ -218,7 +241,7 @@ Use this recipe for every complete paid front-end offer unless the user explicit
 
 1. Set `quality.salesPage.pageType` to `direct-response-long-form-vsl`.
 2. Write `copy.md` before `index.html`.
-3. Before writing the copy body, write a section-by-section copy blueprint with the conversion job, target word count, proof/objection handled, visual block, and CTA role for every section. This blueprint is not optional; it prevents a generic wall of text.
+3. Before writing the copy body, write a section-by-section copy blueprint with the conversion job, target word count, proof/objection handled, visual block, suggested `visualKind`, `copyAnchor`, and CTA role for every section. This blueprint is not optional; it prevents a generic wall of text and becomes the source for `visual-asset-plan.md` v2.
 4. `copy.md` must include these exact headings:
    - `# Sales Page Type`
    - `# Hero`
