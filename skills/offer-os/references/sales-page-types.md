@@ -19,7 +19,7 @@ Use for: cold traffic, low-ticket/front-end offers, new mechanisms, generated of
 Minimum structure:
 
 - Header with logo, CTA, and minimal links.
-- Hero with buyer filter pill, prehead, specific headline, benefit lead, VSL/video frame inside the hero, price strip, CTA to `#buy`, and trust row.
+- Hero with centered buyer filter pill, prehead, specific headline, benefit lead, large stacked VSL/video frame below the headline, price strip below the VSL, CTA to `#buy`, and trust row.
 - VSL section below the hero that deepens the pitch; do not move the first VSL/video cue out of the hero.
 - Problem diagnosis with at least 3 specific symptoms and hidden costs.
 - Agitation section that shows the cost of delay or compounding pain.
@@ -40,7 +40,7 @@ Depth targets:
 - 16+ meaningful sections or subsections.
 - 2,500+ visible page words for a paid complete offer.
 - 3+ CTA placements after the hero.
-- Hero contract `direct-response-hero-v1` and offer stack contract `direct-response-buy-box-v1`.
+- Hero contract `stacked-vsl-hero-v1` and offer stack contract `direct-response-buy-box-v1`.
 - Composition contract `direct-response-composition-v1`: separate problem/agitation/failed-alternatives sections, VSL setup under 220 words, normal paragraphs under 55 words, no non-FAQ/non-stack section above 500 words, and no blank-looking cards/tables.
 - No repeated boilerplate sentences across offer-stack cards.
 
@@ -100,7 +100,8 @@ Populate `quality.salesPage`:
   "pageType": "direct-response-long-form-vsl",
     "pageTypeReason": "Cold front-end toolkit offer needs belief shift and VSL-first sales arc.",
     "requiredSectionContract": "direct-response-v1",
-    "heroContract": "direct-response-hero-v1",
+    "heroContract": "stacked-vsl-hero-v1",
+    "heroLayout": "stacked-vsl",
     "offerStackContract": "direct-response-buy-box-v1",
     "compositionContract": "direct-response-composition-v1",
     "sectionMarkersPresent": true,

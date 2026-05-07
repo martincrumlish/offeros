@@ -9,7 +9,7 @@ Each section must include `data-offeros-section="<id>"` so QA can validate struc
 | Section | ID | Conversion Job | Required Content | Visual/Asset |
 | --- | --- | --- | --- | --- |
 | Header | `header` | Establish brand and orientation | Logo, minimal links if needed | Logo |
-| Hero | `hero` | Create immediate desire and buying momentum | Buyer filter pill, prehead, specific headline, benefit lead, VSL/video frame, price strip, CTA to `#buy`, trust row | Hero VSL thumbnail/video frame |
+| Hero | `hero` | Create immediate desire and buying momentum | Centered buyer filter pill, prehead, specific headline, benefit lead, large stacked VSL/video frame, price strip, CTA to `#buy`, trust row | Large hero VSL thumbnail/video frame |
 | VSL | `vsl` | Deepen the pitch after the hero | VSL thumbnail/preview, play CTA, short promise, bridge from hero | VSL thumbnail |
 | Problem Diagnosis | `problem` | Make the buyer feel understood | Specific pain, hidden cost, current state | Problem visual |
 | Agitation | `agitation` | Make inaction feel expensive | Cost of delay, compounding consequence, emotional frustration, business/operational drag | Cost-of-delay graphic or callout |
@@ -44,14 +44,18 @@ Do not ship a short branded product page as the sales page. Deep-mode pages must
 
 For `direct-response-long-form-vsl`, section markers alone are not enough. The page must have enough copy, specificity, proof/demo, objection handling, and repeated CTA momentum to plausibly sell the offer to a cold buyer.
 
-The hero and offer stack must use the manual direct-response structure. Do not replace them with a branded hero, feature grid, pricing card, or generic card stack.
+The hero and offer stack must use the manual direct-response structure. Do not replace them with a branded hero, feature grid, pricing card, generic card stack, or two-column SaaS hero.
 
 Required hero contract:
 
-- `data-offeros-section="hero"` contains a buyer filter pill, prehead, H1, benefit lead, `data-offeros-hero-video`, `data-offeros-price-strip`, a primary `data-offeros-cta` link to `#buy`, and `data-offeros-trust-row`.
-- The hero video frame must include an image/thumbnail and a play/pitch cue. Do not move the VSL entirely below the fold.
-- The price strip must show the actual price, normal/total value or value context, a short stack summary, and the primary CTA.
-- The trust row must include 3+ concrete trust bullets such as guarantee, instant access, reuse rights, support, or low-risk use.
+- `data-offeros-section="hero"` must also include `data-offeros-hero-layout="stacked-vsl"`.
+- The hero must stack vertically in this order: buyer filter/prehead/H1/benefit lead, then large VSL/video frame, then price strip/CTA, then trust row.
+- The hero copy stack must be centered and marked `data-offeros-hero-copy-stack`.
+- The VSL/video frame must be centered below the headline, visually dominant, and marked `data-offeros-hero-video` plus `data-offeros-hero-video-prominence="primary"`.
+- The hero video frame must include an image/thumbnail and a play/pitch cue. Do not move the VSL entirely below the fold, and do not place it as a small side card to the right of the headline.
+- The price strip must sit below the VSL/video frame, show the actual price, normal/total value or value context, a short stack summary, and the primary CTA.
+- The trust row must sit below the price/CTA area and include 3+ concrete trust bullets such as guarantee, instant access, reuse rights, support, or low-risk use.
+- Do not use two-column, side-by-side, split-screen, `hero-grid`, `hero-split`, or SaaS product hero layouts for `direct-response-long-form-vsl`.
 
 Required offer-stack contract:
 

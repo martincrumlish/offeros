@@ -106,14 +106,14 @@ Output:
 
 1. Page strategy: selected page type, objective, buyer stage, conversion action, friction, trust approach.
 2. Section blueprint: section name, conversion job, content, layout, visual treatment, `copyAnchor`, `visualKind`, CTA, asset, mobile behavior.
-3. Component spec: header, manual-style direct-response hero, VSL, CTA blocks, proof, problem, mechanism, buy-box offer stack, pricing, guarantee, FAQ, footer.
+3. Component spec: header, stacked VSL-first direct-response hero, VSL, CTA blocks, proof, problem, mechanism, buy-box offer stack, pricing, guarantee, FAQ, footer.
 4. Depth check: visible word count, objection count, CTA count, unique offer-stack item copy, repeated-text scan.
 5. Implementation: responsive breakpoints, image sizes, performance, accessibility, form behavior, tracking events.
 6. QA checklist: mobile scan, CTA, links, forms, proof, pricing, objections, speed, accessibility.
 
 The coded page must use real copy and assets. Do not leave placeholders unless the user explicitly requests them. Do not create a giant VSL text block or a polished feature page; the section blueprint must drive the HTML structure.
 
-Use the direct-response section contract from `assets/templates/sales-page/section-map.md`. Keep `data-offeros-section` markers for required sections. For `direct-response-long-form-vsl`, keep the exact hero and buy-box offer-stack contracts: hero video frame, price strip, CTA to `#buy`, trust row, bundle image, deliverable checklist, normally/today value row, large stack CTA, and guarantee/access reassurance. Do not ship a short branded product page, polished feature page, or generic card stack in place of the long-form sales page.
+Use the direct-response section contract from `assets/templates/sales-page/section-map.md`. Keep `data-offeros-section` markers for required sections. For `direct-response-long-form-vsl`, keep the exact stacked VSL-first hero and buy-box offer-stack contracts: centered copy stack, large centered hero video frame below the headline, price strip below the video, CTA to `#buy`, trust row, bundle image, deliverable checklist, normally/today value row, large stack CTA, and guarantee/access reassurance. Do not ship a short branded product page, polished feature page, two-column SaaS hero, or generic card stack in place of the long-form sales page.
 
 If the page uses SVG/CSS diagrams as temporary visuals, mark them as fallbacks and do not describe them as generated images.
 

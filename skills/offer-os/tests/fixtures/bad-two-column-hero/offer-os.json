@@ -1,0 +1,35 @@
+{
+  "schema": "offer-os/v1",
+  "mode": "deep",
+  "offerName": "Regression Offer",
+  "audience": "test buyers",
+  "price": "$27",
+  "modules": [],
+  "artifacts": [
+    {
+      "id": "sales-page",
+      "title": "Sales Page",
+      "type": "page",
+      "category": "Sales",
+      "path": "index.html",
+      "status": "complete",
+      "provenance": "manual"
+    }
+  ],
+  "quality": {
+    "salesPage": {
+      "pageType": "direct-response-long-form-vsl",
+      "requiredSectionContract": "direct-response-v1",
+      "heroContract": "direct-response-hero-v1",
+      "offerStackContract": "direct-response-buy-box-v1",
+      "compositionContract": "direct-response-composition-v1",
+      "sectionMarkersPresent": true,
+      "visibleWordCount": 2600,
+      "objectionCount": 7,
+      "ctaCount": 4,
+      "offerStackItemsUnique": true,
+      "sectionDepthChecked": true,
+      "repeatedTextChecked": true
+    }
+  }
+}

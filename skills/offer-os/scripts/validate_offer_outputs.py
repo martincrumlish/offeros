@@ -300,6 +300,39 @@ def section_opening_tag_has(html_text: str, section_id: str, pattern: str) -> bo
     return bool(match and re.search(pattern, match.group(0), flags=re.I))
 
 
+def hero_two_column_signals(html_text: str, hero_html: str) -> list[str]:
+    signals = []
+    class_tokens = []
+    for class_value in re.findall(r'\bclass\s*=\s*["\']([^"\']+)["\']', hero_html, flags=re.I):
+        class_tokens.extend(class_value.lower().split())
+    bad_class_tokens = {
+        "hero-grid",
+        "hero-split",
+        "hero-cols",
+        "hero-columns",
+        "hero-two-col",
+        "hero-two-column",
+        "split-hero",
+        "two-col",
+        "two-column",
+        "two-columns",
+    }
+    matched = sorted({token for token in class_tokens if token in bad_class_tokens})
+    if matched:
+        signals.append("hero uses two-column/split class names: " + ", ".join(matched))
+
+    for style_block in re.findall(r"<style\b[^>]*>(.*?)</style>", html_text, flags=re.I | re.S):
+        for selector, body in re.findall(r"([^{}]+)\{([^{}]+)\}", style_block, flags=re.S):
+            selector_lower = selector.lower()
+            body_lower = body.lower()
+            if "hero" not in selector_lower:
+                continue
+            if "grid-template-columns" in body_lower:
+                signals.append("hero CSS uses grid-template-columns")
+                break
+    return signals
+
+
 def contains_expected_price(html_text: str, price: float) -> bool:
     if not price:
         return True
@@ -875,20 +908,32 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
 
 
 def validate_direct_response_page_contract(html_text: str, manifest: dict, sales_quality: dict, issues: list[str]) -> None:
-    if sales_quality.get("heroContract") != "direct-response-hero-v1":
-        issues.append("Direct-response sales page quality metadata must record heroContract: direct-response-hero-v1.")
+    if sales_quality.get("heroContract") != "stacked-vsl-hero-v1":
+        issues.append("Direct-response sales page quality metadata must record heroContract: stacked-vsl-hero-v1.")
+    if sales_quality.get("heroLayout") != "stacked-vsl":
+        issues.append("Direct-response sales page quality metadata must record heroLayout: stacked-vsl.")
+    if sales_quality.get("heroVideoProminenceChecked") is not True:
+        issues.append("Direct-response sales page quality metadata must confirm heroVideoProminenceChecked.")
     if sales_quality.get("offerStackContract") != "direct-response-buy-box-v1":
         issues.append("Direct-response sales page quality metadata must record offerStackContract: direct-response-buy-box-v1.")
 
     price = numeric_price(manifest.get("price"))
     hero = section_html(html_text, "hero")
     if hero:
+        if not section_opening_tag_has(html_text, "hero", r'\bdata-offeros-hero-layout\s*=\s*["\']stacked-vsl["\']'):
+            issues.append('Direct-response hero must use data-offeros-hero-layout="stacked-vsl".')
+        if not has_marker(hero, "data-offeros-hero-copy-stack"):
+            issues.append("Direct-response hero must include a centered copy stack marked data-offeros-hero-copy-stack.")
+        for signal in hero_two_column_signals(html_text, hero):
+            issues.append("Direct-response hero must not use a two-column/split SaaS layout: " + signal + ".")
         if not has_marker(hero, "data-offeros-buyer-filter"):
             issues.append("Direct-response hero must include a buyer filter marked data-offeros-buyer-filter.")
         if not has_marker(hero, "data-offeros-hero-video"):
             issues.append("Direct-response hero must include a VSL/video frame marked data-offeros-hero-video.")
         else:
             hero_video = element_with_marker(hero, "data-offeros-hero-video")
+            if not re.search(r'\bdata-offeros-hero-video-prominence\s*=\s*["\']primary["\']', hero_video, flags=re.I):
+                issues.append("Direct-response hero video must be marked data-offeros-hero-video-prominence=\"primary\".")
             if "<img" not in hero_video.lower():
                 issues.append("Direct-response hero video frame must include a thumbnail/image.")
             if not re.search(r"\b(play|watch|video|vsl|pitch)\b", visible_text_from_html(hero_video), flags=re.I):
@@ -910,6 +955,14 @@ def validate_direct_response_page_contract(html_text: str, manifest: dict, sales
             trust_items = len(re.findall(r"<li\b", trust_row, flags=re.I))
             if trust_items < 3:
                 issues.append(f"Direct-response hero trust row must include 3+ trust bullets: {trust_items} found.")
+        h1_pos = hero.lower().find("<h1")
+        video_pos = re.search(r"\bdata-offeros-hero-video(?:\s|=|>)", hero, flags=re.I)
+        price_pos = re.search(r"\bdata-offeros-price-strip(?:\s|=|>)", hero, flags=re.I)
+        trust_pos = re.search(r"\bdata-offeros-trust-row(?:\s|=|>)", hero, flags=re.I)
+        if h1_pos >= 0 and video_pos and price_pos and trust_pos:
+            positions = [h1_pos, video_pos.start(), price_pos.start(), trust_pos.start()]
+            if positions != sorted(positions):
+                issues.append("Direct-response hero must stack in this order: H1/lead, VSL video, price strip/CTA, trust row.")
 
     offer_stack = section_html(html_text, "offer-stack")
     if offer_stack:

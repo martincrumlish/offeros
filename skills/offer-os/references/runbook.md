@@ -160,7 +160,7 @@ Required result:
 - `index.html` started from `assets/templates/sales-page/page-skeleton.html`
 - every required `data-offeros-section` marker retained
 - separate `problem`, `agitation`, and `failed-alternatives` sections retained
-- direct-response hero contract retained: video frame, price strip, CTA to `#buy`, trust row
+- stacked VSL-first hero contract retained: centered copy stack, large centered video frame below the headline, price strip below the video, CTA to `#buy`, trust row
 - offer-stack buy-box contract retained: `id="buy"`, bundle image, 8+ item checklist, value row, large CTA, guarantee/access reassurance
 - at least 2,500 visible words for `direct-response-long-form-vsl`
 - VSL setup section under 220 visible words

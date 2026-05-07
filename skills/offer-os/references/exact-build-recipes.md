@@ -261,12 +261,13 @@ Use this recipe for every complete paid front-end offer unless the user explicit
    - `# FAQ`
    - `# Final CTA`
 5. Create `index.html` from `assets/templates/sales-page/page-skeleton.html`. Do not start from a blank page.
-6. Use the exact hero contract from `assets/templates/sales-page/section-map.md`: buyer filter, prehead, H1, benefit lead, `data-offeros-hero-video`, `data-offeros-price-strip`, CTA to `#buy`, and `data-offeros-trust-row`.
+6. Use the exact stacked VSL-first hero contract from `assets/templates/sales-page/section-map.md`: `data-offeros-hero-layout="stacked-vsl"`, centered buyer filter, prehead, H1, benefit lead, `data-offeros-hero-copy-stack`, large centered `data-offeros-hero-video` with `data-offeros-hero-video-prominence="primary"`, `data-offeros-price-strip` below the video, CTA to `#buy`, and `data-offeros-trust-row`.
 7. Use the exact offer-stack buy-box contract from `assets/templates/sales-page/section-map.md`: `id="buy"`, product bundle visual, `data-offeros-offer-checklist` with 8+ deliverables, `data-offeros-value-row`, large `data-offeros-stack-cta`, and `data-offeros-access-copy`.
 8. Keep every required `data-offeros-section` marker from `assets/templates/sales-page/section-map.md`, including the separate `agitation` section.
 9. Write unique benefit copy for every offer-stack item. Do not map a repeated sentence over multiple cards.
 10. Use direct-response composition rules:
     - Hero visible copy: 90-180 words, plus price strip and trust bullets.
+    - Hero layout: stacked VSL-first only. Do not use a two-column, side-by-side, split-screen, `hero-grid`, or SaaS product hero with the video small on the right.
     - VSL section: 80-220 words, one thumbnail/video block, 3-5 bullets, and one CTA. Do not put the whole sales letter in the VSL section.
     - Problem, agitation, failed alternatives, mechanism, product, proof, offer stack, guarantee, FAQ, and close must be separate visible sections.
     - No normal paragraph may exceed 55 words. Split long explanations into bullets, comparison rows, labeled callouts, or short copy blocks.
@@ -276,7 +277,7 @@ Use this recipe for every complete paid front-end offer unless the user explicit
 11. Include at least 7 FAQ objections, at least 4 CTA placements, and at least 2,500 visible words for `direct-response-long-form-vsl`.
 12. Mark every FAQ item with `data-offeros-faq-item`.
 13. Mark every CTA link or button with `data-offeros-cta`.
-14. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `compositionContract: "direct-response-composition-v1"`, `heroContract: "direct-response-hero-v1"`, and `offerStackContract: "direct-response-buy-box-v1"`.
+14. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `compositionContract: "direct-response-composition-v1"`, `heroContract: "stacked-vsl-hero-v1"`, `heroLayout: "stacked-vsl"`, `heroVideoProminenceChecked: true`, and `offerStackContract: "direct-response-buy-box-v1"`.
 
 Stop conditions:
 
@@ -284,7 +285,9 @@ Stop conditions:
 - If the VSL section becomes a wall of text or exceeds 220 visible words, revise before QA.
 - If any normal paragraph exceeds 55 words, revise before QA.
 - If required comparison/card sections contain blank-looking cells or empty cards, revise before QA.
-- If the hero does not include the video frame, price strip, CTA to `#buy`, and trust row, revise before QA.
+- If the hero does not use stacked VSL-first layout, revise before QA.
+- If the hero uses a two-column/split-grid layout or puts the VSL as a small right-side thumbnail, revise before QA.
+- If the hero does not include the video frame, price strip, CTA to `#buy`, and trust row in that stacked order, revise before QA.
 - If the offer stack is only cards or a pricing panel instead of the buy-box checklist stack, revise before QA.
 - If any sentence appears 4+ times in buyer-facing page copy, revise before QA.
 - If the page can be summarized as hero/features/price/FAQ, revise before QA.

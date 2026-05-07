@@ -40,7 +40,7 @@ Check:
 
 - sales page loads
 - required `data-offeros-section` markers are present
-- direct-response hero has `data-offeros-hero-video`, `data-offeros-price-strip`, CTA to `#buy`, and `data-offeros-trust-row`
+- direct-response hero has `data-offeros-hero-layout="stacked-vsl"`, centered copy stack, large centered `data-offeros-hero-video`, `data-offeros-price-strip` below it, CTA to `#buy`, and `data-offeros-trust-row`; it is not a two-column/split SaaS hero
 - offer stack uses `id="buy"`, `data-offeros-product-bundle`, `data-offeros-offer-checklist`, `data-offeros-value-row`, `data-offeros-stack-cta`, and `data-offeros-access-copy`
 - no broken images
 - no mobile horizontal overflow

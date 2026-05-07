@@ -11,22 +11,25 @@
   </header>
 
   <main>
-    <section data-offeros-section="hero">
-      <!-- Required direct-response hero structure:
-        1. buyer filter pill
-        2. prehead
-        3. specific promise headline
-        4. benefit lead
-        5. VSL/video frame inside the hero marked data-offeros-hero-video
-        6. price strip inside the hero marked data-offeros-price-strip
+    <section data-offeros-section="hero" data-offeros-hero-layout="stacked-vsl">
+      <!-- Required stacked VSL-first direct-response hero structure:
+        1. centered buyer filter pill
+        2. centered prehead
+        3. centered specific promise headline
+        4. centered benefit lead
+        5. large centered VSL/video frame below the headline marked data-offeros-hero-video
+        6. price strip below the video marked data-offeros-price-strip
         7. primary CTA href="#buy" marked data-offeros-cta
-        8. trust row marked data-offeros-trust-row
+        8. trust row below the CTA marked data-offeros-trust-row
+        Do not use a two-column, side-by-side, split, or SaaS hero layout.
       -->
-      <p class="pill" data-offeros-buyer-filter>{{BUYER_FILTER}}</p>
-      <p class="prehead">{{PREHEAD}}</p>
-      <h1>{{HEADLINE}}</h1>
-      <p class="hero-copy">{{BENEFIT_LEAD}}</p>
-      <div class="video-frame" data-offeros-hero-video>
+      <div class="hero-copy-stack" data-offeros-hero-copy-stack>
+        <p class="pill" data-offeros-buyer-filter>{{BUYER_FILTER}}</p>
+        <p class="prehead">{{PREHEAD}}</p>
+        <h1>{{HEADLINE}}</h1>
+        <p class="hero-copy">{{BENEFIT_LEAD}}</p>
+      </div>
+      <div class="video-frame hero-video-primary" data-offeros-hero-video data-offeros-hero-video-prominence="primary">
         <!-- VSL thumbnail/image, play button, and short video promise. -->
       </div>
       <div class="price-strip" data-offeros-price-strip>

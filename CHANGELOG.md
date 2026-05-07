@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0
+
+- Changes the direct-response hero contract to a stacked VSL-first layout with centered copy, large centered video, price/CTA below the video, and trust row below.
+- Rejects two-column, split-screen, and SaaS-style heroes for `direct-response-long-form-vsl` pages.
+- Adds validator and self-test checks for `stacked-vsl-hero-v1`, hero layout metadata, hero video prominence, and common two-column hero signals.
+
 ## 0.8.0
 
 - Moves visual planning to a post-copy-blueprint stage so sales-page visuals are anchored to real direct-response sections instead of pre-copy mood-board prompts.
