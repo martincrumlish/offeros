@@ -120,6 +120,7 @@ Required result:
 
 - `copy.md` with the required headings from the recipe
 - section-by-section sales-page blueprint with conversion job, visual block, suggested `visualKind`, `copyAnchor`, proof/objection handled, and CTA role
+- direct-response-long-form-v1 spine: message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo, before/after, product, offer stack, guarantee, objections, close
 - `quality.salesPage.pageType = "direct-response-long-form-vsl"` unless the user explicitly requested another page type
 - full copy, not an outline
 
@@ -160,6 +161,7 @@ Required result:
 - `index.html` started from `assets/templates/sales-page/page-skeleton.html`
 - every required `data-offeros-section` marker retained
 - separate `problem`, `agitation`, and `failed-alternatives` sections retained
+- proof/demo appears before the main offer stack
 - stacked VSL-first hero contract retained: centered copy stack, large centered video frame below the headline, price strip below the video, CTA to `#buy`, trust row
 - offer-stack buy-box contract retained: `id="buy"`, bundle image, 8+ item checklist, value row, large CTA, guarantee/access reassurance
 - at least 2,500 visible words for `direct-response-long-form-vsl`
@@ -167,6 +169,7 @@ Required result:
 - normal paragraphs under 55 words
 - at least 7 FAQ objections
 - at least 4 CTA placements
+- at least 3 post-hero CTA placements
 - unique buyer-facing copy for each offer-stack card
 
 Verify:

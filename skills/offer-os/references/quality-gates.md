@@ -158,18 +158,18 @@ The coded sales page must:
 - use the resolved design system
 - include the required direct-response section contract from `assets/templates/sales-page/section-map.md`
 - mark each core section with `data-offeros-section`
-- include VSL, problem, agitation, failed alternatives, mechanism, proof, product, offer stack, pricing, guarantee, FAQ, and final CTA areas
+- include VSL, problem, agitation, failed alternatives, mechanism, proof/demo before the buy box, before/after, product, offer stack, pricing, guarantee, FAQ, and final CTA areas
 - work on mobile and desktop
 - have no broken links, missing assets, overflow, unreadable text, or placeholder content
 - use maintainable HTML/CSS/JS
 
-For `direct-response-long-form-vsl`, the page must include full problem diagnosis, agitation, failed alternatives, unique mechanism, product reveal, offer stack, proof/demo, pricing/value logic, guarantee, objections, and repeated CTAs. Offer-stack cards must have unique benefit copy.
+For `direct-response-long-form-vsl`, the page must include full problem diagnosis, agitation, failed alternatives, unique mechanism, proof/demo before the buy box, before/after, product reveal, offer stack, pricing/value logic, guarantee, objections, and repeated CTAs. Offer-stack cards must have unique benefit copy.
 
 For `direct-response-long-form-vsl`, the hero must follow the stacked VSL-first direct-response hero contract: centered buyer filter, prehead, H1, benefit lead, large centered video/VSL frame below the headline, price strip below the video, CTA to `#buy`, and trust row. The offer stack must follow the buy-box contract: `id="buy"`, bundle image, 8+ item deliverable checklist, normally/today value row, large CTA, and guarantee/instant-access reassurance.
 
-For `direct-response-long-form-vsl`, the page must also follow the composition contract: separate problem/agitation/failed-alternatives sections, VSL setup under 220 words, normal paragraphs under 55 words, no non-FAQ/non-stack section above 500 words, and no blank-looking tables/cards.
+For `direct-response-long-form-vsl`, the page must also follow the composition contract: the direct-response-long-form-v1 spine, proof/demo before offer stack, separate problem/agitation/failed-alternatives sections, VSL setup under 220 words, normal paragraphs under 55 words, no non-FAQ/non-stack section above 500 words, and no blank-looking tables/cards.
 
-Fails if it is visually thin, nonresponsive, missing core sections, reads like a short product page, skips the internet-marketing/direct-response arc, uses a nice branded hero instead of the required stacked VSL-first direct-response hero, uses a two-column/split SaaS hero with a small side video, turns the VSL area into a wall of text, replaces the buy-box checklist stack with generic cards/pricing panels, repeats generic card blurbs, has invisible/low-contrast text, or contains scaffold remnants.
+Fails if it is visually thin, nonresponsive, missing core sections, reads like a short product page, skips the internet-marketing/direct-response arc, asks for the sale before mechanism/proof, uses a nice branded hero instead of the required stacked VSL-first direct-response hero, uses a two-column/split SaaS hero with a small side video, turns the VSL area into a wall of text, replaces the buy-box checklist stack with generic cards/pricing panels, repeats generic card blurbs, has invisible/low-contrast text, or contains scaffold remnants.
 
 ## PDF Product Gate
 

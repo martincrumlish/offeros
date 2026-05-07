@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.10.0
+
+- Adds a canonical `direct-response-long-form-v1` framework for paid front-end sales pages: message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo, before/after, product, offer stack, guarantee, objections, and close.
+- Requires `copy.md` to include a structured `# Section Blueprint` before visual planning or page build.
+- Rebuilds the sales-page skeleton from comment placeholders into a real scaffold with VSL, problem, agitation, failed alternatives table, mechanism steps, proof/demo, before/after, product reveal, offer stack, pricing, guarantee, FAQ, and final CTA blocks.
+- Moves proof/demo before the main offer stack and validates the required persuasion order.
+- Adds validator and self-test coverage for fake product pages with markers, missing section blueprint, proof-after-price drift, thin required sections, missing failed-alternatives/mechanism/proof blocks, and weak post-hero CTA rhythm.
+
 ## 0.9.0
 
 - Changes the direct-response hero contract to a stacked VSL-first layout with centered copy, large centered video, price/CTA below the video, and trust row below.

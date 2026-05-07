@@ -19,16 +19,16 @@ Use for: cold traffic, low-ticket/front-end offers, new mechanisms, generated of
 Minimum structure:
 
 - Header with logo, CTA, and minimal links.
-- Hero with centered buyer filter pill, prehead, specific headline, benefit lead, large stacked VSL/video frame below the headline, price strip below the VSL, CTA to `#buy`, and trust row.
+- Hero built from the locked `offeros-stacked-vsl-v2` shell: centered buyer filter pill, prehead, specific headline, benefit lead, large 16:9 VSL/video frame below the headline, price strip below the VSL, CTA to `#buy`, and trust row.
 - VSL section below the hero that deepens the pitch; do not move the first VSL/video cue out of the hero.
 - Problem diagnosis with at least 3 specific symptoms and hidden costs.
 - Agitation section that shows the cost of delay or compounding pain.
 - Failed alternatives with a table or contrast block.
 - Unique mechanism with named framework, why it works, and why it is different.
+- Proof, demonstration, or proof substitute before the main offer stack.
 - Before/after section.
 - Product reveal with product image/mockup.
 - Offer stack buy box with product bundle image, big deliverable checklist, normally/today value row, large access CTA, and guarantee/instant-access reassurance. Cards can support this, but cannot replace it.
-- Proof, demonstration, founder credibility, or proof substitute.
 - Fit and not-fit filters.
 - Pricing with value logic and what happens after purchase.
 - Guarantee with terms and buyer responsibility.
@@ -40,8 +40,9 @@ Depth targets:
 - 16+ meaningful sections or subsections.
 - 2,500+ visible page words for a paid complete offer.
 - 3+ CTA placements after the hero.
-- Hero contract `stacked-vsl-hero-v1` and offer stack contract `direct-response-buy-box-v1`.
-- Composition contract `direct-response-composition-v1`: separate problem/agitation/failed-alternatives sections, VSL setup under 220 words, normal paragraphs under 55 words, no non-FAQ/non-stack section above 500 words, and no blank-looking cards/tables.
+- Hero contract `stacked-vsl-hero-v2` and offer stack contract `direct-response-buy-box-v1`.
+- Framework `direct-response-long-form-v1`: message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo, before/after, product, offer stack, guarantee, objections, close.
+- Composition contract `direct-response-composition-v2`: separate problem/agitation/failed-alternatives sections, proof before offer stack, VSL setup under 220 words, normal paragraphs under 55 words, no non-FAQ/non-stack section above 500 words, and no blank-looking cards/tables.
 - No repeated boilerplate sentences across offer-stack cards.
 
 ### `mechanism-led-product-page`
@@ -100,14 +101,19 @@ Populate `quality.salesPage`:
   "pageType": "direct-response-long-form-vsl",
     "pageTypeReason": "Cold front-end toolkit offer needs belief shift and VSL-first sales arc.",
     "requiredSectionContract": "direct-response-v1",
-    "heroContract": "stacked-vsl-hero-v1",
+    "heroContract": "stacked-vsl-hero-v2",
     "heroLayout": "stacked-vsl",
+    "heroTemplate": "offeros-stacked-vsl-v2",
+    "heroVideoFrame": "large-16x9",
     "offerStackContract": "direct-response-buy-box-v1",
-    "compositionContract": "direct-response-composition-v1",
+    "framework": "direct-response-long-form-v1",
+    "compositionContract": "direct-response-composition-v2",
+    "copyBlueprintPresent": true,
     "sectionMarkersPresent": true,
   "visibleWordCount": 3200,
   "objectionCount": 8,
   "ctaCount": 5,
+  "postHeroCtaCount": 3,
   "offerStackItemsUnique": true,
   "sectionDepthChecked": true,
   "repeatedTextChecked": true

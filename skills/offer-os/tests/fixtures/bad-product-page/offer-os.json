@@ -1,0 +1,52 @@
+{
+  "schema": "offer-os/v1",
+  "mode": "deep",
+  "offerName": "Bad Product Page",
+  "audience": "test buyers",
+  "price": "$27",
+  "modules": [],
+  "artifacts": [
+    {
+      "id": "sales-copy",
+      "title": "Sales Copy",
+      "type": "document",
+      "category": "Sales",
+      "path": "copy.md",
+      "status": "complete",
+      "provenance": "manual"
+    },
+    {
+      "id": "sales-page",
+      "title": "Sales Page",
+      "type": "page",
+      "category": "Sales",
+      "path": "index.html",
+      "status": "complete",
+      "provenance": "manual"
+    }
+  ],
+  "quality": {
+    "salesPage": {
+      "pageType": "direct-response-long-form-vsl",
+      "pageTypeReason": "Cold front-end offer needs full belief-shift page.",
+      "requiredSectionContract": "direct-response-v1",
+      "heroContract": "stacked-vsl-hero-v2",
+      "heroLayout": "stacked-vsl",
+      "heroTemplate": "offeros-stacked-vsl-v2",
+      "heroVideoFrame": "large-16x9",
+      "heroVideoProminenceChecked": true,
+      "offerStackContract": "direct-response-buy-box-v1",
+      "framework": "direct-response-long-form-v1",
+      "compositionContract": "direct-response-composition-v2",
+      "copyBlueprintPresent": true,
+      "sectionMarkersPresent": true,
+      "visibleWordCount": 3000,
+      "objectionCount": 7,
+      "ctaCount": 4,
+      "postHeroCtaCount": 3,
+      "offerStackItemsUnique": true,
+      "sectionDepthChecked": true,
+      "repeatedTextChecked": true
+    }
+  }
+}

@@ -73,8 +73,8 @@ REQUIRED_SALES_PAGE_SECTIONS = [
     "agitation",
     "failed-alternatives",
     "mechanism",
-    "before-after",
     "proof",
+    "before-after",
     "product",
     "offer-stack",
     "fit",
@@ -127,6 +127,51 @@ MOCKUP_VISUAL_KINDS = {
     "product-mockup",
     "dashboard-mockup",
     "offer-stack-bundle",
+}
+
+REQUIRED_COPY_HEADINGS = [
+    "# Sales Page Type",
+    "# Section Blueprint",
+    "# Hero",
+    "# VSL Setup",
+    "# Problem Diagnosis",
+    "# Agitation",
+    "# Failed Alternatives",
+    "# Unique Mechanism",
+    "# Proof Or Demonstration",
+    "# Before And After",
+    "# Product Reveal",
+    "# Offer Stack",
+    "# Who It Is For",
+    "# Who It Is Not For",
+    "# Pricing And Value",
+    "# Guarantee",
+    "# FAQ",
+    "# Final CTA",
+]
+
+REQUIRED_BLUEPRINT_FIELDS = [
+    "sectionId",
+    "conversionJob",
+    "targetWords",
+    "beliefShift",
+    "proofOrObjection",
+    "visualKind",
+    "copyAnchor",
+    "ctaRole",
+]
+
+MIN_SECTION_WORDS = {
+    "problem": 120,
+    "agitation": 90,
+    "failed-alternatives": 90,
+    "mechanism": 120,
+    "proof": 90,
+    "before-after": 70,
+    "product": 100,
+    "fit": 70,
+    "pricing": 60,
+    "guarantee": 50,
 }
 
 
@@ -248,11 +293,7 @@ def count_html_slides(text: str) -> int:
 
 def has_section_marker(html_text: str, section_id: str) -> bool:
     escaped = re.escape(section_id)
-    patterns = [
-        rf"data-offeros-section\s*=\s*[\"']{escaped}[\"']",
-        rf"id\s*=\s*[\"']{escaped}[\"']",
-    ]
-    return any(re.search(pattern, html_text, re.I) for pattern in patterns)
+    return bool(re.search(rf"data-offeros-section\s*=\s*[\"']{escaped}[\"']", html_text, re.I))
 
 
 def section_html(html_text: str, section_id: str) -> str:
@@ -300,6 +341,19 @@ def section_opening_tag_has(html_text: str, section_id: str, pattern: str) -> bo
     return bool(match and re.search(pattern, match.group(0), flags=re.I))
 
 
+def section_positions(html_text: str) -> dict[str, int]:
+    positions = {}
+    for match in re.finditer(r"<section\b[^>]*\bdata-offeros-section\s*=\s*[\"']([^\"']+)[\"'][^>]*>", html_text, flags=re.I | re.S):
+        positions.setdefault(match.group(1).strip().lower(), match.start())
+    return positions
+
+
+def markdown_top_section(text: str, heading: str) -> str:
+    pattern = rf"(?ims)^\s*{re.escape(heading)}\s*$([\s\S]*?)(?=^\s*#\s+|\Z)"
+    match = re.search(pattern, text)
+    return match.group(1) if match else ""
+
+
 def hero_two_column_signals(html_text: str, hero_html: str) -> list[str]:
     signals = []
     class_tokens = []
@@ -308,6 +362,8 @@ def hero_two_column_signals(html_text: str, hero_html: str) -> list[str]:
     bad_class_tokens = {
         "hero-grid",
         "hero-split",
+        "hero-visual",
+        "hero-mockup",
         "hero-cols",
         "hero-columns",
         "hero-two-col",
@@ -822,6 +878,46 @@ def validate_email_sequence(root: Path, by_id: dict[str, dict], issues: list[str
         issues.append("Email sequence contains repeated body blocks: " + examples)
 
 
+def validate_sales_copy(root: Path, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    copy_artifact = by_id.get("sales-copy")
+    copy_path = artifact_path(root, copy_artifact)
+    if not copy_path or not copy_path.exists():
+        issues.append("Sales copy missing; copy.md with # Section Blueprint is required before visual planning or page build.")
+        return
+
+    text = text_for(copy_path)
+    lower = text.lower()
+    missing_headings = [heading for heading in REQUIRED_COPY_HEADINGS if heading.lower() not in lower]
+    if missing_headings:
+        issues.append("Sales copy missing required direct-response headings: " + ", ".join(missing_headings))
+
+    blueprint = markdown_top_section(text, "# Section Blueprint")
+    if not blueprint.strip():
+        issues.append("Sales copy must include # Section Blueprint before page build.")
+        return
+
+    missing_fields = [field for field in REQUIRED_BLUEPRINT_FIELDS if field.lower() not in blueprint.lower()]
+    if missing_fields:
+        issues.append("Sales copy Section Blueprint missing required fields: " + ", ".join(missing_fields))
+
+    blueprint_lower = blueprint.lower()
+    missing_sections = [
+        section
+        for section in REQUIRED_SALES_PAGE_SECTIONS
+        if section != "footer" and not re.search(rf"\b{re.escape(section)}\b", blueprint_lower)
+    ]
+    if missing_sections:
+        issues.append("Sales copy Section Blueprint missing required section rows: " + ", ".join(missing_sections))
+
+    if "direct-response-long-form-v1" not in lower:
+        issues.append("Sales copy must record framework: direct-response-long-form-v1.")
+    if "proof" in blueprint_lower and "offer-stack" in blueprint_lower:
+        proof_pos = blueprint_lower.find("proof")
+        stack_pos = blueprint_lower.find("offer-stack")
+        if stack_pos >= 0 and proof_pos >= 0 and proof_pos > stack_pos:
+            issues.append("Sales copy Section Blueprint must place proof/demo before offer-stack.")
+
+
 def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
     page_artifact = by_id.get("sales-page")
     page_path = artifact_path(root, page_artifact)
@@ -853,8 +949,13 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         issues.append("Sales page quality metadata must confirm repeatedTextChecked.")
     if sales_quality.get("offerStackItemsUnique") is not True:
         issues.append("Sales page quality metadata must confirm offerStackItemsUnique.")
-    if page_type == "direct-response-long-form-vsl" and sales_quality.get("compositionContract") != "direct-response-composition-v1":
-        issues.append("Direct-response sales page quality metadata must record compositionContract: direct-response-composition-v1.")
+    if page_type == "direct-response-long-form-vsl":
+        if sales_quality.get("framework") != "direct-response-long-form-v1":
+            issues.append("Direct-response sales page quality metadata must record framework: direct-response-long-form-v1.")
+        if sales_quality.get("copyBlueprintPresent") is not True:
+            issues.append("Direct-response sales page quality metadata must confirm copyBlueprintPresent.")
+        if sales_quality.get("compositionContract") != "direct-response-composition-v2":
+            issues.append("Direct-response sales page quality metadata must record compositionContract: direct-response-composition-v2.")
 
     visible_text = visible_text_from_html(html_text)
     word_count = len(re.findall(r"\b[\w'-]+\b", visible_text))
@@ -869,10 +970,15 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         issues.append(f"Direct-response long-form VSL page must include 7+ FAQ items marked data-offeros-faq-item: {faq_marker_count} found.")
     if page_type == "direct-response-long-form-vsl" and cta_marker_count < 4:
         issues.append(f"Direct-response long-form VSL page must include 4+ CTA elements marked data-offeros-cta: {cta_marker_count} found.")
+    post_hero_cta_count = len(re.findall(r"data-offeros-post-hero-cta(?:\s|=|>)", html_text, flags=re.I))
+    if page_type == "direct-response-long-form-vsl" and post_hero_cta_count < 3:
+        issues.append(f"Direct-response long-form VSL page must include 3+ post-hero CTA elements marked data-offeros-post-hero-cta: {post_hero_cta_count} found.")
     if page_type == "direct-response-long-form-vsl" and quality_number(sales_quality.get("objectionCount")) < 7:
         issues.append("Direct-response long-form VSL page must record 7+ objections handled.")
     if page_type == "direct-response-long-form-vsl" and quality_number(sales_quality.get("ctaCount")) < 4:
         issues.append("Direct-response long-form VSL page must record 4+ CTA placements.")
+    if page_type == "direct-response-long-form-vsl" and quality_number(sales_quality.get("postHeroCtaCount")) < 3:
+        issues.append("Direct-response long-form VSL page must record 3+ post-hero CTA placements.")
     if page_type == "direct-response-long-form-vsl":
         vsl_words = html_word_count(section_html(html_text, "vsl"))
         if vsl_words > 220:
@@ -895,6 +1001,13 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         blank_cells = empty_table_cells(html_text)
         if blank_cells:
             issues.append(f"Sales page contains {blank_cells} blank table cells; required comparison cells must contain visible copy.")
+        thin_sections = []
+        for section, minimum in MIN_SECTION_WORDS.items():
+            words = html_word_count(section_html(html_text, section))
+            if words < minimum:
+                thin_sections.append(f"{section}: {words} words")
+        if thin_sections:
+            issues.append("Direct-response page has thin required sections: " + "; ".join(thin_sections[:8]))
         validate_direct_response_page_contract(html_text, manifest, sales_quality, issues)
 
     repeated = repeated_sentences(visible_text)
@@ -908,10 +1021,14 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
 
 
 def validate_direct_response_page_contract(html_text: str, manifest: dict, sales_quality: dict, issues: list[str]) -> None:
-    if sales_quality.get("heroContract") != "stacked-vsl-hero-v1":
-        issues.append("Direct-response sales page quality metadata must record heroContract: stacked-vsl-hero-v1.")
+    if sales_quality.get("heroContract") != "stacked-vsl-hero-v2":
+        issues.append("Direct-response sales page quality metadata must record heroContract: stacked-vsl-hero-v2.")
     if sales_quality.get("heroLayout") != "stacked-vsl":
         issues.append("Direct-response sales page quality metadata must record heroLayout: stacked-vsl.")
+    if sales_quality.get("heroTemplate") != "offeros-stacked-vsl-v2":
+        issues.append("Direct-response sales page quality metadata must record heroTemplate: offeros-stacked-vsl-v2.")
+    if sales_quality.get("heroVideoFrame") != "large-16x9":
+        issues.append("Direct-response sales page quality metadata must record heroVideoFrame: large-16x9.")
     if sales_quality.get("heroVideoProminenceChecked") is not True:
         issues.append("Direct-response sales page quality metadata must confirm heroVideoProminenceChecked.")
     if sales_quality.get("offerStackContract") != "direct-response-buy-box-v1":
@@ -922,6 +1039,14 @@ def validate_direct_response_page_contract(html_text: str, manifest: dict, sales
     if hero:
         if not section_opening_tag_has(html_text, "hero", r'\bdata-offeros-hero-layout\s*=\s*["\']stacked-vsl["\']'):
             issues.append('Direct-response hero must use data-offeros-hero-layout="stacked-vsl".')
+        if not section_opening_tag_has(html_text, "hero", r'\bdata-offeros-hero-contract\s*=\s*["\']stacked-vsl-hero-v2["\']'):
+            issues.append('Direct-response hero must use data-offeros-hero-contract="stacked-vsl-hero-v2".')
+        if not section_opening_tag_has(html_text, "hero", r'\bdata-offeros-template\s*=\s*["\']offeros-stacked-vsl-v2["\']'):
+            issues.append('Direct-response hero must use data-offeros-template="offeros-stacked-vsl-v2".')
+        if not section_opening_tag_has(html_text, "hero", r'\bclass\s*=\s*["\'][^"\']*\boo-hero\b[^"\']*\boo-hero-stacked-vsl\b'):
+            issues.append("Direct-response hero must preserve oo-hero oo-hero-stacked-vsl shell classes.")
+        if not has_marker(hero, "data-offeros-hero-inner"):
+            issues.append("Direct-response hero must preserve the data-offeros-hero-inner wrapper.")
         if not has_marker(hero, "data-offeros-hero-copy-stack"):
             issues.append("Direct-response hero must include a centered copy stack marked data-offeros-hero-copy-stack.")
         for signal in hero_two_column_signals(html_text, hero):
@@ -932,8 +1057,18 @@ def validate_direct_response_page_contract(html_text: str, manifest: dict, sales
             issues.append("Direct-response hero must include a VSL/video frame marked data-offeros-hero-video.")
         else:
             hero_video = element_with_marker(hero, "data-offeros-hero-video")
+            if "oo-vsl-frame" not in hero_video.lower():
+                issues.append("Direct-response hero video must use the oo-vsl-frame large 16:9 shell.")
             if not re.search(r'\bdata-offeros-hero-video-prominence\s*=\s*["\']primary["\']', hero_video, flags=re.I):
                 issues.append("Direct-response hero video must be marked data-offeros-hero-video-prominence=\"primary\".")
+            if not re.search(r'\bdata-offeros-hero-video-size\s*=\s*["\']large["\']', hero_video, flags=re.I):
+                issues.append("Direct-response hero video must be marked data-offeros-hero-video-size=\"large\".")
+            if not has_marker(hero_video, "data-offeros-video-thumbnail"):
+                issues.append("Direct-response hero video frame must include a thumbnail marked data-offeros-video-thumbnail.")
+            if not has_marker(hero_video, "data-offeros-video-play"):
+                issues.append("Direct-response hero video frame must include a visible play control marked data-offeros-video-play.")
+            if not has_marker(hero_video, "data-offeros-video-caption"):
+                issues.append("Direct-response hero video frame must include a caption marked data-offeros-video-caption.")
             if "<img" not in hero_video.lower():
                 issues.append("Direct-response hero video frame must include a thumbnail/image.")
             if not re.search(r"\b(play|watch|video|vsl|pitch)\b", visible_text_from_html(hero_video), flags=re.I):
@@ -963,6 +1098,33 @@ def validate_direct_response_page_contract(html_text: str, manifest: dict, sales
             positions = [h1_pos, video_pos.start(), price_pos.start(), trust_pos.start()]
             if positions != sorted(positions):
                 issues.append("Direct-response hero must stack in this order: H1/lead, VSL video, price strip/CTA, trust row.")
+
+    positions = section_positions(html_text)
+    ordered_sections = [section for section in REQUIRED_SALES_PAGE_SECTIONS if section not in {"header", "footer"}]
+    missing_for_order = [section for section in ordered_sections if section not in positions]
+    if not missing_for_order:
+        ordered_positions = [positions[section] for section in ordered_sections]
+        if ordered_positions != sorted(ordered_positions):
+            issues.append("Direct-response page sections must follow the required persuasion order: " + " -> ".join(ordered_sections) + ".")
+    if "proof" in positions and "offer-stack" in positions and positions["proof"] > positions["offer-stack"]:
+        issues.append("Direct-response proof/demo section must appear before the main offer stack.")
+    if "mechanism" in positions and "offer-stack" in positions and positions["mechanism"] > positions["offer-stack"]:
+        issues.append("Direct-response unique mechanism must appear before the main offer stack.")
+
+    failed_alternatives = section_html(html_text, "failed-alternatives")
+    if failed_alternatives and not (has_marker(failed_alternatives, "data-offeros-failed-alternatives-table") or "<table" in failed_alternatives.lower()):
+        issues.append("Direct-response failed-alternatives section must include a table or contrast block marked data-offeros-failed-alternatives-table.")
+    mechanism = section_html(html_text, "mechanism")
+    if mechanism and not has_marker(mechanism, "data-offeros-mechanism-steps"):
+        issues.append("Direct-response mechanism section must include a named mechanism step/framework block marked data-offeros-mechanism-steps.")
+    proof = section_html(html_text, "proof")
+    if proof:
+        proof_cards = len(re.findall(r"data-offeros-proof-card(?:\s|=|>)", proof, flags=re.I))
+        if proof_cards < 2:
+            issues.append(f"Direct-response proof section must include 2+ proof/demo cards marked data-offeros-proof-card: {proof_cards} found.")
+    before_after = section_html(html_text, "before-after")
+    if before_after and not has_marker(before_after, "data-offeros-before-after"):
+        issues.append("Direct-response before/after section must include a before-after block marked data-offeros-before-after.")
 
     offer_stack = section_html(html_text, "offer-stack")
     if offer_stack:
@@ -1552,6 +1714,7 @@ def main() -> int:
             warnings.append(f"Artifact is not complete: {artifact.get('id', rel_path)} ({artifact.get('status')})")
 
     if deep_required:
+        validate_sales_copy(root, by_id, issues, warnings)
         validate_visual_asset_plan(root, manifest, by_id, issues, warnings)
         validate_images(manifest, artifacts, issues, warnings)
         validate_logo(root, manifest, by_id, issues, warnings)

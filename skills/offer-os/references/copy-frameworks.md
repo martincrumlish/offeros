@@ -40,6 +40,28 @@ Structure:
 - Desire
 - Action
 
+## Direct-Response-Long-Form-V1
+
+Use for complete paid front-end OfferOS pages, cold traffic, low-ticket offers, workshops, toolkits, templates, and internet-marketing style funnels.
+
+Structure:
+
+- message match
+- hook / VSL lead
+- problem recognition
+- agitation and cost of delay
+- failed alternatives
+- unique mechanism
+- proof or demonstration before price
+- before/after value picture
+- product reveal
+- offer stack
+- risk reversal
+- objection handling
+- final close
+
+This is the required deep-mode page spine unless the user explicitly requested a different page type. Load `references/direct-response-framework.md` for the exact conversion jobs and copy blueprint schema.
+
 ## Problem-Mechanism-Proof-Offer
 
 Use for sophisticated or skeptical markets where buyers have tried alternatives.
@@ -54,7 +76,7 @@ Structure:
 - risk reversal
 - CTA
 
-For complete paid front-end OfferOS sales pages, this is the required internet-marketing/direct-response page spine unless the user explicitly requested a different page type. PAS, AIDA, BAB, QUEST, PASTOR, and 4P can shape sections, but they cannot reduce deep-mode page depth or remove the required section contract from `assets/templates/sales-page/section-map.md`.
+For skeptical sections inside complete paid front-end OfferOS sales pages, this is the core belief-change layer. PAS, AIDA, BAB, QUEST, PASTOR, and 4P can shape sections, but they cannot reduce deep-mode page depth or remove the required section contract from `assets/templates/sales-page/section-map.md`.
 
 ## Before-After-Bridge
 

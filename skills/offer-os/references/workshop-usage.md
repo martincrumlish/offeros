@@ -110,7 +110,7 @@ The logo is a one-pass placeholder, icon-only mark, illustrative/page-curl/app-i
 For weak sales-page structure:
 
 ```text
-The sales page is too short/product-page-like or reads as a wall of text. Select a page type from sales-page-types.md, default to direct-response-long-form-vsl, then rewrite copy.md and index.html to include the full problem, agitation, failed alternatives, mechanism, proof/demo, offer stack, price, guarantee, objection, and close arc. Keep VSL setup short, paragraphs under 55 words, and use tables/callouts/checklists instead of generic essay sections.
+The sales page is too short/product-page-like or reads as a wall of text. Load direct-response-framework.md, select direct-response-long-form-vsl, then rewrite copy.md with # Section Blueprint and rebuild index.html to include the full message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo before the buy box, before/after, product reveal, offer stack, price, guarantee, objection, and close arc. Keep VSL setup short, paragraphs under 55 words, and use tables/callouts/checklists instead of generic essay sections.
 ```
 
 For weak or random sales-page visuals:

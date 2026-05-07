@@ -14,6 +14,7 @@ SOURCE_CHECKS = [
         "path": "SKILL.md",
         "needles": [
             "references/exact-build-recipes.md",
+            "references/direct-response-framework.md",
             "Start with the Build Controller Recipe",
             "Generator-first",
             "warnings are not shippable",
@@ -108,13 +109,18 @@ SOURCE_CHECKS = [
         "needles": [
             "## Sales Page Recipe",
             "`quality.salesPage.pageType` to `direct-response-long-form-vsl`",
+            "references/direct-response-framework.md",
             "`copy.md` must include these exact headings",
-            "Use the exact stacked VSL-first hero contract",
+            "# Section Blueprint",
+            "direct-response-long-form-v1",
+            "Use the exact stacked VSL-first hero v2 contract",
             "Use the exact offer-stack buy-box contract",
-            "including the separate `agitation` section",
-            "compositionContract: \"direct-response-composition-v1\"",
-            "heroContract: \"stacked-vsl-hero-v1\"",
+            "including the separate `agitation`, `failed-alternatives`, `mechanism`, and pre-offer `proof` sections",
+            "Proof/demo must appear before the main offer stack",
+            "compositionContract: \"direct-response-composition-v2\"",
+            "heroContract: \"stacked-vsl-hero-v2\"",
             "heroLayout: \"stacked-vsl\"",
+            "heroTemplate: \"offeros-stacked-vsl-v2\"",
             "heroVideoProminenceChecked: true",
             "offerStackContract: \"direct-response-buy-box-v1\"",
             "Do not use a two-column",
@@ -125,6 +131,20 @@ SOURCE_CHECKS = [
             "data-offeros-faq-item",
             "data-offeros-cta",
             "Do not map a repeated sentence over multiple cards.",
+        ],
+    },
+    {
+        "id": "direct_response_framework_is_explicit",
+        "path": "references/direct-response-framework.md",
+        "needles": [
+            "## Core Spine",
+            "Message match",
+            "Failed alternatives",
+            "Unique mechanism",
+            "Proof or demonstration",
+            "The blueprint is the source of truth",
+            "Do not move proof only after the buy box",
+            "reads as hero/features/price/FAQ",
         ],
     },
     {
@@ -201,7 +221,11 @@ SOURCE_CHECKS = [
             "PDF-specific visual asset/treatment count below target",
             "VSL-specific visual asset/treatment count below target",
             "compositionContract",
-            "stacked-vsl-hero-v1",
+            "stacked-vsl-hero-v2",
+            "direct-response-long-form-v1",
+            "Sales copy Section Blueprint",
+            "Direct-response page sections must follow the required persuasion order",
+            "Direct-response proof/demo section must appear before the main offer stack",
             "heroLayout: stacked-vsl",
             "heroVideoProminenceChecked",
             "Direct-response hero must not use a two-column/split SaaS layout",
@@ -335,10 +359,16 @@ def synthetic_visual_plan_regression() -> dict:
 
 def synthetic_two_column_hero_regression() -> dict:
     expected = [
-        "Direct-response sales page quality metadata must record heroContract: stacked-vsl-hero-v1.",
+        "Direct-response sales page quality metadata must record heroContract: stacked-vsl-hero-v2.",
+        "Direct-response sales page quality metadata must record heroTemplate: offeros-stacked-vsl-v2.",
+        "Direct-response sales page quality metadata must record heroVideoFrame: large-16x9.",
         "Direct-response sales page quality metadata must record heroLayout: stacked-vsl.",
         "Direct-response sales page quality metadata must confirm heroVideoProminenceChecked.",
+        "Direct-response sales page quality metadata must record framework: direct-response-long-form-v1.",
+        "Direct-response sales page quality metadata must record compositionContract: direct-response-composition-v2.",
         "Direct-response hero must use data-offeros-hero-layout=\"stacked-vsl\".",
+        "Direct-response hero must use data-offeros-hero-contract=\"stacked-vsl-hero-v2\".",
+        "Direct-response hero must use data-offeros-template=\"offeros-stacked-vsl-v2\".",
         "Direct-response hero must include a centered copy stack marked data-offeros-hero-copy-stack.",
         "Direct-response hero must not use a two-column/split SaaS layout",
         "Direct-response hero video must be marked data-offeros-hero-video-prominence=\"primary\".",
@@ -355,6 +385,29 @@ def synthetic_two_column_hero_regression() -> dict:
     }
 
 
+def synthetic_product_page_regression() -> dict:
+    expected = [
+        "Sales copy must include # Section Blueprint before page build.",
+        "Direct-response page sections must follow the required persuasion order",
+        "Direct-response proof/demo section must appear before the main offer stack.",
+        "Direct-response page has thin required sections",
+        "Direct-response failed-alternatives section must include a table or contrast block",
+        "Direct-response mechanism section must include a named mechanism step/framework block",
+        "Direct-response proof section must include 2+ proof/demo cards",
+        "Direct-response long-form VSL page must include 3+ post-hero CTA elements marked data-offeros-post-hero-cta",
+    ]
+    workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-product-page"
+    payload = run_validator(workspace)
+    issue_text = "\n".join(payload.get("issues", []))
+    missing = [item for item in expected if item not in issue_text]
+    return {
+        "id": "synthetic_product_page_regression",
+        "ok": payload.get("returncode") != 0 and not missing,
+        "missingExpectedIssues": missing,
+        "issueCount": payload.get("issueCount"),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-test OfferOS skill source and known regression workspaces.")
     parser.add_argument("--bad-workspace", action="append", default=[], help="Known-bad generated output that must fail validator checks.")
@@ -362,7 +415,11 @@ def main() -> int:
 
     source_results = source_check()
     bad_results = [bad_workspace_check(Path(item).resolve()) for item in args.bad_workspace]
-    synthetic_results = [synthetic_visual_plan_regression(), synthetic_two_column_hero_regression()]
+    synthetic_results = [
+        synthetic_visual_plan_regression(),
+        synthetic_two_column_hero_regression(),
+        synthetic_product_page_regression(),
+    ]
     ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results) and all(item["ok"] for item in synthetic_results)
 
     print(

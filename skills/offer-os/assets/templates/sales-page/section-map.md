@@ -15,10 +15,10 @@ Each section must include `data-offeros-section="<id>"` so QA can validate struc
 | Agitation | `agitation` | Make inaction feel expensive | Cost of delay, compounding consequence, emotional frustration, business/operational drag | Cost-of-delay graphic or callout |
 | Failed Alternatives | `failed-alternatives` | Invalidate what they already tried | Common fixes and why they fail | Comparison table |
 | Unique Mechanism | `mechanism` | Install the new belief | Mechanism name, explanation, why it works | Framework diagram |
+| Proof/Credibility | `proof` | Reduce trust gap before price | Case study, founder credibility, examples, screenshots, proof substitute, or demo | Proof/demo block |
 | Before/After | `before-after` | Make value concrete | Weak current state vs desired state | Before/after graphic |
 | Product Reveal | `product` | Show what they get | Product name, promise, modules | Bundle mockup |
 | Offer Stack | `offer-stack` | Build value and close the purchase decision | Product bundle image, big deliverable checklist, normally/today value row, large access CTA, guarantee/instant-access reassurance | Bundle mockup plus checklist |
-| Proof/Credibility | `proof` | Reduce trust gap | Case study, founder credibility, examples, proof substitute | Proof block |
 | Who It Is For | `fit` | Filter buyers | Fit and disqualifiers | Checklist |
 | Pricing | `pricing` | Clarify the buying decision | Price, payment note, what happens after purchase | Pricing panel |
 | Guarantee | `guarantee` | Reduce risk | Guarantee, terms, reassurance | Guarantee badge |
@@ -36,7 +36,7 @@ Do not ship a short branded product page as the sales page. Deep-mode pages must
 3. Agitation and cost of status quo.
 4. Failed alternatives.
 5. Unique mechanism.
-6. Proof or proof substitute.
+6. Proof or proof substitute before the buy box.
 7. Product reveal and stack.
 8. Price, value, guarantee.
 9. Objection handling.
@@ -48,14 +48,23 @@ The hero and offer stack must use the manual direct-response structure. Do not r
 
 Required hero contract:
 
-- `data-offeros-section="hero"` must also include `data-offeros-hero-layout="stacked-vsl"`.
+- Use the locked hero shell from `assets/templates/sales-page/page-skeleton.html`. Do not write a new hero from scratch.
+- `data-offeros-section="hero"` must also include `data-offeros-hero-layout="stacked-vsl"`, `data-offeros-hero-contract="stacked-vsl-hero-v2"`, and `data-offeros-template="offeros-stacked-vsl-v2"`.
+- Keep the hero section classes `oo-hero oo-hero-stacked-vsl`, the wrapper marked `data-offeros-hero-inner`, and the critical inline CSS for `.oo-hero`, `.oo-hero-inner`, `.oo-hero-copy-stack`, `.oo-vsl-frame`, `.oo-price-strip`, and `.oo-trust-row`.
 - The hero must stack vertically in this order: buyer filter/prehead/H1/benefit lead, then large VSL/video frame, then price strip/CTA, then trust row.
 - The hero copy stack must be centered and marked `data-offeros-hero-copy-stack`.
-- The VSL/video frame must be centered below the headline, visually dominant, and marked `data-offeros-hero-video` plus `data-offeros-hero-video-prominence="primary"`.
-- The hero video frame must include an image/thumbnail and a play/pitch cue. Do not move the VSL entirely below the fold, and do not place it as a small side card to the right of the headline.
+- The VSL/video frame must be centered below the headline, visually dominant, and marked `data-offeros-hero-video`, `data-offeros-hero-video-prominence="primary"`, and `data-offeros-hero-video-size="large"`.
+- The hero video frame must use the `.oo-vsl-frame` 16:9 frame, include a real thumbnail marked `data-offeros-video-thumbnail`, a visible play button marked `data-offeros-video-play`, and a short caption marked `data-offeros-video-caption`. Do not fake the VSL with a small UI card, checklist panel, dashboard mockup, or decorative product screen.
 - The price strip must sit below the VSL/video frame, show the actual price, normal/total value or value context, a short stack summary, and the primary CTA.
 - The trust row must sit below the price/CTA area and include 3+ concrete trust bullets such as guarantee, instant access, reuse rights, support, or low-risk use.
-- Do not use two-column, side-by-side, split-screen, `hero-grid`, `hero-split`, or SaaS product hero layouts for `direct-response-long-form-vsl`.
+- Do not use two-column, side-by-side, split-screen, `hero-grid`, `hero-split`, `hero-visual`, `hero-mockup`, dashboard/product mockup hero art, or SaaS product hero layouts for `direct-response-long-form-vsl`.
+- A light SaaS aesthetic may change colors and surface polish, but it must keep the direct-response stacked VSL shell. It must not become a light SaaS landing-page hero.
+
+Required direct-response order:
+
+`hero -> vsl -> problem -> agitation -> failed-alternatives -> mechanism -> proof -> before-after -> product -> offer-stack -> fit -> pricing -> guarantee -> faq -> final-cta`
+
+Proof/demo must appear before the main offer stack. Do not ask for the sale before the page has installed the mechanism and provided proof, proof substitute, or demonstration.
 
 Required offer-stack contract:
 
@@ -78,5 +87,6 @@ Hard requirements for `direct-response-long-form-vsl`:
 - Text/background contrast must be checked in-browser; white text on white, invisible badges, or blank-looking cards fail the page.
 - 7+ FAQ items marked with `data-offeros-faq-item`.
 - 4+ CTA links/buttons marked with `data-offeros-cta`.
+- 3+ CTA links/buttons after the hero marked with `data-offeros-post-hero-cta`.
 - Unique buyer-facing copy for every offer-stack, angle, bonus, and product card.
 - Repeated-text scan completed before QA.
