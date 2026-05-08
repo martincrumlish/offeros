@@ -1225,8 +1225,17 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         issues.append("Sales page quality metadata must confirm repeatedTextChecked.")
     if sales_quality.get("offerStackItemsUnique") is not True:
         issues.append("Sales page quality metadata must confirm offerStackItemsUnique.")
-    if sales_quality.get("studio") != "sales-page-studio-v1":
-        issues.append("Sales page quality metadata must record studio: sales-page-studio-v1.")
+    if sales_quality.get("studio") != "sales-page-studio-v2":
+        issues.append("Sales page quality metadata must record studio: sales-page-studio-v2.")
+    if sales_quality.get("componentLibrary") != "ac-inspired-direct-response-v1":
+        issues.append("Sales page quality metadata must record componentLibrary: ac-inspired-direct-response-v1.")
+    for key, label in {
+        "faqAccordionEnabled": "FAQ accordion behavior",
+        "threeDButtonsEnabled": "3D CTA button system",
+        "componentIntegrityChecked": "component integrity check",
+    }.items():
+        if sales_quality.get(key) is not True:
+            issues.append(f"Sales page quality metadata must confirm {label}.")
     if page_type == "direct-response-long-form-vsl":
         if sales_quality.get("framework") != "direct-response-long-form-v1":
             issues.append("Direct-response sales page quality metadata must record framework: direct-response-long-form-v1.")
@@ -1235,6 +1244,12 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         if sales_quality.get("compositionContract") != "direct-response-composition-v2":
             issues.append("Direct-response sales page quality metadata must record compositionContract: direct-response-composition-v2.")
     validate_page_kit_contract(root, html_text, manifest, by_id, sales_quality, issues)
+    if 'data-offeros-sales-page-studio="sales-page-studio-v2"' not in html_text:
+        issues.append('Deep sales pages must declare data-offeros-sales-page-studio="sales-page-studio-v2".')
+    if "oo-btn-3d" not in html_text:
+        issues.append("Sales Page Studio output must use the approved 3D CTA button component.")
+    if "oo-faq-item" not in html_text or ".oo-faq-item.active" not in html_text:
+        issues.append("Sales Page Studio output must include the approved FAQ accordion component and active-state CSS.")
 
     visible_text = visible_text_from_html(html_text)
     word_count = len(re.findall(r"\b[\w'-]+\b", visible_text))

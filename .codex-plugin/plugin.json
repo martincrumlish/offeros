@@ -1,7 +1,7 @@
 {
   "name": "offer-os",
-  "version": "0.12.0",
-  "description": "Build deep commercial offer systems in Codex through plugin-owned production studios: intake, strategy/copy, visual assets, direct-response sales pages, email launch sequences, Gotenberg PDF workbooks, VSL PPTX decks, dashboards, and measured QA.",
+  "version": "0.13.0",
+  "description": "Build deep commercial offer systems in Codex through plugin-owned production studios, including AC-inspired long-form Sales Page Studio, visual assets, launch emails, Gotenberg PDF workbooks, VSL PPTX decks, dashboards, and measured QA.",
   "author": {
     "name": "OfferOS",
     "email": "martincrumlish@users.noreply.github.com",
@@ -24,7 +24,7 @@
   "interface": {
     "displayName": "OfferOS",
     "shortDescription": "Build complete offer systems",
-    "longDescription": "OfferOS orchestrates Codex through a deep full offer build using plugin-owned production studios instead of one-off generated build scripts: intake, strategy, design, one final no-SVG imagegen-based locked logo lockup, post-copy visual planning, OfferOS Page Kit direct-response sales pages with stacked main-column VSL hero and #checkout handoff, email launch sequences, Gotenberg/Chromium PDF workbooks, editable VSL PPTX decks, delivery dashboard, and measured QA gates.",
+    "longDescription": "OfferOS orchestrates Codex through a deep full offer build using plugin-owned production studios instead of one-off generated build scripts: intake, strategy, design, one final no-SVG imagegen-based locked logo lockup, post-copy visual planning, AC-inspired long-form Sales Page Studio with stacked main-column VSL hero, 3D CTAs, FAQ accordion, offer stacks, and #checkout handoff, email launch sequences, Gotenberg/Chromium PDF workbooks, editable VSL PPTX decks, delivery dashboard, and measured QA gates.",
     "developerName": "OfferOS",
     "category": "Productivity",
     "capabilities": [

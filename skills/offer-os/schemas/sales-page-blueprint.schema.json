@@ -27,6 +27,48 @@
     },
     "framework": { "const": "direct-response-long-form-v1" },
     "compositionContract": { "const": "direct-response-composition-v2" },
+    "contentContract": { "const": "sales-page-studio-content-v1" },
+    "offerName": { "type": "string" },
+    "audience": { "type": "string" },
+    "problem": { "type": "string" },
+    "promise": { "type": "string" },
+    "headline": { "type": "string" },
+    "lead": { "type": "string" },
+    "normalValue": { "type": "string" },
+    "checkoutTarget": { "type": "string", "default": "#checkout" },
+    "supportEmail": { "type": "string" },
+    "heroVslThumbnail": { "type": "string" },
+    "productBundleImage": { "type": "string" },
+    "sections": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/sectionContent" }
+        },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sectionContent" }
+        }
+      ]
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "id": { "type": "string" },
+              "section": { "type": "string" },
+              "partial": { "type": "string" },
+              "data": { "$ref": "#/$defs/sectionContent" }
+            }
+          }
+        ]
+      }
+    },
     "checkout": {
       "type": "object",
       "additionalProperties": false,
@@ -218,6 +260,71 @@
           "type": "array",
           "items": { "type": "string" }
         }
+      }
+    },
+    "sectionContent": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "copy": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "additionalProperties": true
+            }
+          ]
+        },
+        "eyebrow": { "type": "string" },
+        "prehead": { "type": "string" },
+        "buyerFilter": { "type": "string" },
+        "headline": { "type": "string" },
+        "lead": { "type": "string" },
+        "body": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          ]
+        },
+        "paragraphs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "deliverables": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "bullets": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cta": { "type": "string" },
+        "visualSlot": { "type": "string" }
       }
     },
     "headerSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "header" } } }] },

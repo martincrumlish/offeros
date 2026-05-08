@@ -13,7 +13,7 @@ COMMANDS = {
     "intake": ["init_offer_project.py"],
     "plan": ["build_visual_asset_plan.py", "--plan-only"],
     "build-assets": ["build_visual_asset_plan.py"],
-    "build-sales-page": ["build_sales_page.py"],
+    "build-sales-page": ["build_sales_page_studio.py"],
     "build-emails": ["build_email_sequence.py"],
     "build-workbook": ["build_workbook.py"],
     "build-vsl": ["build_vsl_deck.js"],
