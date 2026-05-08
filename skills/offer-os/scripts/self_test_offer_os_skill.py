@@ -224,6 +224,9 @@ SOURCE_CHECKS = [
             "Sales page contains repeated boilerplate copy",
             "Visual asset plan missing",
             "PIL/HTML/CSS/code-generated PNGs cannot satisfy product bundle",
+            "Pillow/PIL-generated image artifacts are not allowed in OfferOS deep runs",
+            "Sales-page product bundle image",
+            "Hero/VSL thumbnail image",
             "hasArtifactSpecificPlan",
             "visualPlanStage: post-content-blueprint",
             "copyBlueprintUsed",
@@ -458,6 +461,8 @@ def synthetic_logo_drift_regression() -> dict:
 
 def synthetic_code_rendered_creative_regression() -> dict:
     expected = [
+        "Image artifact has invalid provenance 'pil-generated'",
+        "Pillow/PIL-generated image artifacts are not allowed",
         "Generated-design deep runs must create primary conversion visuals with imagegen/imagegen-composite",
         "PIL/HTML/CSS/code-generated PNGs cannot satisfy product bundle",
     ]

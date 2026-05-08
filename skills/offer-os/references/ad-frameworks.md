@@ -81,4 +81,4 @@ For robust campaigns, create:
 - best 3 ads to test first
 - 3 finished ad images from imagegen when image generation is available, with provenance recorded in the manifest
 
-Do not count plain text cards, PIL shapes, HTML/CSS cards, screenshots, or generated-by-code PNGs as generated ad images. In deep generated-design runs they cannot satisfy the required 3 ad creatives; if imagegen is blocked, mark the ad images `needs_revision`, record the blocker, and keep the run out of complete status. Do not create SVG ad images.
+Do not count plain text cards, HTML/CSS cards, screenshots, or generated-by-code PNGs as generated ad images. Do not create ads with Pillow/PIL shapes at all. In deep generated-design runs non-imagegen assets cannot satisfy the required 3 ad creatives; if imagegen is blocked, mark the ad images `needs_revision`, record the blocker, and keep the run out of complete status. Do not create SVG ad images.

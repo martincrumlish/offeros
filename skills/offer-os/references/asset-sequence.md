@@ -25,9 +25,10 @@ Record provenance for every visual artifact in `offer-os.json`.
 
 - Use `imagegen` for bitmap hero, product, offer-stack, product-bundle, buyer-situation, and ad imagery when the user asks for generated images, a generated design direction, or ad images.
 - Do not use SVG files for generated diagrams or visuals. Use HTML/CSS blocks, canvas, or rendered PNG diagrams when a structured diagram is needed.
-- Use `html-css`, `pil-generated`, `generated-by-code`, or `screenshot` only when that is the honest source for a real diagram, worksheet preview, rendered page preview, or QA artifact.
-- Do not use HTML/CSS, Pillow, canvas, screenshots, or generated-by-code PNGs as substitutes for primary conversion visuals. In deep generated-design runs, product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives must be `imagegen` or `imagegen-composite` unless the user provided/licensed the asset.
-- Do not describe PIL text cards, CSS panels, rendered diagrams, or screenshots as "generated images." They can be useful diagram/preview fallbacks, but they must be labeled as such. SVG files are not an allowed fallback in OfferOS deep generated-design runs.
+- Pillow/PIL is not an OfferOS creative generator. Do not use it to author customer-facing images or register `pil-generated` image artifacts. It may only inspect, crop, resize, or composite imagegen/provided/licensed inputs while preserving the source provenance.
+- Use `html-css`, `generated-by-code`, or `screenshot` only when that is the honest source for a real diagram, worksheet preview, rendered page preview, or QA artifact.
+- Do not use HTML/CSS, canvas, screenshots, or generated-by-code PNGs as substitutes for primary conversion visuals. In deep generated-design runs, product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives must be `imagegen` or `imagegen-composite` unless the user provided/licensed the asset.
+- Do not describe CSS panels, rendered diagrams, or screenshots as "generated images." They can be useful diagram/preview fallbacks, but they must be labeled as such. SVG files are not an allowed fallback in OfferOS deep generated-design runs.
 
 Deep mode should include at least:
 
@@ -143,7 +144,7 @@ Required before dashboard, product mockups, VSL product reveal, offer stack grap
 
 The product bundle should show the buyer what they get. If it is a coded diagram, call it a diagram. If it is a generated bitmap mockup, save the prompt/provenance in the manifest.
 
-In deep generated-design runs, the actual product-bundle or offer-stack visual used on the sales page must be generated with the `imagegen` skill/tool or composed from imagegen output. A Pillow/CSS/canvas/generated-by-code PNG can be used as a temporary wireframe or diagram only; it must be registered as `needs_revision` and cannot satisfy `data-offeros-product-bundle` or primary product mockup requirements.
+In deep generated-design runs, the actual product-bundle or offer-stack visual used on the sales page must be generated with the `imagegen` skill/tool or composed from imagegen output. A CSS/canvas/generated-by-code block can be used as a temporary wireframe or diagram only; it must be registered as `needs_revision` and cannot satisfy `data-offeros-product-bundle` or primary product mockup requirements. Do not create a Pillow-authored product bundle at all.
 
 ## Fast Path
 

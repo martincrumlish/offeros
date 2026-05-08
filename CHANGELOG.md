@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.4
+
+- Removes `pil-generated` as an allowed registered artifact provenance.
+- Clarifies that Pillow/PIL is only for inspection, cropping, resizing, or compositing already-sourced assets, never for authoring OfferOS customer-facing images.
+- Adds sales-page source checks so product bundle and hero/VSL thumbnail images must be registered with imagegen/imagegen-composite/provided/licensed provenance.
+
 ## 0.10.3
 
 - Closes the code-rendered PNG loophole for primary conversion visuals.

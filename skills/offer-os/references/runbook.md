@@ -204,9 +204,9 @@ Generate assets in sequence:
 
 Register each useful image.
 
-Record provenance for every visual artifact. If an asset is PIL, HTML/CSS, or a screenshot, label it honestly. If the run asks for generated images, use imagegen for hero/product/ad bitmaps unless blocked and record the blocker in `quality.images.imagegenNotUsedReason`. Do not create or register SVG visual files. Do not use only sales-page visuals for the PDF or VSL.
+Record provenance for every visual artifact. If an asset is HTML/CSS, generated-by-code, or a screenshot, label it honestly. If the run asks for generated images, use imagegen for hero/product/ad bitmaps unless blocked and record the blocker in `quality.images.imagegenNotUsedReason`. Do not create or register SVG visual files. Do not create or register Pillow/PIL-authored image artifacts. Do not use only sales-page visuals for the PDF or VSL.
 
-Do not let a code-rendered PNG satisfy a primary creative slot. In deep generated-design runs, product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives must be `imagegen` or `imagegen-composite` unless supplied/licensed. Pillow, HTML/CSS, canvas, screenshots, generated-by-code, or manual PNGs are acceptable only for diagrams, worksheets, matrices, previews, real artifact screenshots, and QA evidence.
+Do not let a code-rendered PNG satisfy a primary creative slot. In deep generated-design runs, product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives must be `imagegen` or `imagegen-composite` unless supplied/licensed. HTML/CSS, canvas, screenshots, generated-by-code, or manual outputs are acceptable only for diagrams, worksheets, matrices, previews, real artifact screenshots, and QA evidence. Pillow may inspect, crop, resize, or composite existing sourced images, but it must not create the underlying visual.
 
 ## 11. PDF Product
 

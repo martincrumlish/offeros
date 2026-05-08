@@ -50,7 +50,6 @@ ALLOWED_PROVENANCE = {
     "licensed",
     "screenshot",
     "html-css",
-    "pil-generated",
     "manual",
     "generated-by-code",
 }
@@ -274,6 +273,18 @@ def artifact_map(artifacts: list[dict]) -> dict[str, dict]:
     return {item.get("id", ""): item for item in artifacts if isinstance(item, dict)}
 
 
+def artifact_path_map(artifacts: list[dict]) -> dict[str, dict]:
+    by_path = {}
+    for item in artifacts:
+        if not isinstance(item, dict):
+            continue
+        for key in ["path", "preview"]:
+            value = str(item.get(key, "")).replace("\\", "/").strip().lower()
+            if value:
+                by_path.setdefault(value, item)
+    return by_path
+
+
 def artifact_path(root: Path, artifact: dict | None) -> Path | None:
     if not artifact or not artifact.get("path"):
         return None
@@ -356,6 +367,22 @@ def element_with_marker(html_text: str, marker: str) -> str:
         flags=re.I | re.S,
     )
     return match.group(0) if match else ""
+
+
+def opening_tags_with_marker(html_text: str, marker: str) -> list[str]:
+    return [
+        match.group(0)
+        for match in re.finditer(
+            rf"<[a-z][a-z0-9]*\b(?=[^>]*\b{re.escape(marker)}(?:\s|=|>))[^>]*>",
+            html_text,
+            flags=re.I | re.S,
+        )
+    ]
+
+
+def attr_value(tag_html: str, attr: str) -> str:
+    match = re.search(rf"\b{re.escape(attr)}\s*=\s*[\"']([^\"']+)[\"']", tag_html, flags=re.I)
+    return match.group(1).strip() if match else ""
 
 
 def anchor_hrefs_with_marker(html_text: str, marker: str) -> list[str]:
@@ -456,6 +483,24 @@ def is_imagegen_required_creative(artifact: dict) -> bool:
         return True
     identity = artifact_identity_text(artifact)
     return any(term in identity for term in IMAGEGEN_REQUIRED_CREATIVE_TERMS)
+
+
+def validate_registered_creative_src(html_text: str, marker: str, label: str, by_path: dict[str, dict], issues: list[str]) -> None:
+    for tag in opening_tags_with_marker(html_text, marker):
+        src = attr_value(tag, "src")
+        if not src or re.match(r"^(?:https?:|data:|#)", src, flags=re.I):
+            continue
+        normalized = src.split("?", 1)[0].split("#", 1)[0].lstrip("./").replace("\\", "/").lower()
+        artifact = by_path.get(normalized)
+        if not artifact:
+            issues.append(f"{label} source must be registered in offer-os.json with imagegen provenance: {src}")
+            continue
+        provenance = str(artifact.get("provenance", ""))
+        if provenance not in IMAGEGEN_CREATIVE_PROVENANCE:
+            issues.append(
+                f"{label} source must use imagegen/imagegen-composite, provided, or licensed provenance, "
+                f"not {provenance or 'missing'}: {src}"
+            )
 
 
 def quality_number(value) -> int:
@@ -981,6 +1026,7 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         issues.append("Sales page missing; cannot validate direct-response structure.")
         return
     html_text = text_for(page_path)
+    by_path = artifact_path_map(list(by_id.values()))
     missing = [section for section in REQUIRED_SALES_PAGE_SECTIONS if not has_section_marker(html_text, section)]
     if missing:
         issues.append("Sales page missing required direct-response section markers: " + ", ".join(missing))
@@ -1064,6 +1110,8 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
                 thin_sections.append(f"{section}: {words} words")
         if thin_sections:
             issues.append("Direct-response page has thin required sections: " + "; ".join(thin_sections[:8]))
+        validate_registered_creative_src(html_text, "data-offeros-product-bundle", "Sales-page product bundle image", by_path, issues)
+        validate_registered_creative_src(html_text, "data-offeros-video-thumbnail", "Hero/VSL thumbnail image", by_path, issues)
         validate_direct_response_page_contract(html_text, manifest, sales_quality, issues)
 
     repeated = repeated_sentences(visible_text)
@@ -1711,6 +1759,11 @@ def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], wa
             issues.append(f"Image artifact missing provenance: {artifact.get('id', rel_path)}")
         elif provenance not in ALLOWED_PROVENANCE:
             issues.append(f"Image artifact has invalid provenance '{provenance}': {artifact.get('id', rel_path)}")
+        if manifest.get("mode") == "deep" and provenance == "pil-generated":
+            issues.append(
+                f"Pillow/PIL-generated image artifacts are not allowed in OfferOS deep runs: {artifact.get('id', rel_path)}. "
+                "Use imagegen/imagegen-composite for creative images or render diagrams in HTML/CSS without registering a PIL-authored image."
+            )
         if generated_claim(artifact) and provenance not in {"imagegen", "imagegen-composite"}:
             issues.append(f"Artifact claims generated imagery without imagegen/imagegen-composite provenance: {artifact.get('id', rel_path)}")
         if deep_generated_design and is_imagegen_required_creative(artifact) and provenance not in IMAGEGEN_CREATIVE_PROVENANCE:

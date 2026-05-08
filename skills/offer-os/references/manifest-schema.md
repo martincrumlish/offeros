@@ -62,7 +62,7 @@
   "preview": "index.html",
   "description": "Coded sales page for the offer.",
   "status": "complete",
-  "provenance": "imagegen|imagegen-composite|provided|licensed|screenshot|html-css|pil-generated|manual|generated-by-code",
+  "provenance": "imagegen|imagegen-composite|provided|licensed|screenshot|html-css|manual|generated-by-code",
   "quality": {
     "buyerValue": 5,
     "usability": 5,
@@ -80,13 +80,14 @@ Use `provenance` for all images and previews. Use honest labels:
 - `licensed`: licensed external asset
 - `screenshot`: rendered screenshot from a real artifact
 - `html-css`: rendered HTML/CSS visual
-- `pil-generated`: programmatic text/shape image
 - `manual`: hand-authored document/page/deck
 - `generated-by-code`: deterministic script output
 
 Do not use words like "generated image", "AI-generated", or "imagegen" in an artifact title or description unless provenance is `imagegen` or `imagegen-composite`.
 
-For deep generated-design runs, primary conversion visuals must not use `html-css`, `pil-generated`, `generated-by-code`, `manual`, or `screenshot` provenance. Product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives require `imagegen` or `imagegen-composite` unless the asset is genuinely `provided` or `licensed`.
+Do not register `pil-generated` artifacts. Pillow/PIL may be used for inspection, cropping, resizing, or compositing only when the underlying creative source is already `imagegen`, `provided`, or `licensed`.
+
+For deep generated-design runs, primary conversion visuals must not use `html-css`, `generated-by-code`, `manual`, or `screenshot` provenance. Product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives require `imagegen` or `imagegen-composite` unless the asset is genuinely `provided` or `licensed`.
 
 ## Artifact Types
 

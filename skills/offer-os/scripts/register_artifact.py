@@ -26,7 +26,8 @@ def main() -> int:
         default="",
         help=(
             "Image/source provenance: imagegen, imagegen-composite, provided, licensed, screenshot, "
-            "html-css, pil-generated, manual, or generated-by-code. Deep generated-design primary "
+            "html-css, manual, or generated-by-code. Do not register pil-generated artifacts. "
+            "Deep generated-design primary "
             "conversion visuals (product bundle, offer stack, hero/VSL thumbnail, product mockup, ads) "
             "must be imagegen/imagegen-composite unless provided/licensed. Do not register generated SVG artifacts."
         ),
