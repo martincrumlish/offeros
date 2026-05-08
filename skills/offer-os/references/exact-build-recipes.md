@@ -6,26 +6,43 @@ Use these recipes in `deep` mode. Do not replace them with a similar-looking wor
 
 Use this controller for every deep run. This is the highest-level recipe and it overrides softer wording in other files.
 
-1. Create or maintain a reproducible build script in `scripts/build_offer_system.*` or an equivalent checked-in script for the generated offer.
-2. Generate buyer-facing artifacts from structured data/functions in that script. Do not hand-fix generated files after QA without also fixing the generator.
-3. Treat validator warnings as build failures in deep mode. A warning is not acceptable handoff status for complete paid offers.
-4. Run browser QA captures for:
+1. Use the plugin-owned OfferOS Studio dispatcher and builders as the production source of truth. Start with `scripts/offeros.py`, then call the relevant studio builder: `build_visual_asset_plan.py`, `build_sales_page.py`, `build_email_sequence.py`, `build_workbook.py`, `build_vsl_deck.js`, `generate_delivery_dashboard.py`, and `validate_offer_outputs.py`.
+2. Do not create `scripts/build_offer_system.*` in the generated project as the production controller. Generated projects may contain source JSON, static artifacts, previews, and tiny helper scripts, but the real builders live in the plugin.
+3. Generate buyer-facing artifacts from canonical source files: `offer-intake.json`, `offer-architecture.json`, `design.md`, `theme.json`, `copy.md`, `copy-plan.json`, `visual-asset-plan.json`, `sales-page/sales-page-blueprint.json` or `sales-page-blueprint.json`, `workbook/workbook-blueprint.json`, `workbook/workbook-content.json`, `email-sequence.json`, and `presentation/vsl-deck-plan.json`.
+4. Write quality metadata from measured builder output and validator checks. Do not backfill optimistic quality scores at the end.
+5. Treat validator warnings as build failures in deep mode. A warning is not acceptable handoff status for complete paid offers.
+6. Run browser QA captures for:
    - sales page desktop
    - sales page mobile at about 390px wide
    - delivery dashboard desktop
    - delivery dashboard mobile at about 390px wide
    - VSL preview desktop
    - VSL preview mobile at about 390px wide
-5. Browser QA must fail the build if any captured page has horizontal overflow or broken images.
-6. Write `qa-notes.md` from live build variables and validation results. Do not hard-code page counts, CTA counts, warnings, or pass/fail claims.
-7. Copy the final build script into the output project before handoff.
-8. Create `visual-asset-plan.md` v2 only after `copy.md` contains the sales-page section blueprint. Reusing sales-page images as the default visual pool fails deep mode.
+7. Browser QA must fail the build if any captured page has horizontal overflow or broken images.
+8. Write `qa-notes.md` from live build variables and validation results. Do not hard-code page counts, CTA counts, warnings, or pass/fail claims.
+9. Create `visual-asset-plan.json` and `visual-asset-plan.md` v2 only after `copy.md` contains the sales-page section blueprint. Reusing sales-page images as the default visual pool fails deep mode.
 
 Stop conditions:
 
-- If QA requires a manual patch, patch the generator and rerun from clean output.
+- If QA requires a manual patch, patch the plugin-owned studio builder or canonical source file and rerun from clean output.
+- If a generated project contains `scripts/build_offer_system.*` as the production controller, remove that path and rebuild through the OfferOS Studio dispatcher.
 - If `validate_offer_outputs.py --strict --no-write` returns issues or warnings, revise before handoff.
 - If `qa-notes.md` contradicts `offer-os.json`, revise before handoff.
+
+## OfferOS Production Studio Recipe
+
+Use this recipe for complete OfferOS builds.
+
+1. Run or follow `scripts/offeros.py` as the command dispatcher. Valid public commands are `intake`, `plan`, `build-assets`, `build-sales-page`, `build-emails`, `build-workbook`, `build-vsl`, `build-dashboard`, `validate`, and `build-all`.
+2. Intake Studio creates or updates `offer-intake.json`. Ask blocking questions if buyer, promise, mechanism, proof level, price, guarantee, checkout target, design/image constraints, or urgency basis are missing.
+3. Strategy + Copy Studio creates `offer-architecture.json`, `offer-architecture.md`, `copy.md`, and `copy-plan.json`. The sales copy and section blueprint must exist before sales-page visual planning.
+4. Visual Asset Studio creates canonical `visual-asset-plan.json` and human-readable `visual-asset-plan.md`. Every visual row must carry `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, `textRule`, and `source/provenance`.
+5. Sales Page Studio builds `index.html` from the Page Kit builder and records `quality.salesPage.studio: "sales-page-studio-v1"`.
+6. Email Launch Studio builds from `email-sequence.json`, renders Markdown/HTML, and records `quality.emails.studio: "email-launch-studio-v1"`.
+7. PDF Workbook Studio builds from `workbook/workbook-blueprint.json` and `workbook/workbook-content.json`, renders HTML, renders PDF through Gotenberg/Chromium in deep mode, and records `quality.pdf.renderBackend: "gotenberg-chromium"`.
+8. VSL Deck Studio builds from `presentation/vsl-deck-plan.json` through `pptxgenjs` by default, outputs `.pptx`, creates a browser-safe preview, and records `quality.vsl.studio: "vsl-deck-studio-v1"`.
+9. Dashboard Studio uses `scripts/generate_delivery_dashboard.py` and preserves the v2 modal/iframe shell.
+10. QA + Critic Studio runs `validate_offer_outputs.py --strict --no-write`; QA notes are written from measured results only.
 
 ## Logo Recipe
 
@@ -328,23 +345,25 @@ Use this recipe for every paid front-end offer.
 3. Read `visual-asset-plan.md` and fulfill the `## PDF Product Visuals` section before rendering the PDF. PDF visuals are not limited to sales-page images. Create 6+ PDF visuals/treatments, including 4+ that are specific to the PDF product and not reused from the sales page.
 4. Build a real product, not an ebook with repeated worksheet boxes. Every buyer-action page must have a specific name and job, such as "Funnel Fit Matrix", "Traffic Source Reality Check", "Buyer Awareness Mapper", "Offer Path Selector", or "Final Funnel Blueprint". Do not use the generic visible label "Action Surface" as a repeated page heading or box title.
 5. Use at least 7 distinct page archetypes in deep mode: cover, quick start, guide lesson, comparison/decision matrix, completed example, blank worksheet, checklist, implementation plan, script/swipe, scoring/audit, or resource index. No single page archetype may exceed 35% of the PDF.
-6. Create an editable source file under `output/pdf/`.
-7. Create the customer PDF under `output/pdf/`.
-8. For offers up to $29, the product must have at least:
+6. Create `workbook/workbook-blueprint.json` and `workbook/workbook-content.json` before rendering.
+7. Create inspectable HTML source at `output/pdf/[slug]-workbook.html`.
+8. Render the customer PDF through Gotenberg/Chromium by default: `GOTENBERG_URL=http://localhost:3000`, endpoint `/forms/chromium/convert/html`. If Gotenberg is unavailable in deep mode, mark the PDF `needs_revision` and record the blocker; do not silently downgrade to a weak renderer.
+9. Create the customer PDF under `output/pdf/[slug]-workbook.pdf`.
+10. For offers up to $29, the product must have at least:
    - 22 pages
    - 3,500 extracted words unless the user explicitly approved a highly visual workbook
    - 8 buyer-action surfaces
    - 8 named buyer tools/templates
    - 2 completed examples and matching blank templates for core tools
-9. For $30-$99 offers, the product must have at least:
+11. For $30-$99 offers, the product must have at least:
    - 25 pages
    - 4,000 extracted words unless the user explicitly approved a highly visual workbook
    - 8 buyer-action surfaces
    - 10 named buyer tools/templates
    - 3 completed examples and matching blank templates for core tools
-10. Use buyer-action surfaces: audits, calculators, cards, examples, worksheets, templates, scripts, checklists, implementation plans, and debriefs.
-11. Render representative pages from every page archetype to `output/pdf/render-check/`.
-12. Set `quality.pdf.pageCount`, `actionSurfaceCount`, `namedToolCount`, `pageArchetypeCount`, `maxPageArchetypeShare`, `completedExampleCount`, `blankTemplateCount`, `visualAssetCount`, `pdfSpecificVisualAssetCount`, `genericActionSurfaceLabelsRemoved`, `hasCompletedExamples`, `hasBlankTemplates`, and `renderChecked` from the generated artifact, not from memory.
+12. Use buyer-action surfaces: audits, calculators, cards, examples, worksheets, templates, scripts, checklists, implementation plans, and debriefs.
+13. Render representative pages from the actual final PDF to `output/pdf/render-check/`. Synthetic QA preview images do not count.
+14. Set `quality.pdf.pageCount`, `actionSurfaceCount`, `namedToolCount`, `pageArchetypeCount`, `maxPageArchetypeShare`, `completedExampleCount`, `blankTemplateCount`, `visualAssetCount`, `pdfSpecificVisualAssetCount`, `genericActionSurfaceLabelsRemoved`, `hasCompletedExamples`, `hasBlankTemplates`, `renderBackend`, `sourceHtmlPath`, `renderQaPath`, `renderedPageImageCount`, `actualPdfRenderChecked`, `pageArchetypeAudit`, and `renderChecked` from the generated artifact, not from memory.
 
 Stop conditions:
 
@@ -353,6 +372,8 @@ Stop conditions:
 - If the phrase "Action Surface" appears as repeated buyer-facing page furniture, rebuild with named tools/templates.
 - If the PDF has page count but lacks named tools, completed examples, and matching blank templates, rebuild before QA.
 - If `quality.pdf.visualAssetCount` is below 6 or `quality.pdf.pdfSpecificVisualAssetCount` is below 4, create PDF-specific visuals/treatments and rebuild.
+- If `quality.pdf.renderBackend` is not `gotenberg-chromium`, revise the PDF build path.
+- If `quality.pdf.actualPdfRenderChecked` is not true or `renderedPageImageCount` is missing, run actual PDF page render QA before handoff.
 - If extracted text is below the price-point target, revise before QA.
 - If page count or QA notes disagree with the actual PDF, revise before handoff.
 
@@ -361,29 +382,37 @@ Stop conditions:
 Use this recipe for every launch or sales email artifact.
 
 1. Choose a sequence framework from `references/email-frameworks.md`.
-2. For a complete launch sequence, create at least 7 emails.
-3. Every email must include:
+2. Create `email-sequence.json` as the canonical source before rendering Markdown/HTML.
+3. For a complete launch sequence, create at least 7 emails.
+4. Every email must include:
    - send timing
    - subject line
    - preview text
    - campaign role
+   - conversion job
+   - belief shift
+   - primary objection
    - body copy
    - CTA
-4. Each email must have a distinct conversion job. Do not paste the same product paragraph into every email.
-5. Use objection progression: false belief, cost of belief, new insight, proof or demonstration, offer reveal, risk reversal, urgency or final close.
+5. Each email must have a distinct conversion job. Do not paste the same product paragraph into every email.
+6. Use objection progression: false belief, cost of belief, new insight, proof or demonstration, offer reveal, risk reversal, urgency or final close.
+7. Render only through Email Launch Studio (`scripts/build_email_sequence.py`) and record `quality.emails.studio: "email-launch-studio-v1"`.
 
 Stop conditions:
 
 - If the email artifact lacks send timing, preview text, or campaign role, revise before QA.
+- If `email-sequence.json` is missing, revise before rendering.
+- If customer-facing email copy exposes internal campaign labels as headings, revise before QA.
 - If two or more body blocks repeat verbatim, revise before QA.
 
 ## VSL Deck Recipe
 
 Use this recipe for every VSL deck.
 
-1. Create `output/presentation/[slug]-vsl.pptx` as the primary deck. Do not create HTML first.
-2. Create a slide plan with 20-30 slides before generating the PPTX.
-3. Assign every slide one of at least 8 layout names before generating the PPTX:
+1. Create `presentation/vsl-deck-plan.json` as the canonical source before generating the PPTX.
+2. Create `output/presentation/[slug]-vsl.pptx` as the primary deck. Do not create HTML first.
+3. Create a slide plan with 20-30 slides before generating the PPTX.
+4. Assign every slide one of at least 8 layout names before generating the PPTX:
    - full-bleed-title
    - audience-filter
    - problem-map
@@ -397,20 +426,20 @@ Use this recipe for every VSL deck.
    - guarantee
    - objection
    - final-cta
-4. Layout family means structural composition, not color, icon, or background variation. A two-column copy/visual slide remains the same layout family even when colors, icons, headings, or placeholder labels change.
-5. No layout family may be used on more than 35% of slides.
-6. Write a slide-numbered layout audit before registering the deck. Record it in `quality.vsl.layoutAudit` as an array with `slide`, `layoutFamily`, and `visualAsset` for every slide.
-7. Visible slide copy must be buyer-facing. Do not put `Hook`, `Problem`, `Agitate`, `Market`, `Mechanism`, `Proof`, `Offer`, `CTA`, `Objection`, `Close`, `Stage: Problem`, `Problem:`, or similar internal labels anywhere on a slide, including badges, footers, eyebrows, and small captions.
-8. Speaker notes must be recording notes of at least 25 words per slide. Do not use notes such as `Explain mechanism`, `Show proof`, or `Agitate`.
-9. Key slides must include visuals, diagrams, generated frames, screenshots, or product previews. Do not use dark placeholder rectangles with labels as finished visuals.
-10. Read `visual-asset-plan.md` and fulfill the `## VSL Deck Visuals` section before generating the PPTX:
+5. Layout family means structural composition, not color, icon, or background variation. A two-column copy/visual slide remains the same layout family even when colors, icons, headings, or placeholder labels change.
+6. No layout family may be used on more than 35% of slides.
+7. Write a slide-numbered layout audit before registering the deck. Record it in `quality.vsl.layoutAudit` as an array with `slide`, `layoutFamily`, and `visualAsset` for every slide.
+8. Visible slide copy must be buyer-facing. Do not put `Hook`, `Problem`, `Agitate`, `Market`, `Mechanism`, `Proof`, `Offer`, `CTA`, `Objection`, `Close`, `Stage: Problem`, `Problem:`, or similar internal labels anywhere on a slide, including badges, footers, eyebrows, and small captions.
+9. Speaker notes must be recording notes of at least 25 words per slide. Do not use notes such as `Explain mechanism`, `Show proof`, or `Agitate`.
+10. Key slides must include visuals, diagrams, generated frames, screenshots, or product previews. Do not use dark placeholder rectangles with labels as finished visuals.
+11. Read `visual-asset-plan.md` and fulfill the `## VSL Deck Visuals` section before generating the PPTX:
    - 12+ unique visual assets or clearly distinct diagram treatments across a 20-30 slide deck.
    - 8+ VSL visuals/treatments must be specific to the VSL deck and not reused from the sales page.
    - No single non-logo bitmap may appear on more than 25% of slides.
    - Do not recycle the same 3 hero/product images across the deck. A repeated theme is allowed; repeated bitmap filler is not.
    - Product bundle imagery may appear on product reveal, offer stack, value, and CTA slides only.
    - Every slide must have a specific visual job: pattern interrupt, comparison, map, matrix, mechanism diagram, example, proof substitute, product view, objection card, price/value contrast, or close.
-11. Every bitmap image added to the PPTX must preserve aspect ratio. Do not call `slide.addImage({ path, x, y, w, h })` for a visual box unless the image's source ratio exactly matches that box. Use a local helper and route every VSL image through it:
+12. Every bitmap image added to the PPTX must preserve aspect ratio. Do not call `slide.addImage({ path, x, y, w, h })` for a visual box unless the image's source ratio exactly matches that box. Use a local helper and route every VSL image through it:
 
 ```js
 function addPptxImage(slide, relPath, x, y, w, h, fit = "cover") {
@@ -429,14 +458,17 @@ addPptxImage(slide, "assets/images/hero.png", 6.6, 0, 6.73, 7.5, "cover");
 addPptxImage(slide, "assets/logo.png", 5.15, 4.55, 3.0, 1.7, "contain");
 ```
 
-12. Create HTML/contact-sheet only after the PPTX exists. Save it as `output/presentation/vsl-contact-sheet.png` or `output/presentation/vsl-preview.html`.
-13. Register `vsl-deck` as the `.pptx`; set its `preview` to browser-safe `output/presentation/vsl-preview.html` or an image contact sheet, never to the `.pptx` itself.
-14. Set `quality.vsl.maxLayoutShare`, `notesAreNarration`, `visibleStageLabelsRemoved`, `layoutDiversityChecked`, `visualPlaceholdersRemoved`, `visualAssetCount`, `uniqueVisualAssetCount`, `vslSpecificVisualAssetCount`, `maxRepeatedBitmapShare`, `visualReuseChecked`, and `layoutAudit`.
-15. Browser-test `output/presentation/vsl-preview.html` at desktop and about 390px mobile width. The build must fail if the preview has horizontal overflow or broken images.
+13. Create HTML/contact-sheet only after the PPTX exists. Save it as `output/presentation/vsl-contact-sheet.png` or `output/presentation/vsl-preview.html`.
+14. Register `vsl-deck` as the `.pptx`; set its `preview` to browser-safe `output/presentation/vsl-preview.html` or an image contact sheet, never to the `.pptx` itself.
+15. Set `quality.vsl.studio: "vsl-deck-studio-v1"`, `backend: "pptxgenjs"`, `sourcePlanPath`, `editableTextChecked`, `maxLayoutShare`, `notesAreNarration`, `visibleStageLabelsRemoved`, `layoutDiversityChecked`, `visualPlaceholdersRemoved`, `visualAssetCount`, `uniqueVisualAssetCount`, `vslSpecificVisualAssetCount`, `maxRepeatedBitmapShare`, `visualReuseChecked`, and `layoutAudit`.
+16. Browser-test `output/presentation/vsl-preview.html` at desktop and about 390px mobile width. The build must fail if the preview has horizontal overflow or broken images.
 
 Stop conditions:
 
 - If the primary deck is HTML, stop and rebuild as PPTX.
+- If `presentation/vsl-deck-plan.json` is missing, stop and write the slide plan source first.
+- If the deck was not built through `pptxgenjs` or the Presentations plugin with the same quality contract, stop and rebuild.
+- If `quality.vsl.editableTextChecked` is not true, stop and inspect the PPTX for flattened-image-only output.
 - If stage labels are visible as slide titles, revise before QA.
 - If one layout dominates the deck, revise before QA.
 - If the same large bitmap appears on more than 25% of slides, revise the visual plan before QA.

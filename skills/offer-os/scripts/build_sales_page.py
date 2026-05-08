@@ -9,6 +9,7 @@ import re
 PAGE_KIT_VERSION = "v1"
 PAGE_KIT_ID = "offeros-page-kit-v1"
 BUILDER_VERSION = "offeros-page-kit-builder-v1"
+STUDIO_VERSION = "sales-page-studio-v1"
 DEFAULT_PAGE_KIT_ARCHETYPE = "classic-vsl-longform"
 DEFAULT_THEME_PRESET = "classic-direct-response"
 VSL_PLACEMENT = "main-column-stacked"
@@ -253,6 +254,14 @@ def block_context(root: Path, manifest: dict, blueprint: dict, theme: dict) -> d
             hero_image,
         ],
     )
+    assets = theme.get("assets", {}) if isinstance(theme.get("assets"), dict) else {}
+
+    def theme_asset(name: str) -> str:
+        item = assets.get(name)
+        if isinstance(item, dict):
+            return as_text(item.get("path"))
+        return as_text(item)
+
     return {
         "offerName": html_text(offer_name),
         "offer_name": html_text(offer_name),
@@ -263,6 +272,11 @@ def block_context(root: Path, manifest: dict, blueprint: dict, theme: dict) -> d
         "checkout_target": html_text(checkout_target),
         "heroVslThumbnail": html_text(hero_image or "assets/page/hero-vsl-thumbnail.png"),
         "productBundleImage": html_text(bundle_image or "assets/page/product-bundle.png"),
+        "failedAlternativesVisual": html_text(find_asset(root, [theme_asset("failedAlternativesVisual"), "assets/page/failed-alternatives.png"])),
+        "mechanismVisual": html_text(find_asset(root, [theme_asset("mechanismVisual"), "assets/page/mechanism-diagram.png"])),
+        "proofVisual": html_text(find_asset(root, [theme_asset("proofVisual"), "assets/page/proof-demo.png"])),
+        "beforeAfterVisual": html_text(find_asset(root, [theme_asset("beforeAfterVisual"), "assets/page/before-after.png"])),
+        "guaranteeBadge": html_text(find_asset(root, [theme_asset("guaranteeBadge"), "assets/page/guarantee-badge.png"])),
         "themeName": html_text(theme_preset(theme)),
         "archetype": html_text(page_kit_archetype(blueprint, theme)),
     }
@@ -297,6 +311,17 @@ def card(title: str, copy: str, marker: str = "") -> str:
 
 def list_items(items: list[str]) -> str:
     return "".join(f"<li>{html_text(item)}</li>" for item in items)
+
+
+def support_visual(src: str, alt: str, kind: str, anchor: str) -> str:
+    if not src:
+        return ""
+    return (
+        f'<figure class="oo-support-visual" data-offeros-page-visual data-offeros-visual-kind="{html_text(kind)}" '
+        f'data-offeros-copy-anchor="{html_text(anchor)}">'
+        f'<img src="{src}" alt="{html_text(alt)}">'
+        "</figure>"
+    )
 
 
 def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict, context: dict[str, str]) -> str:
@@ -355,12 +380,18 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         extra_cta = ""
         if section_id == "proof":
             extra_cta = f'<a class="oo-cta" data-offeros-cta data-offeros-post-hero-cta href="{checkout}">See what is included</a>'
+        visual = ""
+        if section_id == "mechanism":
+            visual = support_visual(context["mechanismVisual"], f"{offer} mechanism diagram", "mechanism-diagram", "mechanism")
+        elif section_id == "proof":
+            visual = support_visual(context["proofVisual"], f"{offer} proof or demo visual", "proof-demo-visual", "proof")
         return f"""
     <section class="oo-section{' oo-section-dark' if section_id in {'agitation', 'mechanism'} else ''}" data-offeros-section="{section_id}">
       <div class="oo-container">
         <p class="oo-eyebrow">{html_text(first_value(data.get("eyebrow"), fallback=headline))}</p>
         <h2>{html_text(first_value(data.get("headline"), fallback=headline))}</h2>
         {paragraph(first_value(data.get("copy"), fallback=copy))}
+        {visual}
         <div class="oo-grid-3" {'data-offeros-proof-grid' if section_id == 'proof' else 'data-offeros-product-modules' if section_id == 'product' else 'data-offeros-mechanism-steps' if section_id == 'mechanism' else ''}>{''.join(card(first_value(item.get('title'), fallback='Key point'), first_value(item.get('copy'), fallback='Specific copy goes here.'), marker) for item in items[:3])}</div>
         {extra_cta}
       </div>
@@ -377,6 +408,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
       <div class="oo-container">
         <p class="oo-eyebrow">Why the usual fixes fail</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="The old fixes do not create enough buying momentum."))}</h2>
+        {support_visual(context["failedAlternativesVisual"], f"{offer} failed alternatives comparison", "comparison-visual", "failed-alternatives")}
         <table class="oo-table" data-offeros-failed-alternatives-table><thead><tr><th>What they tried</th><th>Why it did not fix the real issue</th><th>What is needed instead</th></tr></thead><tbody>{body}</tbody></table>
       </div>
     </section>"""
@@ -386,6 +418,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
       <div class="oo-container">
         <p class="oo-eyebrow">Before and after</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="The buying journey changes when the sequence does the selling work."))}</h2>
+        {support_visual(context["beforeAfterVisual"], f"{offer} before and after visual", "structured-panel", "before-after")}
         <div class="oo-grid-2" data-offeros-before-after>{card("Before", first_value(data.get("before"), fallback="The offer depends on scattered claims, vague proof, and a checkout link that appears before trust is earned."))}{card("After", first_value(data.get("after"), fallback="The page diagnoses the problem, installs the mechanism, proves credibility, then presents the stack with a low-friction next step."))}</div>
       </div>
     </section>"""
@@ -442,6 +475,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
       <div class="oo-container oo-narrow">
         <p class="oo-eyebrow">Risk reversal</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="Use it, inspect it, and keep the buying decision low risk."))}</h2>
+        {support_visual(context["guaranteeBadge"], f"{offer} guarantee badge", "structured-panel", "guarantee")}
         <p>{html_text(first_value(data.get("copy"), fallback="If the page kit does not give you a clearer offer path, use the stated guarantee terms and support contact in your customer-facing policies."))}</p>
       </div>
     </section>"""
@@ -568,6 +602,9 @@ def css(theme: dict) -> str:
     .oo-grid-2 {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
     .oo-card {{ background: var(--oo-surface); color: var(--oo-ink); border: 1px solid rgba(0,0,0,.08); border-radius: 8px; padding: 22px; }}
     .oo-section-dark .oo-card {{ background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.14); }}
+    .oo-support-visual {{ margin: 28px 0; border: 1px solid rgba(0,0,0,.08); border-radius: 8px; overflow: hidden; background: var(--oo-surface); box-shadow: 0 18px 46px rgba(17,24,39,.08); }}
+    .oo-support-visual img {{ width: 100%; max-height: 420px; object-fit: cover; }}
+    .oo-section-dark .oo-support-visual {{ border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.08); }}
     .oo-table {{ width: 100%; border-collapse: collapse; margin-top: 24px; background: var(--oo-surface); border-radius: 8px; overflow: hidden; }}
     .oo-table th, .oo-table td {{ padding: 16px; border: 1px solid rgba(0,0,0,.1); text-align: left; vertical-align: top; }}
     .oo-table th {{ background: var(--oo-primary); color: #fff; }}
@@ -738,6 +775,7 @@ def update_manifest(
             "sectionDepthChecked": True,
             "repeatedTextChecked": True,
             "builder": BUILDER_VERSION,
+            "studio": STUDIO_VERSION,
             "pageKit": PAGE_KIT_ID,
             "pageKitBuilder": BUILDER_VERSION,
             "pageKitArchetype": page_kit_archetype(blueprint, theme),
@@ -747,6 +785,8 @@ def update_manifest(
             "pageKitBlueprintUsed": True,
             "themeTokensUsed": True,
             "orderFormIncluded": False,
+            "salesPageVisualCount": len(re.findall(r"<img\b", html_text_value, flags=re.I)),
+            "supportingVisualSlotsUsed": len(re.findall(r"data-offeros-page-visual", html_text_value, flags=re.I)),
             "approvedPartialsUsed": used_partials,
         }
     )

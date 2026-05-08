@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://offeros.local/schemas/vsl-deck-plan.schema.json",
+  "title": "OfferOS VSL Deck Studio Plan",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema", "title", "slides"],
+  "properties": {
+    "schema": { "const": "offeros/vsl-deck-plan/v1" },
+    "title": { "type": "string", "minLength": 4 },
+    "slides": {
+      "type": "array",
+      "minItems": 20,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "slide",
+          "internalJob",
+          "visibleTitle",
+          "layoutFamily",
+          "visualAsset",
+          "visualTreatment",
+          "editableTextBlocks",
+          "speakerNotes",
+          "ctaRole"
+        ],
+        "properties": {
+          "slide": { "type": "integer", "minimum": 1 },
+          "internalJob": { "type": "string", "minLength": 4 },
+          "visibleTitle": { "type": "string", "minLength": 4 },
+          "layoutFamily": { "type": "string", "minLength": 4 },
+          "visualAsset": { "type": "string" },
+          "visualTreatment": { "type": "string" },
+          "editableTextBlocks": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 3 }
+          },
+          "speakerNotes": { "type": "string", "minLength": 120 },
+          "ctaRole": { "type": "string" }
+        }
+      }
+    }
+  }
+}

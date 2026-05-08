@@ -16,7 +16,8 @@ SOURCE_CHECKS = [
             "references/exact-build-recipes.md",
             "references/direct-response-framework.md",
             "Start with the Build Controller Recipe",
-            "Generator-first",
+            "Studio-owned production",
+            "scripts/offeros.py",
             "warnings are not shippable",
             "preserve the direct-response hero and buy-box offer-stack contracts exactly",
         ],
@@ -26,11 +27,27 @@ SOURCE_CHECKS = [
         "path": "references/exact-build-recipes.md",
         "needles": [
             "## Build Controller Recipe",
-            "Do not hand-fix generated files after QA without also fixing the generator.",
+            "plugin-owned OfferOS Studio dispatcher",
+            "Do not create `scripts/build_offer_system.*`",
             "Treat validator warnings as build failures in deep mode.",
             "VSL preview mobile",
             "qa-notes.md",
-            "Create `visual-asset-plan.md` v2 only after `copy.md` contains the sales-page section blueprint.",
+            "Create `visual-asset-plan.json` and `visual-asset-plan.md` v2 only after `copy.md` contains the sales-page section blueprint.",
+        ],
+    },
+    {
+        "id": "studio_dispatcher_and_builders_exist",
+        "path": "references/exact-build-recipes.md",
+        "needles": [
+            "## OfferOS Production Studio Recipe",
+            "`scripts/offeros.py`",
+            "`build_visual_asset_plan.py`",
+            "`build_email_sequence.py`",
+            "`build_workbook.py`",
+            "`build_vsl_deck.js`",
+            "quality.pdf.renderBackend: \"gotenberg-chromium\"",
+            "quality.vsl.studio: \"vsl-deck-studio-v1\"",
+            "quality.emails.studio: \"email-launch-studio-v1\"",
         ],
     },
     {
@@ -235,6 +252,15 @@ SOURCE_CHECKS = [
         "id": "validator_blocks_known_regressions",
         "path": "scripts/validate_offer_outputs.py",
         "needles": [
+            "Deep OfferOS runs must not use generated scripts/build_offer_system.* as the production source of truth.",
+            "sales-page-studio-v1",
+            "email-launch-studio-v1",
+            "pdf-workbook-studio-v1",
+            "gotenberg-chromium",
+            "vsl-deck-studio-v1",
+            "editableTextChecked",
+            "actualPdfRenderChecked",
+            "renderedPageImageCount",
             "Deep OfferOS runs must not create or register SVG artifacts.",
             "OfferOS generated runs must not create or register SVG logo files.",
             "Logo quality metadata must confirm svgAssetCreated: false.",
@@ -545,6 +571,23 @@ def synthetic_code_rendered_creative_regression() -> dict:
     }
 
 
+def synthetic_generated_controller_regression() -> dict:
+    expected = [
+        "Deep OfferOS runs must not use generated scripts/build_offer_system.* as the production source of truth.",
+        "Studio quality metadata says usesGeneratedBuildOfferSystem=true",
+    ]
+    workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-generated-controller"
+    payload = run_validator(workspace)
+    issue_text = "\n".join(payload.get("issues", []))
+    missing = [item for item in expected if item not in issue_text]
+    return {
+        "id": "synthetic_generated_controller_regression",
+        "ok": payload.get("returncode") != 0 and not missing,
+        "missingExpectedIssues": missing,
+        "issueCount": payload.get("issueCount"),
+    }
+
+
 def synthetic_page_kit_builder_rejects_unapproved_sources() -> dict:
     builder = SKILL_ROOT / "scripts" / "build_sales_page.py"
     workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-page-kit-unapproved-source"
@@ -591,6 +634,7 @@ def main() -> int:
         synthetic_svg_artifact_regression(),
         synthetic_logo_drift_regression(),
         synthetic_code_rendered_creative_regression(),
+        synthetic_generated_controller_regression(),
         synthetic_page_kit_builder_rejects_unapproved_sources(),
     ]
     ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results) and all(item["ok"] for item in synthetic_results)

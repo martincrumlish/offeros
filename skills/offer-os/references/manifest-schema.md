@@ -89,6 +89,8 @@ Do not register `pil-generated` artifacts. Pillow/PIL may be used for inspection
 
 For deep generated-design runs, primary conversion visuals must not use `html-css`, `generated-by-code`, `manual`, or `screenshot` provenance. Product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives require `imagegen` or `imagegen-composite` unless the asset is genuinely `provided` or `licensed`.
 
+Do not use generated `scripts/build_offer_system.*` files as the production source of truth. Deep runs are built by plugin-owned OfferOS Studio scripts. Generated projects contain canonical source data and final artifacts.
+
 ## Artifact Types
 
 Use these values:
@@ -112,6 +114,8 @@ A deep run should register:
 - `design-guide`
 - `logo`
 - `visual-asset-plan`
+- `email-sequence-source`
+- `vsl-deck-source`
 - `sales-copy`
 - `sales-page-blueprint`
 - `theme`
@@ -136,6 +140,14 @@ For deep mode, include module-level quality metadata when applicable:
 {
   "quality": {
     "pdf": {
+      "studio": "pdf-workbook-studio-v1",
+      "renderBackend": "gotenberg-chromium",
+      "sourceHtmlPath": "output/pdf/example-workbook.html",
+      "sourceBlueprintPath": "workbook/workbook-blueprint.json",
+      "sourceContentPath": "workbook/workbook-content.json",
+      "renderQaPath": "output/pdf/render-check",
+      "renderedPageImageCount": 8,
+      "actualPdfRenderChecked": true,
       "pageCount": 28,
       "actionSurfaceCount": 10,
       "namedToolCount": 10,
@@ -148,7 +160,10 @@ For deep mode, include module-level quality metadata when applicable:
       "genericActionSurfaceLabelsRemoved": true,
       "hasCompletedExamples": true,
       "hasBlankTemplates": true,
-      "renderChecked": true
+      "renderChecked": true,
+      "pageArchetypeAudit": [
+        { "page": 1, "archetype": "cover", "namedTool": "Workbook cover", "visualAsset": "assets/pdf/cover-frame.png" }
+      ]
     },
     "logo": {
       "logoMode": "single-final-logo-v1",
@@ -189,6 +204,9 @@ For deep mode, include module-level quality metadata when applicable:
       "critiquePassed": true
     },
     "vsl": {
+      "studio": "vsl-deck-studio-v1",
+      "backend": "pptxgenjs",
+      "sourcePlanPath": "presentation/vsl-deck-plan.json",
       "slideCount": 24,
       "layoutCount": 9,
       "maxLayoutShare": 0.29,
@@ -204,6 +222,7 @@ For deep mode, include module-level quality metadata when applicable:
       "visibleStageLabelsRemoved": true,
       "layoutDiversityChecked": true,
       "visualPlaceholdersRemoved": true,
+      "editableTextChecked": true,
       "layoutAudit": [
         { "slide": 1, "layoutFamily": "full-bleed-title", "visualAsset": "hero image" }
       ],
@@ -213,6 +232,7 @@ For deep mode, include module-level quality metadata when applicable:
       "hasObjections": true
     },
     "salesPage": {
+      "studio": "sales-page-studio-v1",
       "pageType": "direct-response-long-form-vsl",
       "pageTypeReason": "Cold front-end offer needs full belief-shift page.",
       "requiredSectionContract": "direct-response-v1",
@@ -236,6 +256,8 @@ For deep mode, include module-level quality metadata when applicable:
       "copyBlueprintPresent": true,
       "sectionMarkersPresent": true,
       "visibleWordCount": 3200,
+      "salesPageVisualCount": 6,
+      "supportingVisualSlotsUsed": 4,
       "objectionCount": 8,
       "ctaCount": 5,
       "postHeroCtaCount": 3,
@@ -248,9 +270,22 @@ For deep mode, include module-level quality metadata when applicable:
       "hasModalPreview": true,
       "hasIframePreview": true
     },
+    "emails": {
+      "studio": "email-launch-studio-v1",
+      "emailCount": 7,
+      "framework": "Belief-Shift Launch Sequence",
+      "hasSendTiming": true,
+      "hasPreviewText": true,
+      "hasCampaignRoles": true,
+      "distinctConversionJobs": 7,
+      "repeatedBodyBlocksChecked": true,
+      "ctaCount": 7,
+      "urgencyBasisValid": true
+    },
     "images": {
       "hasArtifactSpecificPlan": true,
       "visualPlanPath": "visual-asset-plan.md",
+      "visualPlanJsonPath": "visual-asset-plan.json",
       "visualPlanStage": "post-content-blueprint",
       "copyBlueprintUsed": true,
       "visualReusePolicy": "artifact-specific-v1",

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0
+
+- Replaces generated `scripts/build_offer_system.*` production control with plugin-owned OfferOS Studio builders and a public `scripts/offeros.py` dispatcher.
+- Adds canonical studio source contracts and builders for visual planning, launch emails, Gotenberg/Chromium PDF workbooks, and editable VSL PPTX decks.
+- Adds schemas for `visual-asset-plan.json`, `email-sequence.json`, workbook blueprint/content files, and `presentation/vsl-deck-plan.json`.
+- Extends validation so deep runs fail on generated build controllers, missing studio source files, weak sales-page visual usage, missing email quality metadata, missing Gotenberg/PDF render evidence, and VSL decks without source/editability metadata.
+- Updates initialization folders and self-tests for the production-studio architecture.
+
 ## 0.11.0
 
 - Adds the OfferOS Page Kit sales-page framework: intake gate, sales-page blueprint schema, theme schema, archetypes, themes, partials, CSS, JS, and a static HTML builder.

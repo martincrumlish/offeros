@@ -1,0 +1,30 @@
+{
+  "schema": "offer-os/v1",
+  "mode": "deep",
+  "offerName": "Bad Generated Controller",
+  "slug": "bad-generated-controller",
+  "audience": "Offer builders",
+  "price": "27",
+  "designSource": {
+    "type": "generated"
+  },
+  "modules": [],
+  "artifacts": [],
+  "quality": {
+    "studios": {
+      "usesGeneratedBuildOfferSystem": true
+    }
+  },
+  "qa": {
+    "technical": {
+      "status": "failed"
+    },
+    "commercial": {
+      "status": "failed"
+    }
+  },
+  "commercialAudit": {
+    "status": "failed",
+    "scores": {}
+  }
+}

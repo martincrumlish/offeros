@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://offeros.local/schemas/email-sequence.schema.json",
+  "title": "OfferOS Email Launch Studio Source",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema", "framework", "urgencyBasis", "emails"],
+  "properties": {
+    "schema": { "const": "offeros/email-sequence/v1" },
+    "sequenceType": { "enum": ["launch", "evergreen"], "default": "launch" },
+    "framework": { "type": "string", "minLength": 4 },
+    "urgencyBasis": { "type": "string" },
+    "offerName": { "type": "string" },
+    "price": { "type": "string" },
+    "guarantee": { "type": "string" },
+    "checkoutTarget": { "type": "string", "default": "#checkout" },
+    "emails": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "sendTiming",
+          "subject",
+          "previewText",
+          "campaignRole",
+          "conversionJob",
+          "beliefShift",
+          "primaryObjection",
+          "bodyBlocks",
+          "ctaLabel",
+          "ctaUrl",
+          "complianceNotes"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "sendTiming": { "type": "string", "minLength": 4 },
+          "subject": { "type": "string", "minLength": 4 },
+          "previewText": { "type": "string", "minLength": 4 },
+          "campaignRole": { "type": "string", "minLength": 4 },
+          "conversionJob": { "type": "string", "minLength": 8 },
+          "beliefShift": { "type": "string", "minLength": 8 },
+          "primaryObjection": { "type": "string", "minLength": 4 },
+          "bodyBlocks": {
+            "type": "array",
+            "minItems": 3,
+            "items": { "type": "string", "minLength": 40 }
+          },
+          "ctaLabel": { "type": "string", "minLength": 2 },
+          "ctaUrl": { "type": "string", "minLength": 1 },
+          "complianceNotes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

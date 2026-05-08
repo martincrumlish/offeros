@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://offeros.local/schemas/workbook-content.schema.json",
+  "title": "OfferOS PDF Workbook Content",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema", "pages"],
+  "properties": {
+    "schema": { "const": "offeros/workbook-content/v1" },
+    "pages": {
+      "type": "array",
+      "minItems": 22,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["archetype", "title", "body"],
+        "properties": {
+          "archetype": {
+            "enum": [
+              "cover",
+              "quick-start",
+              "module-divider",
+              "guide-lesson",
+              "decision-matrix",
+              "completed-example",
+              "blank-worksheet",
+              "checklist",
+              "script-swipe",
+              "audit-scorecard",
+              "implementation-plan",
+              "resource-index"
+            ]
+          },
+          "title": { "type": "string", "minLength": 3 },
+          "tool": { "type": "string" },
+          "body": {
+            "oneOf": [
+              { "type": "string", "minLength": 20 },
+              {
+                "type": "array",
+                "items": { "type": "string", "minLength": 20 }
+              }
+            ]
+          },
+          "bullets": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "rows": {
+            "type": "array"
+          },
+          "visualAsset": { "type": "string" }
+        }
+      }
+    }
+  }
+}

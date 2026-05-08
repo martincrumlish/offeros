@@ -49,8 +49,19 @@ def main() -> int:
     for folder in [
         "assets",
         "assets/ads",
+        "assets/page",
+        "assets/pdf",
+        "assets/vsl",
+        "assets/dashboard",
+        "copy",
+        "sales-page",
+        "workbook",
+        "presentation",
+        "output/email",
         "output/pdf",
+        "output/pdf/render-check",
         "output/presentation",
+        "output/qa",
         "output/playwright",
     ]:
         (root / folder).mkdir(parents=True, exist_ok=True)

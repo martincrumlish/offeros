@@ -310,6 +310,19 @@ def artifact_path(root: Path, artifact: dict | None) -> Path | None:
     return root / artifact["path"]
 
 
+def validate_studio_source_control(root: Path, manifest: dict, issues: list[str]) -> None:
+    generated_controllers = sorted((root / "scripts").glob("build_offer_system.*")) if (root / "scripts").exists() else []
+    if generated_controllers:
+        rels = ", ".join(str(path.relative_to(root)).replace("\\", "/") for path in generated_controllers[:5])
+        issues.append(
+            "Deep OfferOS runs must not use generated scripts/build_offer_system.* as the production source of truth. "
+            "Use plugin-owned OfferOS Studio builders instead: " + rels
+        )
+    studios = manifest.get("quality", {}).get("studios", {})
+    if isinstance(studios, dict) and studios.get("usesGeneratedBuildOfferSystem") is True:
+        issues.append("Studio quality metadata says usesGeneratedBuildOfferSystem=true; production builders must live in the plugin.")
+
+
 def count_pdf(path: Path) -> tuple[int | None, int | None]:
     try:
         from pypdf import PdfReader
@@ -964,9 +977,31 @@ def validate_pdf(root: Path, manifest: dict, by_id: dict[str, dict], issues: lis
         issues.append("PDF quality metadata must confirm blank buyer-fillable templates.")
     if pdf_quality.get("renderChecked") is not True:
         issues.append("PDF quality metadata must confirm rendered page visual QA.")
+    if pdf_quality.get("studio") != "pdf-workbook-studio-v1":
+        issues.append("PDF quality metadata must record studio: pdf-workbook-studio-v1.")
+    if pdf_quality.get("renderBackend") != "gotenberg-chromium":
+        issues.append("PDF quality metadata must record renderBackend: gotenberg-chromium for PDF Workbook Studio deep runs.")
+    source_html = str(pdf_quality.get("sourceHtmlPath", "")).strip()
+    if not source_html:
+        issues.append("PDF quality metadata must record sourceHtmlPath.")
+    elif not (root / source_html).exists():
+        issues.append(f"PDF sourceHtmlPath does not exist: {source_html}")
+    if pdf_quality.get("actualPdfRenderChecked") is not True:
+        issues.append("PDF quality metadata must confirm actualPdfRenderChecked from final PDF page renders.")
+    rendered_page_count = quality_number(pdf_quality.get("renderedPageImageCount"))
+    if rendered_page_count < 1:
+        issues.append("PDF quality metadata must record renderedPageImageCount from actual final PDF page images.")
+    render_qa = str(pdf_quality.get("renderQaPath", "")).strip()
+    if not render_qa:
+        issues.append("PDF quality metadata must record renderQaPath.")
+    elif not (root / render_qa).exists():
+        issues.append(f"PDF renderQaPath does not exist: {render_qa}")
+    page_audit = pdf_quality.get("pageArchetypeAudit")
+    if not isinstance(page_audit, list) or not page_audit:
+        issues.append("PDF quality metadata must include pageArchetypeAudit with page, archetype, namedTool, and visualAsset.")
 
 
-def validate_email_sequence(root: Path, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+def validate_email_sequence(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
     email_artifact = by_id.get("email-sequence")
     email_path = artifact_path(root, email_artifact)
     if not email_path or not email_path.exists():
@@ -1018,6 +1053,27 @@ def validate_email_sequence(root: Path, by_id: dict[str, dict], issues: list[str
     if repeated_blocks:
         examples = "; ".join(f"'{sentence[:80]}' x{count}" for sentence, count in repeated_blocks[:3])
         issues.append("Email sequence contains repeated body blocks: " + examples)
+    email_source = artifact_path(root, by_id.get("email-sequence-source"))
+    if not email_source or not email_source.exists():
+        issues.append("Email Launch Studio requires canonical email-sequence.json source registered as email-sequence-source.")
+    email_quality = manifest.get("quality", {}).get("emails", {})
+    if not isinstance(email_quality, dict):
+        email_quality = {}
+    if email_quality.get("studio") != "email-launch-studio-v1":
+        issues.append("Email quality metadata must record studio: email-launch-studio-v1.")
+    if quality_number(email_quality.get("emailCount")) < target_count:
+        issues.append("Email quality metadata emailCount is below the rendered sequence target.")
+    for key, label in {
+        "hasSendTiming": "send timing",
+        "hasPreviewText": "preview text",
+        "hasCampaignRoles": "campaign roles",
+        "repeatedBodyBlocksChecked": "repeated body block check",
+        "urgencyBasisValid": "valid urgency basis",
+    }.items():
+        if email_quality.get(key) is not True:
+            issues.append(f"Email quality metadata must confirm {label}.")
+    if quality_number(email_quality.get("distinctConversionJobs")) < target_count:
+        issues.append("Email quality metadata must record distinct conversion jobs for the sequence.")
 
 
 def validate_sales_copy(root: Path, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
@@ -1137,6 +1193,14 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         return
     html_text = text_for(page_path)
     by_path = artifact_path_map(list(by_id.values()))
+    local_images = [
+        src
+        for src in re.findall(r"<img\b[^>]*\bsrc\s*=\s*[\"']([^\"']+)[\"']", html_text, flags=re.I | re.S)
+        if not re.match(r"^(?:https?:|data:|#)", src, flags=re.I)
+    ]
+    missing_images = [src for src in local_images if not (root / src.split("?", 1)[0].split("#", 1)[0].lstrip("./")).exists()]
+    if missing_images:
+        issues.append("Sales page references missing local images: " + ", ".join(missing_images[:8]))
     missing = [section for section in REQUIRED_SALES_PAGE_SECTIONS if not has_section_marker(html_text, section)]
     if missing:
         issues.append("Sales page missing required direct-response section markers: " + ", ".join(missing))
@@ -1161,6 +1225,8 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         issues.append("Sales page quality metadata must confirm repeatedTextChecked.")
     if sales_quality.get("offerStackItemsUnique") is not True:
         issues.append("Sales page quality metadata must confirm offerStackItemsUnique.")
+    if sales_quality.get("studio") != "sales-page-studio-v1":
+        issues.append("Sales page quality metadata must record studio: sales-page-studio-v1.")
     if page_type == "direct-response-long-form-vsl":
         if sales_quality.get("framework") != "direct-response-long-form-v1":
             issues.append("Direct-response sales page quality metadata must record framework: direct-response-long-form-v1.")
@@ -1183,6 +1249,12 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
         issues.append(f"Direct-response long-form VSL page must include 7+ FAQ items marked data-offeros-faq-item: {faq_marker_count} found.")
     if page_type == "direct-response-long-form-vsl" and cta_marker_count < 4:
         issues.append(f"Direct-response long-form VSL page must include 4+ CTA elements marked data-offeros-cta: {cta_marker_count} found.")
+    page_visual_count = len(re.findall(r"data-offeros-page-visual|data-offeros-video-thumbnail|data-offeros-product-bundle", html_text, flags=re.I))
+    if page_type == "direct-response-long-form-vsl" and page_visual_count < 6:
+        issues.append(f"Direct-response long-form VSL page must include 6+ meaningful page visuals: {page_visual_count} found.")
+    recorded_page_visual_count = quality_number(sales_quality.get("salesPageVisualCount"))
+    if recorded_page_visual_count and recorded_page_visual_count < 6:
+        issues.append("Sales page quality metadata salesPageVisualCount below target: 6+ expected.")
     post_hero_cta_count = len(re.findall(r"data-offeros-post-hero-cta(?:\s|=|>)", html_text, flags=re.I))
     if page_type == "direct-response-long-form-vsl" and post_hero_cta_count < 3:
         issues.append(f"Direct-response long-form VSL page must include 3+ post-hero CTA elements marked data-offeros-post-hero-cta: {post_hero_cta_count} found.")
@@ -1543,6 +1615,15 @@ def validate_vsl(root: Path, manifest: dict, by_id: dict[str, dict], issues: lis
     vsl_quality = manifest.get("quality", {}).get("vsl", {})
     if not isinstance(vsl_quality, dict):
         vsl_quality = {}
+    vsl_source = artifact_path(root, by_id.get("vsl-deck-source"))
+    if not vsl_source or not vsl_source.exists():
+        issues.append("VSL Deck Studio requires canonical presentation/vsl-deck-plan.json source registered as vsl-deck-source.")
+    if vsl_quality.get("studio") != "vsl-deck-studio-v1":
+        issues.append("VSL quality metadata must record studio: vsl-deck-studio-v1.")
+    if vsl_quality.get("backend") not in {"pptxgenjs", "presentations-plugin"}:
+        issues.append("VSL quality metadata must record backend: pptxgenjs or presentations-plugin.")
+    if vsl_quality.get("editableTextChecked") is not True:
+        issues.append("VSL quality metadata must confirm editableTextChecked; flattened-image-only decks are not acceptable.")
     if suffix != ".pptx" and vsl_quality.get("nonPptxUserRequested") is not True:
         issues.append("Primary VSL deck must be a PowerPoint .pptx artifact. HTML belongs in vsl-preview, not vsl-deck.")
     if suffix == ".pptx":
@@ -1801,6 +1882,9 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         issues.append(f"Image quality metadata visualPlanPath does not exist: {plan_meta_path}")
     elif not plan_meta_path:
         issues.append("Image quality metadata must record visualPlanPath.")
+    plan_json_path = str(image_quality.get("visualPlanJsonPath", "visual-asset-plan.json")).strip()
+    if not (root / plan_json_path).exists():
+        issues.append(f"Canonical visual-asset-plan.json missing: {plan_json_path}")
     if image_quality.get("visualReusePolicy") != "artifact-specific-v1":
         issues.append("Image quality metadata must record visualReusePolicy: artifact-specific-v1.")
     if image_quality.get("visualPlanStage") != "post-content-blueprint":
@@ -1988,12 +2072,13 @@ def main() -> int:
             warnings.append(f"Artifact is not complete: {artifact.get('id', rel_path)} ({artifact.get('status')})")
 
     if deep_required:
+        validate_studio_source_control(root, manifest, issues)
         validate_sales_copy(root, by_id, issues, warnings)
         validate_visual_asset_plan(root, manifest, by_id, issues, warnings)
         validate_images(manifest, artifacts, issues, warnings)
         validate_logo(root, manifest, by_id, issues, warnings)
         validate_ads(root, by_id, issues, warnings)
-        validate_email_sequence(root, by_id, issues, warnings)
+        validate_email_sequence(root, manifest, by_id, issues, warnings)
         validate_sales_page(root, manifest, by_id, issues, warnings)
         validate_pdf(root, manifest, by_id, issues, warnings)
         validate_vsl(root, manifest, by_id, issues, warnings)

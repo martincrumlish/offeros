@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://offeros.local/schemas/workbook-blueprint.schema.json",
+  "title": "OfferOS PDF Workbook Blueprint",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema", "title", "buyerOutcome", "completionCriteria", "modules", "namedTools", "pageArchetypes"],
+  "properties": {
+    "schema": { "const": "offeros/workbook-blueprint/v1" },
+    "title": { "type": "string", "minLength": 4 },
+    "buyerOutcome": { "type": "string", "minLength": 12 },
+    "completionCriteria": { "type": "string", "minLength": 12 },
+    "modules": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "namedTools": {
+      "type": "array",
+      "minItems": 8,
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "pageArchetypes": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "enum": [
+          "cover",
+          "quick-start",
+          "module-divider",
+          "guide-lesson",
+          "decision-matrix",
+          "completed-example",
+          "blank-worksheet",
+          "checklist",
+          "script-swipe",
+          "audit-scorecard",
+          "implementation-plan",
+          "resource-index"
+        ]
+      }
+    }
+  }
+}
