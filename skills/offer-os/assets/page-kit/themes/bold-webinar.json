@@ -1,0 +1,20 @@
+{
+  "id": "bold-webinar",
+  "name": "bold-webinar",
+  "label": "Bold Webinar",
+  "themePreset": "bold-webinar",
+  "pageKitArchetype": "challenge-workshop",
+  "colors": {
+    "background": "#09090b",
+    "surface": "#18181b",
+    "ink": "#fafafa",
+    "muted": "#d4d4d8",
+    "primary": "#7c3aed",
+    "accent": "#facc15",
+    "dark": "#050505"
+  },
+  "fonts": {
+    "heading": "Arial Black, Arial, Helvetica, sans-serif",
+    "body": "Arial, Helvetica, sans-serif"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "premium-editorial",
+  "name": "premium-editorial",
+  "label": "Premium Editorial",
+  "themePreset": "premium-editorial",
+  "pageKitArchetype": "classic-vsl-longform",
+  "colors": {
+    "background": "#f4f1ea",
+    "surface": "#fffdf8",
+    "ink": "#191714",
+    "muted": "#5e615c",
+    "primary": "#0b6f63",
+    "accent": "#c94c2f",
+    "dark": "#15120d"
+  },
+  "fonts": {
+    "heading": "Georgia, Times New Roman, serif",
+    "body": "Arial, Helvetica, sans-serif"
+  }
+}

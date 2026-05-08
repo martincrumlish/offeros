@@ -1,0 +1,101 @@
+[data-opk-theme="classic-direct-response"] {
+  --opk-bg: #fbf7ef;
+  --opk-surface: #ffffff;
+  --opk-surface-alt: #f1eadf;
+  --opk-paper: #fffdf8;
+  --opk-text: #171717;
+  --opk-muted: #5d5a52;
+  --opk-ink: #111b18;
+  --opk-primary: #145c50;
+  --opk-accent: #f2b84b;
+  --opk-danger: #b8322a;
+  --opk-line: rgba(23, 23, 23, 0.14);
+  --opk-shadow: rgba(30, 24, 14, 0.16);
+  --opk-radius: 8px;
+  --opk-max: 1120px;
+}
+
+[data-opk-theme="light-saas-direct-response"] {
+  --opk-bg: #f7fafc;
+  --opk-surface: #ffffff;
+  --opk-surface-alt: #edf4fb;
+  --opk-paper: #ffffff;
+  --opk-text: #111827;
+  --opk-muted: #4b5563;
+  --opk-ink: #0f172a;
+  --opk-primary: #1268f3;
+  --opk-accent: #18c7a7;
+  --opk-danger: #d12f2f;
+  --opk-line: rgba(17, 24, 39, 0.13);
+  --opk-shadow: rgba(15, 23, 42, 0.13);
+  --opk-radius: 8px;
+  --opk-max: 1120px;
+}
+
+[data-opk-theme="bold-webinar"] {
+  --opk-bg: #11131a;
+  --opk-surface: #1a1f2e;
+  --opk-surface-alt: #252d42;
+  --opk-paper: #f8fbff;
+  --opk-text: #f7f9ff;
+  --opk-muted: #cfd8ee;
+  --opk-ink: #10131b;
+  --opk-primary: #ffcc29;
+  --opk-accent: #ff5b5f;
+  --opk-danger: #ff5b5f;
+  --opk-line: rgba(247, 249, 255, 0.17);
+  --opk-shadow: rgba(0, 0, 0, 0.3);
+  --opk-radius: 8px;
+  --opk-max: 1120px;
+}
+
+[data-opk-theme="premium-editorial"] {
+  --opk-bg: #f4f1ea;
+  --opk-surface: #ffffff;
+  --opk-surface-alt: #e8e1d4;
+  --opk-paper: #fffdf8;
+  --opk-text: #171511;
+  --opk-muted: #5f5b52;
+  --opk-ink: #14120e;
+  --opk-primary: #0b5d57;
+  --opk-accent: #b7442c;
+  --opk-danger: #9f2d25;
+  --opk-line: rgba(20, 18, 14, 0.14);
+  --opk-shadow: rgba(40, 30, 16, 0.15);
+  --opk-radius: 6px;
+  --opk-max: 1120px;
+}
+
+[data-opk-theme="fitness-performance"] {
+  --opk-bg: #07090d;
+  --opk-surface: #111722;
+  --opk-surface-alt: #1b2433;
+  --opk-paper: #f8fafc;
+  --opk-text: #f8fafc;
+  --opk-muted: #c8d3e1;
+  --opk-ink: #080b10;
+  --opk-primary: #9cff3c;
+  --opk-accent: #19d3ff;
+  --opk-danger: #ff4d3d;
+  --opk-line: rgba(248, 250, 252, 0.16);
+  --opk-shadow: rgba(0, 0, 0, 0.34);
+  --opk-radius: 6px;
+  --opk-max: 1120px;
+}
+
+[data-opk-theme="creator-workshop"] {
+  --opk-bg: #fff7ef;
+  --opk-surface: #ffffff;
+  --opk-surface-alt: #ffe8d6;
+  --opk-paper: #fffdf8;
+  --opk-text: #201713;
+  --opk-muted: #6a5750;
+  --opk-ink: #1d1510;
+  --opk-primary: #ea5b31;
+  --opk-accent: #2458d3;
+  --opk-danger: #bd2d2d;
+  --opk-line: rgba(32, 23, 19, 0.14);
+  --opk-shadow: rgba(84, 44, 22, 0.14);
+  --opk-radius: 8px;
+  --opk-max: 1120px;
+}

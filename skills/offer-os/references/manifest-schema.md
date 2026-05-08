@@ -113,6 +113,8 @@ A deep run should register:
 - `logo`
 - `visual-asset-plan`
 - `sales-copy`
+- `sales-page-blueprint`
+- `theme`
 - `sales-page`
 - `pdf-product-source`
 - `pdf-product`
@@ -222,6 +224,15 @@ For deep mode, include module-level quality metadata when applicable:
       "offerStackContract": "direct-response-buy-box-v1",
       "framework": "direct-response-long-form-v1",
       "compositionContract": "direct-response-composition-v2",
+      "pageKit": "offeros-page-kit-v1",
+      "pageKitBuilder": "offeros-page-kit-builder-v1",
+      "pageKitArchetype": "classic-vsl-longform",
+      "themePreset": "classic-direct-response",
+      "pageKitBlueprintUsed": true,
+      "themeTokensUsed": true,
+      "checkoutTarget": "#checkout",
+      "vslPlacement": "main-column-stacked",
+      "orderFormIncluded": false,
       "copyBlueprintPresent": true,
       "sectionMarkersPresent": true,
       "visibleWordCount": 3200,

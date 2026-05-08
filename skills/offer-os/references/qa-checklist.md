@@ -41,8 +41,9 @@ Check:
 - sales page loads
 - required `data-offeros-section` markers are present
 - sales page follows the direct-response-long-form-v1 spine and proof/demo appears before the main offer stack
-- direct-response hero has `data-offeros-hero-layout="stacked-vsl"`, centered copy stack, large centered `data-offeros-hero-video`, `data-offeros-price-strip` below it, CTA to `#buy`, and `data-offeros-trust-row`; it is not a two-column/split SaaS hero
-- offer stack uses `id="buy"`, `data-offeros-product-bundle`, `data-offeros-offer-checklist`, `data-offeros-value-row`, `data-offeros-stack-cta`, and `data-offeros-access-copy`
+- sales page declares `data-offeros-page-kit="v1"`, `data-offeros-builder="offeros-page-kit-builder-v1"`, and `data-offeros-vsl-placement="main-column-stacked"`
+- direct-response hero has `data-offeros-hero-layout="stacked-vsl"`, centered copy stack, large centered `data-offeros-hero-video`, `data-offeros-price-strip` below it, CTA to `#checkout`, and `data-offeros-trust-row`; it is not a two-column/split SaaS hero
+- offer stack uses `id="checkout"` or `data-offeros-buy-section`, `data-offeros-product-bundle`, `data-offeros-offer-checklist`, `data-offeros-value-row`, `data-offeros-stack-cta`, and `data-offeros-access-copy`
 - no broken images
 - no mobile horizontal overflow
 - text is readable

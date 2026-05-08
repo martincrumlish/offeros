@@ -29,6 +29,8 @@ DEEP_REQUIRED_IDS = [
     "logo",
     "visual-asset-plan",
     "sales-copy",
+    "sales-page-blueprint",
+    "theme",
     "sales-page",
     "pdf-product-source",
     "pdf-product",
@@ -120,6 +122,23 @@ ALLOWED_SALES_PAGE_TYPES = {
     "proof-led-case-study-page",
     "webinar-workshop-registration",
     "sales-letter-checkout",
+}
+
+ALLOWED_PAGE_KIT_ARCHETYPES = {
+    "classic-vsl-longform",
+    "modern-vsl-software",
+    "one-page-tripwire",
+    "challenge-workshop",
+    "toolkit-workbook",
+}
+
+ALLOWED_PAGE_KIT_THEMES = {
+    "light-saas-direct-response",
+    "classic-direct-response",
+    "bold-webinar",
+    "premium-editorial",
+    "fitness-performance",
+    "creator-workshop",
 }
 
 BANNED_VISIBLE_VSL_STAGE_LABELS = {
@@ -395,6 +414,28 @@ def anchor_hrefs_with_marker(html_text: str, marker: str) -> list[str]:
         if href:
             hrefs.append(href.group(1).strip())
     return hrefs
+
+
+def html_attr_value(html_text: str, attr: str) -> str:
+    match = re.search(rf"\b{re.escape(attr)}\s*=\s*[\"']([^\"']+)[\"']", html_text, flags=re.I)
+    return match.group(1).strip() if match else ""
+
+
+def order_form_signals(html_text: str) -> list[str]:
+    signals = []
+    lower = html_text.lower()
+    if re.search(r"<form\b", html_text, flags=re.I):
+        signals.append("contains a <form> element")
+    marker_patterns = {
+        "order form marker": r"data-offeros-section\s*=\s*[\"'](?:order|order-form|checkout|payment)[\"']|data-order-form|data-checkout-form",
+        "payment field": r"\b(?:card number|credit card|cvv|cvc|expiry|expiration|billing address|stripe|paypal)\b",
+        "order-form class/id": r"\b(?:order-form|checkout-form|payment-form|billing-form|card-field|order-bump)\b",
+        "submit-order language": r"\b(?:complete order|submit order|place order|pay now)\b",
+    }
+    for label, pattern in marker_patterns.items():
+        if re.search(pattern, lower, flags=re.I):
+            signals.append(label)
+    return signals
 
 
 def section_opening_tag_has(html_text: str, section_id: str, pattern: str) -> bool:
@@ -1019,6 +1060,75 @@ def validate_sales_copy(root: Path, by_id: dict[str, dict], issues: list[str], w
             issues.append("Sales copy Section Blueprint must place proof/demo before offer-stack.")
 
 
+def validate_page_kit_contract(
+    root: Path,
+    html_text: str,
+    manifest: dict,
+    by_id: dict[str, dict],
+    sales_quality: dict,
+    issues: list[str],
+) -> None:
+    if manifest.get("mode") != "deep":
+        return
+
+    if html_attr_value(html_text, "data-offeros-page-kit") != "v1":
+        issues.append('Deep sales pages must be built by OfferOS Page Kit and declare data-offeros-page-kit="v1".')
+    if html_attr_value(html_text, "data-offeros-builder") != "offeros-page-kit-builder-v1":
+        issues.append('Deep sales pages must declare data-offeros-builder="offeros-page-kit-builder-v1".')
+    if html_attr_value(html_text, "data-offeros-vsl-placement") != "main-column-stacked":
+        issues.append('Deep sales pages must declare data-offeros-vsl-placement="main-column-stacked".')
+
+    html_archetype = html_attr_value(html_text, "data-offeros-archetype")
+    html_theme = html_attr_value(html_text, "data-offeros-theme")
+    archetype = str(sales_quality.get("pageKitArchetype") or html_archetype).strip()
+    theme = str(sales_quality.get("themePreset") or html_theme).strip()
+    if archetype not in ALLOWED_PAGE_KIT_ARCHETYPES:
+        issues.append("Sales page quality metadata must record a valid pageKitArchetype from the OfferOS Page Kit.")
+    if theme not in ALLOWED_PAGE_KIT_THEMES:
+        issues.append("Sales page quality metadata must record a valid themePreset from the OfferOS Page Kit.")
+    if html_archetype and archetype and html_archetype != archetype:
+        issues.append("Sales page pageKitArchetype metadata must match data-offeros-archetype.")
+    if html_theme and theme and html_theme != theme:
+        issues.append("Sales page themePreset metadata must match data-offeros-theme.")
+
+    expected_quality = {
+        "pageKit": "offeros-page-kit-v1",
+        "pageKitBuilder": "offeros-page-kit-builder-v1",
+        "checkoutTarget": "#checkout",
+        "vslPlacement": "main-column-stacked",
+    }
+    for field, expected in expected_quality.items():
+        if sales_quality.get(field) != expected:
+            issues.append(f"Sales page quality metadata must record {field}: {expected}.")
+    if sales_quality.get("pageKitBlueprintUsed") is not True:
+        issues.append("Sales page quality metadata must confirm pageKitBlueprintUsed.")
+    if sales_quality.get("themeTokensUsed") is not True:
+        issues.append("Sales page quality metadata must confirm themeTokensUsed.")
+    if sales_quality.get("orderFormIncluded") is not False:
+        issues.append("Sales page quality metadata must confirm orderFormIncluded: false.")
+
+    blueprint_path = artifact_path(root, by_id.get("sales-page-blueprint"))
+    if not blueprint_path or not blueprint_path.exists():
+        issues.append("Deep sales pages must register a sales-page-blueprint artifact before index.html.")
+    theme_path = artifact_path(root, by_id.get("theme"))
+    if not theme_path or not theme_path.exists():
+        issues.append("Deep sales pages must register a theme artifact before index.html.")
+
+    signals = order_form_signals(html_text)
+    if signals:
+        issues.append("Sales page must not contain an order form or checkout form; link CTAs to #checkout instead: " + "; ".join(signals[:5]) + ".")
+
+    cta_hrefs = anchor_hrefs_with_marker(html_text, "data-offeros-cta")
+    stack_cta_hrefs = anchor_hrefs_with_marker(html_text, "data-offeros-stack-cta")
+    if "#checkout" not in cta_hrefs:
+        issues.append('Sales page must include at least one data-offeros-cta link to the checkout placeholder href="#checkout".')
+    if stack_cta_hrefs and "#checkout" not in stack_cta_hrefs:
+        issues.append('Offer-stack purchase CTA must link to the checkout placeholder href="#checkout".')
+    banned_targets = [href for href in cta_hrefs if href.lower() in {"#order", "#order-form", "#payment", "#checkout-form"}]
+    if banned_targets:
+        issues.append("Sales page CTAs must not target on-page order/payment form anchors: " + ", ".join(sorted(set(banned_targets))) + ".")
+
+
 def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
     page_artifact = by_id.get("sales-page")
     page_path = artifact_path(root, page_artifact)
@@ -1058,6 +1168,7 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
             issues.append("Direct-response sales page quality metadata must confirm copyBlueprintPresent.")
         if sales_quality.get("compositionContract") != "direct-response-composition-v2":
             issues.append("Direct-response sales page quality metadata must record compositionContract: direct-response-composition-v2.")
+    validate_page_kit_contract(root, html_text, manifest, by_id, sales_quality, issues)
 
     visible_text = visible_text_from_html(html_text)
     word_count = len(re.findall(r"\b[\w'-]+\b", visible_text))
@@ -1185,8 +1296,10 @@ def validate_direct_response_page_contract(html_text: str, manifest: dict, sales
                 issues.append("Direct-response hero price strip must show manifest.price.")
             if not re.search(r"\b(total value|value|normally|regular|today|includes?)\b", visible_text_from_html(price_strip), flags=re.I):
                 issues.append("Direct-response hero price strip must include value context and a short stack summary.")
-        if not any(href == "#buy" for href in anchor_hrefs_with_marker(hero, "data-offeros-cta")):
-            issues.append('Direct-response hero must include a primary data-offeros-cta link with href="#buy".')
+        hero_cta_hrefs = anchor_hrefs_with_marker(hero, "data-offeros-cta")
+        expected_checkout_target = str(sales_quality.get("checkoutTarget") or "#checkout")
+        if expected_checkout_target not in hero_cta_hrefs:
+            issues.append(f'Direct-response hero must include a primary data-offeros-cta link with href="{expected_checkout_target}".')
         if not has_marker(hero, "data-offeros-trust-row"):
             issues.append("Direct-response hero must include a trust row marked data-offeros-trust-row.")
         else:
@@ -1232,8 +1345,8 @@ def validate_direct_response_page_contract(html_text: str, manifest: dict, sales
 
     offer_stack = section_html(html_text, "offer-stack")
     if offer_stack:
-        if not section_opening_tag_has(html_text, "offer-stack", r'\bid\s*=\s*["\']buy["\']|\bdata-offeros-buy-section(?:\s|=|>)'):
-            issues.append('Direct-response offer stack must be the buy section with id="buy" or data-offeros-buy-section.')
+        if not section_opening_tag_has(html_text, "offer-stack", r'\bid\s*=\s*["\']checkout["\']|\bdata-offeros-buy-section(?:\s|=|>)'):
+            issues.append('Direct-response offer stack must be the checkout section with id="checkout" or data-offeros-buy-section.')
         if not has_marker(offer_stack, "data-offeros-product-bundle"):
             issues.append("Direct-response offer stack must include a product bundle visual marked data-offeros-product-bundle.")
         if not has_marker(offer_stack, "data-offeros-offer-checklist"):

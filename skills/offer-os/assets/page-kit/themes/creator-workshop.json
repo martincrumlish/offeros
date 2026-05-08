@@ -1,0 +1,20 @@
+{
+  "id": "creator-workshop",
+  "name": "creator-workshop",
+  "label": "Creator Workshop",
+  "themePreset": "creator-workshop",
+  "pageKitArchetype": "challenge-workshop",
+  "colors": {
+    "background": "#fff7ed",
+    "surface": "#ffffff",
+    "ink": "#1c1917",
+    "muted": "#78716c",
+    "primary": "#db2777",
+    "accent": "#f59e0b",
+    "dark": "#2b111c"
+  },
+  "fonts": {
+    "heading": "Arial, Helvetica, sans-serif",
+    "body": "Arial, Helvetica, sans-serif"
+  }
+}

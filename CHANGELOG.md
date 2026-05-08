@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.0
+
+- Adds the OfferOS Page Kit sales-page framework: intake gate, sales-page blueprint schema, theme schema, archetypes, themes, partials, CSS, JS, and a static HTML builder.
+- Makes deep-mode sales pages builder-generated instead of handwritten: `scripts/build_sales_page.py` must produce `index.html` with Page Kit metadata, stacked main-column VSL placement, and approved section markers.
+- Limits Page Kit source options to the agreed release archetypes and theme presets, and makes the builder reject unapproved legacy/experimental values.
+- Changes the default sales-page purchase handoff to `#checkout` and forbids embedded checkout/order/payment forms in generated sales pages.
+- Extends validation and self-test coverage for non-builder pages, two-column hero drift, missing Page Kit metadata, missing blueprint/theme artifacts, and on-page checkout/order-form drift.
+
 ## 0.10.5
 
 - Changes the logo workflow to single-final-logo mode: one imagegen logo lockup at `assets/logo.png`, not three options or alternate lockups.

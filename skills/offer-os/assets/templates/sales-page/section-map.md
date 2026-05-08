@@ -9,7 +9,7 @@ Each section must include `data-offeros-section="<id>"` so QA can validate struc
 | Section | ID | Conversion Job | Required Content | Visual/Asset |
 | --- | --- | --- | --- | --- |
 | Header | `header` | Establish brand and orientation | Logo, minimal links if needed | Logo |
-| Hero | `hero` | Create immediate desire and buying momentum | Centered buyer filter pill, prehead, specific headline, benefit lead, large stacked VSL/video frame, price strip, CTA to `#buy`, trust row | Large hero VSL thumbnail/video frame |
+| Hero | `hero` | Create immediate desire and buying momentum | Centered buyer filter pill, prehead, specific headline, benefit lead, large stacked VSL/video frame, price strip, CTA to `#checkout`, trust row | Large hero VSL thumbnail/video frame |
 | VSL | `vsl` | Deepen the pitch after the hero | VSL thumbnail/preview, play CTA, short promise, bridge from hero | VSL thumbnail |
 | Problem Diagnosis | `problem` | Make the buyer feel understood | Specific pain, hidden cost, current state | Problem visual |
 | Agitation | `agitation` | Make inaction feel expensive | Cost of delay, compounding consequence, emotional frustration, business/operational drag | Cost-of-delay graphic or callout |
@@ -68,7 +68,7 @@ Proof/demo must appear before the main offer stack. Do not ask for the sale befo
 
 Required offer-stack contract:
 
-- `data-offeros-section="offer-stack"` must also have `id="buy"` or `data-offeros-buy-section`.
+- `data-offeros-section="offer-stack"` must also have `id="checkout"` or `data-offeros-buy-section`.
 - It must include a product bundle visual marked `data-offeros-product-bundle`.
 - It must include a large checklist marked `data-offeros-offer-checklist` with 8+ concrete deliverables; do not replace this with cards only.
 - It must include a normally/today or total-value/today row marked `data-offeros-value-row`.

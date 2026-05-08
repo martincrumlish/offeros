@@ -1,0 +1,45 @@
+<section
+  class="opk-hero opk-hero--stacked-vsl"
+  data-offeros-section="hero"
+  data-offeros-hero-layout="stacked-vsl"
+  data-offeros-hero-contract="stacked-vsl-hero-v2"
+  data-offeros-template="offeros-stacked-vsl-v2">
+  <div class="opk-container opk-hero__inner" data-offeros-hero-inner>
+    <div class="opk-hero__copy" data-offeros-hero-copy-stack>
+      <p class="opk-pill" data-offeros-buyer-filter>{{buyer_filter}}</p>
+      <p class="opk-eyebrow">{{prehead}}</p>
+      <h1>{{headline}}</h1>
+      <p class="opk-lead">{{benefit_lead}}</p>
+    </div>
+
+    <figure
+      class="opk-vsl-frame opk-vsl-frame--hero"
+      data-offeros-hero-video
+      data-offeros-hero-video-prominence="primary"
+      data-offeros-hero-video-size="large">
+      <img src="{{hero_vsl_thumbnail}}" alt="{{offer_name}} VSL preview" data-offeros-video-thumbnail>
+      <button class="opk-play" type="button" data-opk-video-play data-offeros-video-play aria-label="Play VSL">
+        <span aria-hidden="true"></span>
+      </button>
+      <figcaption class="opk-video-caption" data-offeros-video-caption>
+        <strong>{{video_label}}</strong>
+        <span>{{video_promise}}</span>
+      </figcaption>
+    </figure>
+
+    <div class="opk-price-strip" data-offeros-price-strip>
+      <div>
+        <span class="opk-price">{{price}}</span>
+        <small>{{value_context}}</small>
+      </div>
+      <p>{{stack_summary}}</p>
+      <a class="opk-cta" data-offeros-cta href="#checkout">{{primary_cta}}</a>
+    </div>
+
+    <ul class="opk-trust-row" data-offeros-trust-row>
+      <li>{{trust_bullet_1}}</li>
+      <li>{{trust_bullet_2}}</li>
+      <li>{{trust_bullet_3}}</li>
+    </ul>
+  </div>
+</section>

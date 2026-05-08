@@ -1,0 +1,8 @@
+{
+  "pageType": "direct-response-long-form-vsl",
+  "pageKitArchetype": "direct-response-long-form-vsl",
+  "themePreset": "classic-direct-response",
+  "blocks": [
+    { "id": "hero" }
+  ]
+}

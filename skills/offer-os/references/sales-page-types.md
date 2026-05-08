@@ -19,7 +19,7 @@ Use for: cold traffic, low-ticket/front-end offers, new mechanisms, generated of
 Minimum structure:
 
 - Header with logo, CTA, and minimal links.
-- Hero built from the locked `offeros-stacked-vsl-v2` shell: centered buyer filter pill, prehead, specific headline, benefit lead, large 16:9 VSL/video frame below the headline, price strip below the VSL, CTA to `#buy`, and trust row.
+- Hero built from the locked `offeros-stacked-vsl-v2` shell: centered buyer filter pill, prehead, specific headline, benefit lead, large 16:9 VSL/video frame below the headline, price strip below the VSL, CTA to `#checkout`, and trust row.
 - VSL section below the hero that deepens the pitch; do not move the first VSL/video cue out of the hero.
 - Problem diagnosis with at least 3 specific symptoms and hidden costs.
 - Agitation section that shows the cost of delay or compounding pain.

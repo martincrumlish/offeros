@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://offeros.local/schemas/sales-page-blueprint.schema.json",
+  "title": "OfferOS Sales Page Blueprint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "pageType",
+    "pageKitArchetype",
+    "themePreset",
+    "checkout",
+    "hero",
+    "requiredSections",
+    "offerStack",
+    "optionalBlocks",
+    "builder"
+  ],
+  "properties": {
+    "schema": { "const": "offeros/sales-page-blueprint/v1" },
+    "pageType": { "const": "direct-response-long-form-vsl" },
+    "pageKitArchetype": {
+      "enum": ["classic-vsl-longform", "modern-vsl-software", "one-page-tripwire", "challenge-workshop", "toolkit-workbook"]
+    },
+    "themePreset": {
+      "enum": ["light-saas-direct-response", "classic-direct-response", "bold-webinar", "premium-editorial", "fitness-performance", "creator-workshop"]
+    },
+    "framework": { "const": "direct-response-long-form-v1" },
+    "compositionContract": { "const": "direct-response-composition-v2" },
+    "checkout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "mode", "orderForm"],
+      "properties": {
+        "target": { "type": "string", "default": "#checkout" },
+        "mode": { "enum": ["anchor", "external-link"] },
+        "orderForm": { "const": false },
+        "notes": { "type": "string" }
+      },
+      "not": {
+        "properties": {
+          "mode": { "const": "embedded-form" }
+        },
+        "required": ["mode"]
+      }
+    },
+    "hero": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "layout", "template", "videoFrame", "stackOrder"],
+      "properties": {
+        "contract": { "const": "stacked-vsl-hero-v2" },
+        "layout": { "const": "stacked-vsl" },
+        "template": { "const": "offeros-stacked-vsl-v2" },
+        "videoFrame": { "const": "large-16x9" },
+        "requiredMarkers": {
+          "type": "array",
+          "contains": { "const": "data-offeros-hero-video" },
+          "items": {
+            "enum": [
+              "data-offeros-hero-inner",
+              "data-offeros-hero-copy-stack",
+              "data-offeros-buyer-filter",
+              "data-offeros-hero-video",
+              "data-offeros-video-thumbnail",
+              "data-offeros-video-play",
+              "data-offeros-video-caption",
+              "data-offeros-price-strip"
+            ]
+          }
+        },
+        "stackOrder": {
+          "type": "array",
+          "prefixItems": [
+            { "const": "copy-stack" },
+            { "const": "vsl-frame" },
+            { "const": "price-strip" },
+            { "const": "trust-row" }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "disallowedLayouts": {
+          "type": "array",
+          "items": {
+            "enum": ["two-column", "split-screen", "hero-grid", "hero-split", "hero-visual", "hero-mockup", "saas-product-hero"]
+          }
+        }
+      }
+    },
+    "requiredSections": {
+      "type": "array",
+      "minItems": 16,
+      "prefixItems": [
+        { "$ref": "#/$defs/headerSection" },
+        { "$ref": "#/$defs/heroSection" },
+        { "$ref": "#/$defs/vslSection" },
+        { "$ref": "#/$defs/problemSection" },
+        { "$ref": "#/$defs/agitationSection" },
+        { "$ref": "#/$defs/failedAlternativesSection" },
+        { "$ref": "#/$defs/mechanismSection" },
+        { "$ref": "#/$defs/proofSection" },
+        { "$ref": "#/$defs/beforeAfterSection" },
+        { "$ref": "#/$defs/productSection" },
+        { "$ref": "#/$defs/offerStackSection" },
+        { "$ref": "#/$defs/fitSection" },
+        { "$ref": "#/$defs/pricingSection" },
+        { "$ref": "#/$defs/guaranteeSection" },
+        { "$ref": "#/$defs/faqSection" },
+        { "$ref": "#/$defs/finalCtaSection" }
+      ],
+      "items": { "$ref": "#/$defs/section" }
+    },
+    "offerStack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "anchorId", "requiredMarkers", "minimumDeliverables"],
+      "properties": {
+        "contract": { "const": "direct-response-buy-box-v1" },
+        "anchorId": { "const": "checkout" },
+        "requiredMarkers": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "enum": [
+              "data-offeros-product-bundle",
+              "data-offeros-offer-checklist",
+              "data-offeros-value-row",
+              "data-offeros-cta",
+              "data-offeros-stack-cta",
+              "data-offeros-access-copy"
+            ]
+          }
+        },
+        "minimumDeliverables": { "type": "integer", "minimum": 8 },
+        "orderForm": { "const": false }
+      }
+    },
+    "optionalBlocks": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "founder-note",
+          "case-study",
+          "demo-screens",
+          "comparison-table",
+          "bonus-stack",
+          "use-cases",
+          "implementation-roadmap",
+          "risk-reversal-callout",
+          "testimonial-strip",
+          "technical-requirements"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "qualityTargets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "minimumVisibleWords": { "type": "integer", "minimum": 2500, "default": 2500 },
+        "minimumFaqItems": { "type": "integer", "minimum": 7, "default": 7 },
+        "minimumCtas": { "type": "integer", "minimum": 4, "default": 4 },
+        "minimumPostHeroCtas": { "type": "integer", "minimum": 3, "default": 3 },
+        "maxVslSetupWords": { "type": "integer", "maximum": 220, "default": 220 },
+        "maxParagraphWords": { "type": "integer", "maximum": 55, "default": 55 }
+      }
+    },
+    "builder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "sourceTemplate", "themePath", "outputPath", "buildMode", "generatedAt"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1 },
+        "sourceTemplate": { "const": "assets/templates/sales-page/page-skeleton.html" },
+        "themePath": { "type": "string", "default": "theme.json" },
+        "outputPath": { "type": "string", "default": "index.html" },
+        "buildMode": { "enum": ["deep", "standard", "fast"] },
+        "generatedAt": { "type": "string" },
+        "generator": { "type": "string" },
+        "contentSource": { "type": "string" },
+        "assetPlanPath": { "type": "string", "default": "visual-asset-plan.md" },
+        "qa": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sectionMarkersChecked": { "type": "boolean" },
+            "noOrderFormChecked": { "type": "boolean" },
+            "mobileChecked": { "type": "boolean" },
+            "desktopChecked": { "type": "boolean" },
+            "contrastChecked": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "disallowedBlocks": {
+      "type": "array",
+      "items": { "enum": ["order-form", "embedded-checkout", "payment-fields", "credit-card-form"] },
+      "default": ["order-form", "embedded-checkout", "payment-fields", "credit-card-form"]
+    }
+  },
+  "$defs": {
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "job", "requiredContent", "marker"],
+      "properties": {
+        "id": { "type": "string" },
+        "job": { "type": "string", "minLength": 8 },
+        "requiredContent": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 3 }
+        },
+        "marker": { "type": "string", "pattern": "^data-offeros-section=" },
+        "visual": { "type": "string" },
+        "optionalBlocks": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "headerSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "header" } } }] },
+    "heroSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "hero" } } }] },
+    "vslSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "vsl" } } }] },
+    "problemSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "problem" } } }] },
+    "agitationSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "agitation" } } }] },
+    "failedAlternativesSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "failed-alternatives" } } }] },
+    "mechanismSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "mechanism" } } }] },
+    "proofSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "proof" } } }] },
+    "beforeAfterSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "before-after" } } }] },
+    "productSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "product" } } }] },
+    "offerStackSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "offer-stack" } } }] },
+    "fitSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "fit" } } }] },
+    "pricingSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "pricing" } } }] },
+    "guaranteeSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "guarantee" } } }] },
+    "faqSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "faq" } } }] },
+    "finalCtaSection": { "allOf": [{ "$ref": "#/$defs/section" }, { "properties": { "id": { "const": "final-cta" } } }] }
+  }
+}

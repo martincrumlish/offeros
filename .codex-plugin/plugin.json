@@ -1,7 +1,7 @@
 {
   "name": "offer-os",
-  "version": "0.10.5",
-  "description": "Build deep commercial offer systems in Codex: offer architecture, design direction, one-logo imagegen-based locked logo lockups/images, imagegen-required primary conversion visuals, copy-blueprint-driven visual plans, direct-response long-form sales pages, imagegen visual worker dispatch, customer-ready PDF products, ads, emails, VSL decks, delivery dashboards, and QA.",
+  "version": "0.11.0",
+  "description": "Build deep commercial offer systems in Codex: offer architecture, design direction, one-logo imagegen-based locked logo lockups/images, intake-gated copy-blueprint visual plans, OfferOS Page Kit direct-response sales pages, imagegen visual worker dispatch, customer-ready PDF products, ads, emails, VSL decks, delivery dashboards, and QA.",
   "author": {
     "name": "OfferOS",
     "email": "martincrumlish@users.noreply.github.com",
@@ -24,7 +24,7 @@
   "interface": {
     "displayName": "OfferOS",
     "shortDescription": "Build complete offer systems",
-    "longDescription": "OfferOS orchestrates Codex through a deep full offer build: strategy, design, one final no-SVG imagegen-based locked logo lockup, imagegen-required primary conversion visuals that reuse assets/logo.png as the exact logo reference, copy-blueprint-driven artifact visuals, direct-response long-form sales pages with proof-before-price structure, imagegen visual worker dispatch when agents are authorized, customer-ready PDF product, ad assets, email sequence, VSL deck, delivery dashboard, and QA gates.",
+    "longDescription": "OfferOS orchestrates Codex through a deep full offer build: strategy, design, one final no-SVG imagegen-based locked logo lockup, imagegen-required primary conversion visuals that reuse assets/logo.png as the exact logo reference, intake-gated copy and visual planning, OfferOS Page Kit static HTML/CSS/JS direct-response sales pages with stacked main-column VSL hero and #checkout handoff, imagegen visual worker dispatch when agents are authorized, customer-ready PDF product, ad assets, email sequence, VSL deck, delivery dashboard, and QA gates.",
     "developerName": "OfferOS",
     "category": "Productivity",
     "capabilities": [

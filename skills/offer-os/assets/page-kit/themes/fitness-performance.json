@@ -1,0 +1,20 @@
+{
+  "id": "fitness-performance",
+  "name": "fitness-performance",
+  "label": "Fitness Performance",
+  "themePreset": "fitness-performance",
+  "pageKitArchetype": "classic-vsl-longform",
+  "colors": {
+    "background": "#0c0f0e",
+    "surface": "#151a18",
+    "ink": "#f8faf9",
+    "muted": "#cbd5d1",
+    "primary": "#16a34a",
+    "accent": "#f97316",
+    "dark": "#050706"
+  },
+  "fonts": {
+    "heading": "Arial Black, Arial, Helvetica, sans-serif",
+    "body": "Arial, Helvetica, sans-serif"
+  }
+}

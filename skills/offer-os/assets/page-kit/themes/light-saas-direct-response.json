@@ -1,0 +1,20 @@
+{
+  "id": "light-saas-direct-response",
+  "name": "light-saas-direct-response",
+  "label": "Light SaaS Direct Response",
+  "themePreset": "light-saas-direct-response",
+  "pageKitArchetype": "modern-vsl-software",
+  "colors": {
+    "background": "#f7f9fc",
+    "surface": "#ffffff",
+    "ink": "#101828",
+    "muted": "#667085",
+    "primary": "#2563eb",
+    "accent": "#12b76a",
+    "dark": "#0f172a"
+  },
+  "fonts": {
+    "heading": "Inter, Arial, Helvetica, sans-serif",
+    "body": "Inter, Arial, Helvetica, sans-serif"
+  }
+}

@@ -269,14 +269,16 @@ Use this recipe for every complete paid front-end offer unless the user explicit
    - `# Guarantee`
    - `# FAQ`
    - `# Final CTA`
-6. Create `index.html` from `assets/templates/sales-page/page-skeleton.html`. Do not start from a blank page, do not delete the critical hero CSS, and do not replace the locked hero shell with a custom hero.
-7. Use the exact stacked VSL-first hero v2 contract from `assets/templates/sales-page/section-map.md`: `data-offeros-hero-layout="stacked-vsl"`, `data-offeros-hero-contract="stacked-vsl-hero-v2"`, `data-offeros-template="offeros-stacked-vsl-v2"`, `oo-hero oo-hero-stacked-vsl`, centered buyer filter, prehead, H1, benefit lead, `data-offeros-hero-copy-stack`, large centered `.oo-vsl-frame` with `data-offeros-hero-video`, `data-offeros-hero-video-prominence="primary"`, `data-offeros-hero-video-size="large"`, thumbnail marked `data-offeros-video-thumbnail`, play button marked `data-offeros-video-play`, caption marked `data-offeros-video-caption`, `data-offeros-price-strip` below the video, CTA to `#buy`, and `data-offeros-trust-row`.
-8. Use the exact offer-stack buy-box contract from `assets/templates/sales-page/section-map.md`: `id="buy"`, product bundle visual, `data-offeros-offer-checklist` with 8+ deliverables, `data-offeros-value-row`, large `data-offeros-stack-cta`, and `data-offeros-access-copy`.
-9. Keep every required `data-offeros-section` marker from `assets/templates/sales-page/section-map.md`, including the separate `agitation`, `failed-alternatives`, `mechanism`, and pre-offer `proof` sections.
+6. Write `sales-page-blueprint.json` from `schemas/sales-page-blueprint.schema.json`. It must select exactly one Page Kit archetype from `classic-vsl-longform`, `modern-vsl-software`, `one-page-tripwire`, `challenge-workshop`, or `toolkit-workbook`; set the same value in `pageKitArchetype`; set `checkout.target` or `checkoutTarget` to `#checkout`; set `orderForm` to false; and map required plus optional sections to approved Page Kit blocks.
+7. Write `theme.json` from `schemas/theme.schema.json` or a compatible Page Kit theme preset in `assets/page-kit/themes/`. It must select exactly one theme preset from `light-saas-direct-response`, `classic-direct-response`, `bold-webinar`, `premium-editorial`, `fitness-performance`, or `creator-workshop`. It controls style, typography, spacing, card treatment, and motion; it must not alter the conversion structure.
+8. Build `index.html` only by running `scripts/build_sales_page.py`. Do not hand-write `index.html`, do not start from a blank page, and do not replace the locked hero or offer-stack shell with a custom layout.
+9. Use the exact stacked VSL-first hero v2 contract from `assets/templates/sales-page/section-map.md`: `data-offeros-hero-layout="stacked-vsl"`, `data-offeros-hero-contract="stacked-vsl-hero-v2"`, `data-offeros-template="offeros-stacked-vsl-v2"`, `oo-hero oo-hero-stacked-vsl`, centered buyer filter, prehead, H1, benefit lead, `data-offeros-hero-copy-stack`, large centered `.oo-vsl-frame` with `data-offeros-hero-video`, `data-offeros-hero-video-prominence="primary"`, `data-offeros-hero-video-size="large"`, thumbnail marked `data-offeros-video-thumbnail`, play button marked `data-offeros-video-play`, caption marked `data-offeros-video-caption`, `data-offeros-price-strip` below the video, CTA to `#checkout`, and `data-offeros-trust-row`.
+10. Use the exact offer-stack buy-box contract from `assets/templates/sales-page/section-map.md`: `id="checkout"` or `data-offeros-buy-section`, product bundle visual, `data-offeros-offer-checklist` with 8+ deliverables, `data-offeros-value-row`, large `data-offeros-stack-cta`, and `data-offeros-access-copy`. Do not include an embedded checkout, order form, payment fields, or credit-card form.
+11. Keep every required `data-offeros-section` marker from `assets/templates/sales-page/section-map.md`, including the separate `agitation`, `failed-alternatives`, `mechanism`, and pre-offer `proof` sections.
    Proof/demo must appear before the main offer stack.
-10. Follow this DOM order: `hero`, `vsl`, `problem`, `agitation`, `failed-alternatives`, `mechanism`, `proof`, `before-after`, `product`, `offer-stack`, `fit`, `pricing`, `guarantee`, `faq`, `final-cta`.
-11. Write unique benefit copy for every offer-stack item. Do not map a repeated sentence over multiple cards.
-12. Use direct-response composition rules:
+12. Follow this DOM order: `hero`, `vsl`, `problem`, `agitation`, `failed-alternatives`, `mechanism`, `proof`, `before-after`, `product`, `offer-stack`, `fit`, `pricing`, `guarantee`, `faq`, `final-cta`.
+13. Write unique benefit copy for every offer-stack item. Do not map a repeated sentence over multiple cards.
+14. Use direct-response composition rules:
     - Hero visible copy: 90-180 words, plus price strip and trust bullets.
     - Hero layout: stacked VSL-first only. Do not use a two-column, side-by-side, split-screen, `hero-grid`, `hero-split`, `hero-visual`, `hero-mockup`, product/dashboard mockup hero art, or SaaS product hero with the video small on the right.
     - VSL section: 80-220 words, one thumbnail/video block, 3-5 bullets, and one CTA. Do not put the whole sales letter in the VSL section.
@@ -286,23 +288,26 @@ Use this recipe for every complete paid front-end offer unless the user explicit
     - No section except FAQ or offer stack may exceed 500 visible words.
     - Failed alternatives tables, before/after blocks, product cards, and proof/demo blocks must have visible buyer-facing copy in every cell/card.
     - The design must use high-contrast text/background pairs; white text on white, low-contrast badges, and blank-looking cards are build failures.
-13. Include at least 7 FAQ objections, at least 4 CTA placements, at least 3 post-hero CTA placements, and at least 2,500 visible words for `direct-response-long-form-vsl`.
-14. Mark every FAQ item with `data-offeros-faq-item`.
-15. Mark every CTA link or button with `data-offeros-cta`; mark post-hero CTA placements with `data-offeros-post-hero-cta`.
-16. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `framework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, and `offerStackContract: "direct-response-buy-box-v1"`.
+15. Include at least 7 FAQ objections, at least 4 CTA placements, at least 3 post-hero CTA placements, and at least 2,500 visible words for `direct-response-long-form-vsl`.
+16. Mark every FAQ item with `data-offeros-faq-item`.
+17. Mark every CTA link or button with `data-offeros-cta`; mark post-hero CTA placements with `data-offeros-post-hero-cta`; purchase CTAs must link to `#checkout` by default.
+18. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `framework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, `offerStackContract: "direct-response-buy-box-v1"`, `pageKit: "offeros-page-kit-v1"`, `pageKitBuilder: "offeros-page-kit-builder-v1"`, `pageKitArchetype`, `themePreset`, `pageKitBlueprintUsed: true`, `themeTokensUsed: true`, `checkoutTarget: "#checkout"`, `vslPlacement: "main-column-stacked"`, and `orderFormIncluded: false`.
 
 Stop conditions:
 
 - If `copy.md` does not contain `# Section Blueprint` with rows for every required section, revise before page or visual planning.
+- If `sales-page-blueprint.json`, `theme.json`, or `quality.salesPage` uses an unapproved Page Kit archetype or theme preset, revise before building.
 - If the page reads as `hero/features/price/FAQ`, revise before QA.
 - If `index.html` has fewer than 2,500 visible words for `direct-response-long-form-vsl`, revise before QA.
 - If the VSL section becomes a wall of text or exceeds 220 visible words, revise before QA.
 - If any normal paragraph exceeds 55 words, revise before QA.
 - If any required direct-response section has fewer than the minimum buyer-facing words, revise before QA.
 - If required comparison/card sections contain blank-looking cells or empty cards, revise before QA.
-- If the hero does not use the locked `offeros-stacked-vsl-v2` shell from the skeleton, revise before QA.
+- If `index.html` was not created by `scripts/build_sales_page.py` or lacks `data-offeros-page-kit="v1"`, `data-offeros-builder="offeros-page-kit-builder-v1"`, and `data-offeros-vsl-placement="main-column-stacked"`, rebuild through the Page Kit builder.
+- If the hero does not use the locked `offeros-stacked-vsl-v2` Page Kit shell, revise before QA.
 - If the hero uses a two-column/split-grid layout, product/dashboard mockup hero art, or puts the VSL as a small right-side thumbnail/card, revise before QA.
-- If the hero does not include the large 16:9 VSL frame, thumbnail, play button, caption, price strip, CTA to `#buy`, and trust row in that stacked order, revise before QA.
+- If the hero does not include the large 16:9 VSL frame, thumbnail, play button, caption, price strip, CTA to `#checkout`, and trust row in that stacked order, revise before QA.
+- If the page contains an embedded checkout, order form, payment fields, or credit-card form, remove it and link CTAs to `#checkout`.
 - If proof/demo appears only after the offer stack or pricing, revise before QA.
 - If the offer stack is only cards or a pricing panel instead of the buy-box checklist stack, revise before QA.
 - If any sentence appears 4+ times in buyer-facing page copy, revise before QA.

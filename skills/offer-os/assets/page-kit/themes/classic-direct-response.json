@@ -1,0 +1,20 @@
+{
+  "id": "classic-direct-response",
+  "name": "classic-direct-response",
+  "label": "Classic Direct Response",
+  "themePreset": "classic-direct-response",
+  "pageKitArchetype": "classic-vsl-longform",
+  "colors": {
+    "background": "#fbf7ef",
+    "surface": "#ffffff",
+    "ink": "#171717",
+    "muted": "#5d5a52",
+    "primary": "#175c52",
+    "accent": "#f4b84a",
+    "dark": "#101b18"
+  },
+  "fonts": {
+    "heading": "Arial, Helvetica, sans-serif",
+    "body": "Arial, Helvetica, sans-serif"
+  }
+}

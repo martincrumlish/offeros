@@ -1,0 +1,37 @@
+{
+  "id": "toolkit-workbook",
+  "label": "Toolkit Workbook",
+  "pageType": "direct-response-long-form-vsl",
+  "framework": "direct-response-long-form-v1",
+  "builder": "offeros-page-kit-builder-v1",
+  "checkoutTarget": "#checkout",
+  "orderForm": false,
+  "vslPlacement": "main-column-stacked",
+  "requiredSections": [
+    "header",
+    "hero",
+    "vsl",
+    "problem",
+    "agitation",
+    "failed-alternatives",
+    "mechanism",
+    "proof",
+    "before-after",
+    "product",
+    "offer-stack",
+    "fit",
+    "pricing",
+    "guarantee",
+    "faq",
+    "final-cta"
+  ],
+  "optionalSections": ["sample-output-gallery", "module-breakdown", "implementation-roadmap", "bonuses", "technical-requirements"],
+  "qualityTargets": {
+    "minimumVisibleWords": 2500,
+    "minimumFaqItems": 7,
+    "minimumCtas": 4,
+    "minimumPostHeroCtas": 3,
+    "maxVslSetupWords": 220,
+    "maxParagraphWords": 55
+  }
+}

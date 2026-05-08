@@ -122,6 +122,14 @@ SOURCE_CHECKS = [
             "`copy.md` must include these exact headings",
             "# Section Blueprint",
             "direct-response-long-form-v1",
+            "sales-page-blueprint.json",
+            "theme.json",
+            "scripts/build_sales_page.py",
+            "data-offeros-page-kit=\"v1\"",
+            "data-offeros-builder=\"offeros-page-kit-builder-v1\"",
+            "data-offeros-vsl-placement=\"main-column-stacked\"",
+            "checkoutTarget: \"#checkout\"",
+            "orderFormIncluded: false",
             "Use the exact stacked VSL-first hero v2 contract",
             "Use the exact offer-stack buy-box contract",
             "including the separate `agitation`, `failed-alternatives`, `mechanism`, and pre-offer `proof` sections",
@@ -154,6 +162,25 @@ SOURCE_CHECKS = [
             "The blueprint is the source of truth",
             "Do not move proof only after the buy box",
             "reads as hero/features/price/FAQ",
+        ],
+    },
+    {
+        "id": "page_kit_builder_is_explicit",
+        "path": "scripts/build_sales_page.py",
+        "needles": [
+            "PAGE_KIT_ID = \"offeros-page-kit-v1\"",
+            "BUILDER_VERSION = \"offeros-page-kit-builder-v1\"",
+            "DEFAULT_CHECKOUT_TARGET = \"#checkout\"",
+            "VSL_PLACEMENT = \"main-column-stacked\"",
+            "ALLOWED_PAGE_KIT_ARCHETYPES",
+            "ALLOWED_THEME_PRESETS",
+            "Unsupported Page Kit archetype",
+            "Unsupported Page Kit theme preset",
+            "data-offeros-page-kit",
+            "data-offeros-builder",
+            "data-offeros-vsl-placement",
+            "sales-page-blueprint",
+            "orderFormIncluded",
         ],
     },
     {
@@ -255,6 +282,14 @@ SOURCE_CHECKS = [
             "data-offeros-cta",
             "Direct-response hero must include a VSL/video frame marked data-offeros-hero-video",
             "Direct-response offer stack must include a deliverable checklist marked data-offeros-offer-checklist",
+            "Deep sales pages must be built by OfferOS Page Kit",
+            "data-offeros-builder=\"offeros-page-kit-builder-v1\"",
+            "data-offeros-vsl-placement=\"main-column-stacked\"",
+            "Sales page must not contain an order form or checkout form",
+            "href=\"#checkout\"",
+            "pageKitBlueprintUsed",
+            "themeTokensUsed",
+            "orderFormIncluded: false",
             "Facebook ads contain repeated boilerplate copy",
             "Email sequence contains repeated boilerplate copy",
             "PDF extracted text is light for a paid product",
@@ -428,6 +463,29 @@ def synthetic_product_page_regression() -> dict:
     }
 
 
+def synthetic_page_kit_regression() -> dict:
+    expected = [
+        'Deep sales pages must be built by OfferOS Page Kit and declare data-offeros-page-kit="v1".',
+        'Deep sales pages must declare data-offeros-builder="offeros-page-kit-builder-v1".',
+        'Deep sales pages must declare data-offeros-vsl-placement="main-column-stacked".',
+        "Sales page must not contain an order form or checkout form",
+        'Sales page must include at least one data-offeros-cta link to the checkout placeholder href="#checkout".',
+        'Offer-stack purchase CTA must link to the checkout placeholder href="#checkout".',
+        "Sales page CTAs must not target on-page order/payment form anchors",
+        "Direct-response hero must not use a two-column/split SaaS layout",
+    ]
+    workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-page-kit-handwritten"
+    payload = run_validator(workspace)
+    issue_text = "\n".join(payload.get("issues", []))
+    missing = [item for item in expected if item not in issue_text]
+    return {
+        "id": "synthetic_page_kit_regression",
+        "ok": payload.get("returncode") != 0 and not missing,
+        "missingExpectedIssues": missing,
+        "issueCount": payload.get("issueCount"),
+    }
+
+
 def synthetic_svg_artifact_regression() -> dict:
     expected = [
         "Deep OfferOS runs must not create or register SVG artifacts.",
@@ -487,6 +545,37 @@ def synthetic_code_rendered_creative_regression() -> dict:
     }
 
 
+def synthetic_page_kit_builder_rejects_unapproved_sources() -> dict:
+    builder = SKILL_ROOT / "scripts" / "build_sales_page.py"
+    workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-page-kit-unapproved-source"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(builder),
+            "--workspace",
+            str(workspace),
+            "--manifest",
+            "offer-os.json",
+            "--blueprint",
+            "sales-page-blueprint.json",
+            "--theme",
+            "theme.json",
+            "--output",
+            "index.html",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    combined = f"{completed.stdout}\n{completed.stderr}"
+    return {
+        "id": "synthetic_page_kit_builder_rejects_unapproved_sources",
+        "ok": completed.returncode != 0 and "Unsupported Page Kit archetype" in combined,
+        "returncode": completed.returncode,
+        "expected": "Unsupported Page Kit archetype",
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-test OfferOS skill source and known regression workspaces.")
     parser.add_argument("--bad-workspace", action="append", default=[], help="Known-bad generated output that must fail validator checks.")
@@ -498,9 +587,11 @@ def main() -> int:
         synthetic_visual_plan_regression(),
         synthetic_two_column_hero_regression(),
         synthetic_product_page_regression(),
+        synthetic_page_kit_regression(),
         synthetic_svg_artifact_regression(),
         synthetic_logo_drift_regression(),
         synthetic_code_rendered_creative_regression(),
+        synthetic_page_kit_builder_rejects_unapproved_sources(),
     ]
     ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results) and all(item["ok"] for item in synthetic_results)
 

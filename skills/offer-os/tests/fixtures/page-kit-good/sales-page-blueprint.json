@@ -1,0 +1,47 @@
+{
+  "offerName": "Page Kit Good",
+  "audience": "solo consultants",
+  "problem": "turning a workshop into a paid offer",
+  "headline": "Turn a one-off workshop into a clear paid offer buyers understand",
+  "lead": "Page Kit Good gives solo consultants the page sequence, proof blocks, offer stack, and checkout handoff they need without embedding a brittle order form.",
+  "checkoutTarget": "#checkout",
+  "pageType": "direct-response-long-form-vsl",
+  "blocks": [
+    { "id": "hero", "partial": "hero" },
+    { "id": "vsl" },
+    { "id": "problem" },
+    { "id": "agitation" },
+    { "id": "failed-alternatives" },
+    { "id": "mechanism" },
+    { "id": "proof" },
+    { "id": "before-after" },
+    { "id": "product" },
+    { "id": "offer-stack" },
+    { "id": "fit" },
+    { "id": "pricing" },
+    { "id": "guarantee" },
+    { "id": "faq" },
+    { "id": "final-cta" }
+  ],
+  "sections": {
+    "hero": {
+      "buyerFilter": "For consultants packaging a proven workshop",
+      "prehead": "Approved page-kit sales page",
+      "headline": "Turn a one-off workshop into a clear paid offer buyers understand",
+      "lead": "Use the locked VSL hero, proof-before-pitch flow, and offer-stack checklist to make the buying decision easier.",
+      "cta": "Get the page kit"
+    },
+    "offer-stack": {
+      "deliverables": [
+        "Stacked VSL hero",
+        "Problem diagnosis section",
+        "Agitation section",
+        "Failed alternatives table",
+        "Mechanism section",
+        "Proof cards",
+        "Offer checklist",
+        "FAQ and final CTA"
+      ]
+    }
+  }
+}

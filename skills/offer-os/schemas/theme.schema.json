@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://offeros.local/schemas/theme.schema.json",
+  "title": "OfferOS Page Kit Theme",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "themePreset", "pageKitArchetype", "brand", "colors", "type", "layout", "assets"],
+  "properties": {
+    "schema": { "const": "offeros/theme/v1" },
+    "themePreset": {
+      "enum": ["light-saas-direct-response", "classic-direct-response", "bold-webinar", "premium-editorial", "fitness-performance", "creator-workshop"]
+    },
+    "pageKitArchetype": {
+      "enum": ["classic-vsl-longform", "modern-vsl-software", "one-page-tripwire", "challenge-workshop", "toolkit-workbook"]
+    },
+    "brand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "logoPath"],
+      "properties": {
+        "name": { "type": "string", "minLength": 2 },
+        "logoPath": { "type": "string", "minLength": 1 },
+        "voice": { "type": "string" }
+      }
+    },
+    "colors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["background", "surface", "text", "mutedText", "primary", "accent"],
+      "properties": {
+        "background": { "$ref": "#/$defs/color" },
+        "surface": { "$ref": "#/$defs/color" },
+        "text": { "$ref": "#/$defs/color" },
+        "mutedText": { "$ref": "#/$defs/color" },
+        "primary": { "$ref": "#/$defs/color" },
+        "accent": { "$ref": "#/$defs/color" },
+        "success": { "$ref": "#/$defs/color" },
+        "warning": { "$ref": "#/$defs/color" },
+        "border": { "$ref": "#/$defs/color" }
+      }
+    },
+    "type": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["headingFamily", "bodyFamily"],
+      "properties": {
+        "headingFamily": { "type": "string", "minLength": 2 },
+        "bodyFamily": { "type": "string", "minLength": 2 },
+        "scale": { "enum": ["compact", "standard", "editorial"] }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxWidth", "radius", "density"],
+      "properties": {
+        "maxWidth": { "type": "string", "default": "1120px" },
+        "radius": { "type": "string", "default": "8px" },
+        "density": { "enum": ["compact", "standard", "spacious"] },
+        "heroTemplate": { "const": "offeros-stacked-vsl-v2" },
+        "cardStyle": { "enum": ["flat", "bordered", "raised"] }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["heroVslThumbnail", "productBundle"],
+      "properties": {
+        "heroVslThumbnail": { "$ref": "#/$defs/asset" },
+        "productBundle": { "$ref": "#/$defs/asset" },
+        "mechanismVisual": { "$ref": "#/$defs/asset" },
+        "proofVisual": { "$ref": "#/$defs/asset" },
+        "guaranteeBadge": { "$ref": "#/$defs/asset" }
+      }
+    }
+  },
+  "$defs": {
+    "color": {
+      "type": "string",
+      "pattern": "^(#[0-9A-Fa-f]{3,8}|rgb\\(|hsl\\(|[a-zA-Z]+)"
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "provenance"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "alt": { "type": "string" },
+        "provenance": {
+          "enum": ["imagegen", "imagegen-composite", "provided", "licensed", "screenshot", "html-css", "manual", "generated-by-code"]
+        }
+      }
+    }
+  }
+}
