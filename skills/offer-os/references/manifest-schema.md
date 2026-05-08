@@ -232,11 +232,7 @@ For deep mode, include module-level quality metadata when applicable:
       "hasObjections": true
     },
     "salesPage": {
-      "studio": "sales-page-studio-v2",
-      "componentLibrary": "ac-inspired-direct-response-v1",
-      "faqAccordionEnabled": true,
-      "threeDButtonsEnabled": true,
-      "componentIntegrityChecked": true,
+      "studio": "sales-page-studio-v1",
       "pageType": "direct-response-long-form-vsl",
       "pageTypeReason": "Cold front-end offer needs full belief-shift page.",
       "requiredSectionContract": "direct-response-v1",

@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
@@ -184,7 +183,7 @@ SOURCE_CHECKS = [
     },
     {
         "id": "page_kit_builder_is_explicit",
-        "path": "scripts/build_sales_page_studio.py",
+        "path": "scripts/build_sales_page.py",
         "needles": [
             "PAGE_KIT_ID = \"offeros-page-kit-v1\"",
             "BUILDER_VERSION = \"offeros-page-kit-builder-v1\"",
@@ -254,9 +253,7 @@ SOURCE_CHECKS = [
         "path": "scripts/validate_offer_outputs.py",
         "needles": [
             "Deep OfferOS runs must not use generated scripts/build_offer_system.* as the production source of truth.",
-            "sales-page-studio-v2",
-            "ac-inspired-direct-response-v1",
-            "data-offeros-sales-page-studio=\"sales-page-studio-v2\"",
+            "sales-page-studio-v1",
             "email-launch-studio-v1",
             "pdf-workbook-studio-v1",
             "gotenberg-chromium",
@@ -622,115 +619,6 @@ def synthetic_page_kit_builder_rejects_unapproved_sources() -> dict:
     }
 
 
-def synthetic_sales_page_studio_good_build() -> dict:
-    builder = SKILL_ROOT / "scripts" / "build_sales_page.py"
-    with tempfile.TemporaryDirectory(prefix="offeros-sales-studio-") as temp:
-        workspace = Path(temp)
-        (workspace / "offer-os.json").write_text(
-            json.dumps(
-                {
-                    "schema": "offer-os/v1",
-                    "mode": "deep",
-                    "offerName": "Studio Proof",
-                    "slug": "studio-proof",
-                    "audience": "offer builders",
-                    "problem": "disconnected assets that do not sell",
-                    "price": "27",
-                    "brand": {"logo": "assets/logo.png"},
-                    "modules": [],
-                    "artifacts": [],
-                    "quality": {"salesPage": {}},
-                },
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-        (workspace / "sales-page-blueprint.json").write_text(
-            json.dumps(
-                {
-                    "schema": "offeros/sales-page-blueprint/v1",
-                    "pageType": "direct-response-long-form-vsl",
-                    "pageKitArchetype": "classic-vsl-longform",
-                    "themePreset": "light-saas-direct-response",
-                    "framework": "direct-response-long-form-v1",
-                    "compositionContract": "direct-response-composition-v2",
-                    "contentContract": "sales-page-studio-content-v1",
-                    "checkout": {"target": "#checkout", "mode": "anchor", "orderForm": False},
-                    "hero": {"contract": "stacked-vsl-hero-v2", "layout": "stacked-vsl", "template": "offeros-stacked-vsl-v2", "videoFrame": "large-16x9", "stackOrder": ["copy-stack", "vsl-frame", "price-strip", "trust-row"]},
-                    "requiredSections": [],
-                    "offerStack": {"contract": "direct-response-buy-box-v1", "anchorId": "checkout", "requiredMarkers": ["data-offeros-product-bundle", "data-offeros-offer-checklist", "data-offeros-value-row", "data-offeros-cta", "data-offeros-stack-cta"], "minimumDeliverables": 8},
-                    "optionalBlocks": [],
-                    "builder": {"version": "test", "sourceTemplate": "assets/templates/sales-page/page-skeleton.html", "themePath": "theme.json", "outputPath": "index.html", "buildMode": "deep", "generatedAt": "test"},
-                },
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-        (workspace / "theme.json").write_text(
-            json.dumps(
-                {
-                    "schema": "offeros/theme/v1",
-                    "themePreset": "light-saas-direct-response",
-                    "pageKitArchetype": "classic-vsl-longform",
-                    "colors": {"background": "#f7f5ef", "surface": "#ffffff", "text": "#10151f", "mutedText": "#53606f", "primary": "#0d62ff", "accent": "#14c8b8", "border": "#dce3ef"},
-                    "type": {"headingFamily": "Inter, Arial, sans-serif", "bodyFamily": "Inter, Arial, sans-serif"},
-                    "assets": {"heroVslThumbnail": {"path": "assets/page/hero-vsl-thumbnail.png", "provenance": "imagegen"}, "productBundle": {"path": "assets/page/product-bundle.png", "provenance": "imagegen"}},
-                },
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-        completed = subprocess.run(
-            [
-                sys.executable,
-                str(builder),
-                "--workspace",
-                str(workspace),
-                "--manifest",
-                "offer-os.json",
-                "--blueprint",
-                "sales-page-blueprint.json",
-                "--theme",
-                "theme.json",
-                "--output",
-                "index.html",
-            ],
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        html_path = workspace / "index.html"
-        manifest_path = workspace / "offer-os.json"
-        html = html_path.read_text(encoding="utf-8") if html_path.exists() else ""
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
-        missing = []
-        for token in [
-            'data-offeros-sales-page-studio="sales-page-studio-v2"',
-            "oo-btn-3d",
-            ".oo-faq-item.active",
-            'data-offeros-section="offer-stack"',
-            'data-offeros-section="final-cta"',
-        ]:
-            if token not in html:
-                missing.append(token)
-        sales_quality = manifest.get("quality", {}).get("salesPage", {})
-        for key, expected in {
-            "studio": "sales-page-studio-v2",
-            "componentLibrary": "ac-inspired-direct-response-v1",
-            "faqAccordionEnabled": True,
-            "threeDButtonsEnabled": True,
-            "componentIntegrityChecked": True,
-        }.items():
-            if sales_quality.get(key) != expected:
-                missing.append(f"quality.salesPage.{key}={expected}")
-        return {
-            "id": "synthetic_sales_page_studio_good_build",
-            "ok": completed.returncode == 0 and not missing,
-            "returncode": completed.returncode,
-            "missingExpectedOutput": missing,
-        }
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-test OfferOS skill source and known regression workspaces.")
     parser.add_argument("--bad-workspace", action="append", default=[], help="Known-bad generated output that must fail validator checks.")
@@ -748,7 +636,6 @@ def main() -> int:
         synthetic_code_rendered_creative_regression(),
         synthetic_generated_controller_regression(),
         synthetic_page_kit_builder_rejects_unapproved_sources(),
-        synthetic_sales_page_studio_good_build(),
     ]
     ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results) and all(item["ok"] for item in synthetic_results)
 

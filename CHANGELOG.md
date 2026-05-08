@@ -1,12 +1,5 @@
 # Changelog
 
-## 0.13.0
-
-- Adds the real Sales Page Studio renderer in `build_sales_page_studio.py`, with `build_sales_page.py` kept as a compatibility wrapper.
-- Ports the useful AC Landing Agent structure into controlled OfferOS components: stacked VSL hero, top bar, what-this-is block, comparison table, proof/demo, mechanism steps, compact and expanded offer stacks, guarantee, sales letter, fit section, pricing, FAQ accordion, final CTA, 3D buttons, and responsive self-contained CSS.
-- Extends `sales-page-blueprint.schema.json` with a real content contract for section copy, blocks, offer metadata, visual slots, and page assets.
-- Hardens validation so deep sales pages must declare `data-offeros-sales-page-studio="sales-page-studio-v2"`, use the AC-inspired component library, include 3D CTAs, include the FAQ accordion, and record component integrity metadata.
-
 ## 0.12.0
 
 - Replaces generated `scripts/build_offer_system.*` production control with plugin-owned OfferOS Studio builders and a public `scripts/offeros.py` dispatcher.
