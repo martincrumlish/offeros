@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.1
+
+- Reverts the failed `0.13.0` Sales Page Studio rewrite, restoring the previous Page Kit behavior.
+- Closes the `imagegen-composite` loophole for primary conversion visuals.
+- Requires primary sales-page/ad conversion assets to be `imagegen-final` with `finalPixelsGeneratedBy: imagegen`, `localCreativeOverlay: false`, and non-creative-only local post-processing.
+- Updates visual planning, schemas, validator checks, register-artifact metadata, and regression fixtures so local PIL/canvas/HTML/CSS/script composition cannot pass as finished generated creative.
+
 ## 0.12.0
 
 - Replaces generated `scripts/build_offer_system.*` production control with plugin-owned OfferOS Studio builders and a public `scripts/offeros.py` dispatcher.

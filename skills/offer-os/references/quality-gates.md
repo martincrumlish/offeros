@@ -60,22 +60,25 @@ Every logo, product image, page graphic, ad image, deck visual, and dashboard pr
 
 Allowed provenance values:
 
-- `imagegen`: created with the imagegen skill/tool from a prompt.
-- `imagegen-composite`: final bitmap composed from an imagegen mark/frame plus deterministic rendered text or layout.
+- `imagegen`: created with the imagegen skill/tool from a prompt; acceptable for supporting visuals but not sufficient metadata for primary sales-page conversion visuals.
+- `imagegen-final`: final buyer-facing creative pixels were produced by the imagegen skill/tool.
+- `imagegen-composite`: final bitmap composed by imagegen using reference images. This does not include local PIL/canvas/HTML/CSS/script composition.
 - `provided`: supplied by the user.
 - `licensed`: externally sourced with permission/license.
 - `screenshot`: captured from a real page, deck, PDF, or product artifact.
 - `html-css`: browser-rendered HTML/CSS visual.
 - `generated-by-code`: deterministic script output.
 
-These values are not interchangeable. Deep mode requires real imagegen/imagegen-composite bitmap assets for primary conversion visuals when the user asks for generated design direction, generated images, ad images, or supporting images. Product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives must be `imagegen` or `imagegen-composite` unless the user provided/licensed the asset. `html-css`, `generated-by-code`, `manual`, and `screenshot` can support diagrams, worksheets, rendered previews, QA evidence, or real artifact screenshots, but they do not count as AI image generation and cannot satisfy those primary creative slots. Pillow/PIL-authored image artifacts are not allowed in deep OfferOS runs; Pillow may only inspect, crop, resize, or composite already-sourced assets. SVG files are not allowed generated visual assets or fallbacks.
+These values are not interchangeable. Deep mode requires real `imagegen-final` bitmap assets for primary conversion visuals when the user asks for generated design direction, generated images, ad images, or supporting images. Product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives must be `imagegen-final` unless the user provided/licensed the asset. `imagegen-composite` counts only when imagegen performed the composition using reference images and the artifact records `imagegenNativeComposite: true`, `finalPixelsGeneratedBy: imagegen`, and `localCreativeOverlay: false`. `html-css`, `generated-by-code`, `manual`, and `screenshot` can support diagrams, worksheets, rendered previews, QA evidence, or real artifact screenshots, but they do not count as AI image generation and cannot satisfy those primary creative slots. Pillow/PIL-authored image artifacts are not allowed in deep OfferOS runs; Pillow may only inspect, crop, resize, compress, or format-convert already-sourced assets. SVG files are not allowed generated visual assets or fallbacks.
 
 Fails if:
 
 - an SVG file is created or registered as a generated visual artifact
 - an image artifact is registered as `pil-generated`
 - a PIL card, CSS block, or screenshot is described as a generated image
-- a product bundle, offer-stack bundle, product mockup, hero/VSL thumbnail, buyer-situation photo, or ad creative is made as a PIL/HTML/CSS/canvas/screenshot/generated-by-code/manual PNG instead of imagegen/imagegen-composite
+- a product bundle, offer-stack bundle, product mockup, hero/VSL thumbnail, buyer-situation photo, or ad creative is made as a PIL/HTML/CSS/canvas/screenshot/generated-by-code/manual PNG instead of `imagegen-final`
+- `imagegen-composite` is used for a primary conversion visual without `imagegenNativeComposite: true`, `finalPixelsGeneratedBy: imagegen`, and `localCreativeOverlay: false`
+- a local script adds logo, headline text, labels, UI cards, badges, mockups, overlays, or product-stack composition after imagegen
 - the manifest omits provenance for image artifacts
 - all visual assets are code-generated diagrams with no real bitmap hero/product/ad imagery
 - ad images are mostly text blocks rather than persuasive creative

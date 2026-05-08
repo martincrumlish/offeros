@@ -38,6 +38,14 @@ VSL_VISUALS = [
     ("dashboard-mockup", "delivery", "Show how access works", "assets/vsl/delivery-preview.png", "16:9"),
 ]
 
+PRIMARY_CONVERSION_VISUAL_KINDS = {
+    "hero-vsl-frame",
+    "product-mockup",
+    "offer-stack-bundle",
+    "buyer-situation-photo",
+    "ad-creative",
+}
+
 
 def read_json(path: Path, default: dict | None = None) -> dict:
     if path.exists():
@@ -62,10 +70,12 @@ def upsert_artifact(manifest: dict, artifact: dict) -> None:
 
 
 def visual_row(kind: str, anchor: str, job: str, path: str, ratio: str, text_rule: str = "short labels only", provenance: str = "imagegen") -> dict:
+    if kind in PRIMARY_CONVERSION_VISUAL_KINDS and provenance in {"imagegen", "imagegen-composite"}:
+        provenance = "imagegen-final"
     logo_prompt = ""
     if kind in {"product-mockup", "offer-stack-bundle", "dashboard-mockup", "ad-creative"}:
         logo_prompt = " logoReference: assets/logo.png. Use the supplied assets/logo.png exactly; do not redesign, recolor, redraw, reinterpret, replace, or substitute the logo."
-    return {
+    row = {
         "artifactTarget": path,
         "filePath": path,
         "visualKind": kind,
@@ -74,10 +84,16 @@ def visual_row(kind: str, anchor: str, job: str, path: str, ratio: str, text_rul
         "aspectRatio": ratio,
         "textRule": text_rule,
         "source/provenance": provenance,
+        "finalPixelsGeneratedBy": "imagegen" if provenance in {"imagegen-final", "imagegen-composite"} else provenance,
+        "localPostprocess": ["crop", "resize", "compression", "format-conversion"] if provenance in {"imagegen-final", "imagegen-composite"} else [],
+        "localCreativeOverlay": False,
         "reusePermission": "artifact-specific",
         "artifactSpecific": True,
-        "generationPrompt": f"{kind} for {anchor}. {job}. Avoid busy fake UI/mockup filler.{logo_prompt}",
+        "generationPrompt": f"{kind} for {anchor}. {job}. Final buyer-facing image must be produced by imagegen; do not add logo, text, UI cards, badges, mockups, overlays, or product-stack composition locally after imagegen. Avoid busy fake UI/mockup filler.{logo_prompt}",
     }
+    if provenance == "imagegen-composite":
+        row["imagegenNativeComposite"] = True
+    return row
 
 
 def markdown_rows(rows: list[dict]) -> str:
@@ -93,6 +109,10 @@ def markdown_rows(rows: list[dict]) -> str:
                 f"  aspectRatio: `{row['aspectRatio']}`",
                 f"  textRule: `{row['textRule']}`",
                 f"  source/provenance: `{row['source/provenance']}`",
+                f"  finalPixelsGeneratedBy: `{row['finalPixelsGeneratedBy']}`",
+                f"  localPostprocess: `{', '.join(row['localPostprocess'])}`",
+                f"  localCreativeOverlay: `{str(row['localCreativeOverlay']).lower()}`",
+                *([f"  imagegenNativeComposite: `{str(row['imagegenNativeComposite']).lower()}`"] if "imagegenNativeComposite" in row else []),
                 f"  reusePermission: `{row['reusePermission']}`",
                 f"  artifactSpecific: `{str(row['artifactSpecific']).lower()}`",
                 f"  generationPrompt: `{row['generationPrompt']}`",
@@ -124,6 +144,7 @@ def build_plan(root: Path, manifest: dict) -> dict:
         "visualPlanStage": "post-content-blueprint",
         "copyBlueprintUsed": copy_blueprint_exists(root),
         "salesPageImageSystem": "mixed-direct-response-v1",
+        "primaryConversionFinalPixelsPolicy": "imagegen-final-v1",
         "logoReference": "assets/logo.png",
         "logoUsagePolicy": "use-locked-logo-reference",
         "alternateLogosCreated": False,
@@ -157,6 +178,7 @@ def write_markdown(path: Path, plan: dict) -> None:
         f"- visualPlanStage: {plan['visualPlanStage']}",
         f"- copyBlueprintUsed: {str(plan['copyBlueprintUsed']).lower()}",
         f"- salesPageImageSystem: {plan['salesPageImageSystem']}",
+        f"- primaryConversionFinalPixelsPolicy: {plan['primaryConversionFinalPixelsPolicy']}",
         f"- logoReference: {plan['logoReference']}",
         f"- logoUsagePolicy: {plan['logoUsagePolicy']}",
         f"- alternateLogosCreated: {str(plan['alternateLogosCreated']).lower()}",
@@ -220,6 +242,7 @@ def update_manifest(root: Path, manifest: dict, plan: dict) -> None:
             "copyBlueprintUsed": plan["copyBlueprintUsed"],
             "visualReusePolicy": "artifact-specific-v1",
             "salesPageImageSystem": "mixed-direct-response-v1",
+            "primaryConversionFinalPixelsPolicy": "imagegen-final-v1",
             "logoReference": "assets/logo.png",
             "logoUsagePolicy": "use-locked-logo-reference",
             "alternateLogosCreated": False,

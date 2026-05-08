@@ -9,6 +9,7 @@
     "visualPlanStage",
     "copyBlueprintUsed",
     "salesPageImageSystem",
+    "primaryConversionFinalPixelsPolicy",
     "logoReference",
     "logoUsagePolicy",
     "alternateLogosCreated",
@@ -22,6 +23,7 @@
     "visualPlanStage": { "const": "post-content-blueprint" },
     "copyBlueprintUsed": { "const": true },
     "salesPageImageSystem": { "const": "mixed-direct-response-v1" },
+    "primaryConversionFinalPixelsPolicy": { "const": "imagegen-final-v1" },
     "logoReference": { "const": "assets/logo.png" },
     "logoUsagePolicy": { "const": "use-locked-logo-reference" },
     "alternateLogosCreated": { "const": false },
@@ -59,7 +61,10 @@
         "conversionJob",
         "aspectRatio",
         "textRule",
-        "source/provenance"
+        "source/provenance",
+        "finalPixelsGeneratedBy",
+        "localPostprocess",
+        "localCreativeOverlay"
       ],
       "properties": {
         "artifactTarget": { "type": "string", "minLength": 1 },
@@ -88,8 +93,17 @@
         "aspectRatio": { "type": "string", "minLength": 3 },
         "textRule": { "type": "string", "minLength": 3 },
         "source/provenance": {
-          "enum": ["imagegen", "imagegen-composite", "provided", "licensed", "screenshot", "html-css", "manual", "generated-by-code"]
-        }
+          "enum": ["imagegen", "imagegen-final", "imagegen-composite", "provided", "licensed", "screenshot", "html-css", "manual", "generated-by-code"]
+        },
+        "finalPixelsGeneratedBy": { "type": "string", "minLength": 1 },
+        "localPostprocess": {
+          "type": "array",
+          "items": {
+            "enum": ["crop", "resize", "compression", "format-conversion", "non-creative-qa-fix"]
+          }
+        },
+        "localCreativeOverlay": { "type": "boolean" },
+        "imagegenNativeComposite": { "type": "boolean" }
       }
     }
   }

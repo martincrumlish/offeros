@@ -17,6 +17,18 @@
       "path": "assets/images/product-bundle.png",
       "provenance": "pil-generated",
       "status": "complete"
+    },
+    {
+      "id": "hero-vsl-thumbnail",
+      "title": "Hero VSL Thumbnail",
+      "type": "image",
+      "category": "Images",
+      "path": "assets/images/hero-vsl-thumbnail.png",
+      "provenance": "imagegen-composite",
+      "finalPixelsGeneratedBy": "local-script",
+      "localPostprocess": ["crop", "logo-overlay", "headline-text"],
+      "localCreativeOverlay": true,
+      "status": "complete"
     }
   ],
   "quality": {

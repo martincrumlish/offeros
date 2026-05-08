@@ -53,10 +53,13 @@ Tell every worker:
 - you are not alone in the codebase; do not revert or overwrite others' files
 - write only inside your assigned output folder and update only the visual rows you own if asked to edit `visual-asset-plan.md`
 - use the `imagegen` skill/tool for bitmap visuals when available
+- for primary conversion visuals, produce the final buyer-facing image with imagegen and record `source/provenance: imagegen-final`, `finalPixelsGeneratedBy: imagegen`, `localCreativeOverlay: false`, and `localPostprocess` limited to crop, resize, compression, or format-conversion
+- use `imagegen-composite` only when imagegen performed the reference-image composition; local PIL/canvas/HTML/CSS/script composition does not qualify
 - preserve the design system: palette, typography cues, image treatment, logo style, density, and texture rules
 - if a visual needs the logo visible, pass `assets/logo.png` as the only logo reference image to imagegen and instruct it to use the supplied logo exactly
 - do not invent, redesign, recolor, redraw, reinterpret, replace, or substitute the logo/wordmark
 - do not use any other logo image, old attempt, sketch, or alternative mark as a reference
+- do not add logo, headline text, labels, UI cards, badges, mockups, overlays, or product-stack composition locally after imagegen; if the creative is wrong, regenerate or edit with imagegen
 - follow `salesPageImageSystem: mixed-direct-response-v1` unless the user explicitly requested another image system
 - use mockup-style visuals mainly for product reveal, offer stack, dashboard preview, and CTA bundle sections
 - use diagrams, comparisons, proof/demo visuals, structured panels, screenshots, or restrained buyer-situation imagery for mechanism, failed alternatives, proof, objections, and feature specifics
@@ -78,6 +81,8 @@ Style references: design.md rules, frozen assets/logo.png only, color palette, p
 Composition: [specific layout, focal point, aspect ratio]
 Text rule: [no text | large exact text only | labels from plan only]
 Logo rule: if this visual needs a logo, use assets/logo.png as the exact supplied logo reference; do not invent, redesign, recolor, redraw, reinterpret, replace, or substitute it
+Final-pixel rule: the final buyer-facing image must be produced by imagegen. Do not add local overlays, labels, badges, UI cards, mockups, product stacks, or logo placement after imagegen. Local processing may only crop, resize, compress, convert format, or perform non-creative QA fixes.
+Required metadata: source/provenance=imagegen-final; finalPixelsGeneratedBy=imagegen; localCreativeOverlay=false; localPostprocess=[crop, resize, compression, format-conversion]
 Must feel: [commercial, useful, direct-response, buyer-specific]
 Avoid: alternate logos, old logo attempts, logo option sheets, generic stock look, unrelated metaphors, illegible text, fake UI unless requested, busy mockup filler, hallucinated dashboards, reusing sales-page image concepts as filler
 Output: [exact file path]

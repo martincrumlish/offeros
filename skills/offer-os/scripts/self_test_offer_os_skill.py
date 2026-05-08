@@ -281,7 +281,8 @@ SOURCE_CHECKS = [
             "Primary logo bitmap must be a horizontal lockup",
             "Sales page contains repeated boilerplate copy",
             "Visual asset plan missing",
-            "PIL/HTML/CSS/code-generated PNGs cannot satisfy product bundle",
+            "final buyer-facing pixels from imagegen",
+            "localCreativeOverlay",
             "Pillow/PIL-generated image artifacts are not allowed in OfferOS deep runs",
             "Sales-page product bundle image",
             "Hero/VSL thumbnail image",
@@ -289,6 +290,10 @@ SOURCE_CHECKS = [
             "visualPlanStage: post-content-blueprint",
             "copyBlueprintUsed",
             "salesPageImageSystem: mixed-direct-response-v1",
+            "primaryConversionFinalPixelsPolicy: imagegen-final-v1",
+            "imagegen-final",
+            "finalPixelsGeneratedBy: imagegen",
+            "localCreativeOverlay: false",
             "fields tied to copy sections",
             "Sales-page visual plan is all mockup/UI-style visuals",
             "PDF-specific visual asset/treatment count below target",
@@ -556,8 +561,12 @@ def synthetic_code_rendered_creative_regression() -> dict:
     expected = [
         "Image artifact has invalid provenance 'pil-generated'",
         "Pillow/PIL-generated image artifacts are not allowed",
-        "Generated-design deep runs must create primary conversion visuals with imagegen/imagegen-composite",
-        "PIL/HTML/CSS/code-generated PNGs cannot satisfy product bundle",
+        "Generated-design deep runs must create primary conversion visuals with final buyer-facing pixels from imagegen",
+        "local overlays cannot satisfy product bundle",
+        "uses imagegen-composite without imagegenNativeComposite: true",
+        "must record finalPixelsGeneratedBy: imagegen",
+        "must record localCreativeOverlay: false",
+        "localPostprocess contains creative operations",
     ]
     workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-code-rendered-creative"
     payload = run_validator(workspace)

@@ -90,7 +90,7 @@ Output: finished complete logo lockup suitable to save as assets/logo.png
    - set `quality.logo.downstreamImagegenMustUseLogoReference = true`
    - do not pass any old logo attempts, sketches, rejected images, or screenshots as downstream logo references
    - for downstream imagegen visuals that need the logo visible, pass `assets/logo.png` as the only logo reference image and prompt: `Use the supplied assets/logo.png exactly as the product/brand logo. Do not invent, redesign, recolor, redraw, reinterpret, replace, or substitute the logo or wordmark.`
-11. Register the logo artifact with `provenance: imagegen`. Do not register a generated-design logo as `imagegen-composite` unless the user explicitly approved a non-imagegen repair:
+11. Register the logo artifact with `provenance: imagegen`. Do not register a generated-design logo as `imagegen-composite`; if the logo needs repair, regenerate or edit it with imagegen:
 
 ```powershell
 .\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\register_artifact.py --id logo --title "Primary Logo" --type image --category Brand --path assets/logo.png --provenance imagegen --buyer-value 4 --usability 4 --trust 4
@@ -183,12 +183,13 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - `visualPlanStage: post-content-blueprint`
    - `copyBlueprintUsed: true`
    - `salesPageImageSystem: mixed-direct-response-v1`
+   - `primaryConversionFinalPixelsPolicy: imagegen-final-v1`
    - `logoReference: assets/logo.png`
    - `logoUsagePolicy: use-locked-logo-reference`
    - `alternateLogosCreated: false`
    - `mockupHeavyUserRequested: false` unless the user explicitly requested mockup-heavy art direction
    - `sourceBlueprints: copy.md, product blueprint/page archetypes, VSL slide plan, ad angle map`
-4. For every planned visual, list these exact fields: `artifactTarget`, `filePath`, `visualKind`, `copyAnchor`, `conversionJob`, `aspectRatio`, `textRule`, `source/provenance`, `reusePermission`, `artifactSpecific`, and `generationPrompt` or `productionMethod`.
+4. For every planned visual, list these exact fields: `artifactTarget`, `filePath`, `visualKind`, `copyAnchor`, `conversionJob`, `aspectRatio`, `textRule`, `source/provenance`, `finalPixelsGeneratedBy`, `localPostprocess`, `localCreativeOverlay`, `reusePermission`, `artifactSpecific`, and `generationPrompt` or `productionMethod`.
 5. Use only these `visualKind` values unless the user supplied a specific visual system that requires an extra kind: `hero-vsl-frame`, `product-mockup`, `dashboard-mockup`, `offer-stack-bundle`, `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `buyer-situation-photo`, `structured-panel`, `worksheet-preview`, `matrix-visual`, `checklist-visual`, `slide-pattern-interrupt`, `ad-creative`, `brand-frame`.
 6. For `## Sales Page Visuals`, every row must include a `copyAnchor` matching a real sales-page section from `copy.md` and the page skeleton, such as `hero`, `vsl`, `failed-alternatives`, `mechanism`, `proof`, `product`, `offer-stack`, `pricing`, `guarantee`, or `faq`.
 7. Use `mixed-direct-response-v1` by default:
@@ -196,8 +197,10 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - use `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `structured-panel`, or restrained `buyer-situation-photo` for mechanism, failed alternatives, proof/demo, objections, feature specifics, and problem/agitation sections
    - do not make every sales-page image a polished fake UI/product mockup unless `mockupHeavyUserRequested: true`
    - avoid busy fake UI, hallucinated dashboards, illegible tiny text, decorative abstract mockups, and visuals that do not support a specific copy claim
-   - set `source/provenance: imagegen` or `imagegen-composite` for `hero-vsl-frame`, `product-mockup`, `offer-stack-bundle`, `buyer-situation-photo`, and `ad-creative` rows unless the asset is user-provided or licensed
+   - set `source/provenance: imagegen-final`, `finalPixelsGeneratedBy: imagegen`, `localCreativeOverlay: false`, and `localPostprocess` limited to crop, resize, compression, or format-conversion for `hero-vsl-frame`, `product-mockup`, `offer-stack-bundle`, `buyer-situation-photo`, and `ad-creative` rows unless the asset is user-provided or licensed
+   - use `imagegen-composite` only when the composition itself was performed by imagegen using reference images; in that case also set `imagegenNativeComposite: true`, `finalPixelsGeneratedBy: imagegen`, and `localCreativeOverlay: false`
    - do not set `productionMethod`, `source/provenance`, or fallback notes for those rows to `Pillow`, `PIL`, `html-css`, `canvas`, `screenshot`, `generated-by-code`, or `manual`; HTML/CSS, canvas, screenshots, and generated-by-code are allowed only for diagrams, worksheets, matrices, previews, QA screenshots, and real screenshots of built artifacts. Pillow/PIL is never allowed as an output authoring method.
+   - do not use Pillow, canvas, HTML/CSS screenshots, or local scripts to add logo, headline text, labels, UI cards, badges, mockups, overlays, or product-stack composition after imagegen. If the creative is wrong, regenerate or edit with imagegen.
    - if a row needs the logo visible inside a generated product bundle, product mockup, dashboard mockup, ad, PDF visual, or VSL visual, its `generationPrompt` must include `logoReference: assets/logo.png` and must instruct imagegen to use that supplied logo exactly with no redesign, recolor, redraw, reinterpretation, replacement, or substitute logo
 8. Use these minimum visual budgets in deep mode:
    - Global/shared: logo lockup, brand mark, product bundle/mockup, and one reusable texture/pattern or brand frame.
@@ -250,7 +253,9 @@ Stop conditions:
 - If `quality.images.salesPageImageSystem` is not `mixed-direct-response-v1` and the user did not explicitly request another image system, rebuild the plan.
 - If any sales-page visual lacks `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, or `textRule`, rebuild the plan.
 - If every sales-page visual is a mockup-style visual and `mockupHeavyUserRequested` is not `true`, revise to a mixed direct-response visual system.
-- If a product bundle, offer-stack bundle, product mockup, hero/VSL thumbnail, buyer-situation photo, or ad creative is planned as PIL/HTML/CSS/canvas/screenshot/generated-by-code/manual, stop and replace it with an imagegen/imagegen-composite job or a provided/licensed asset.
+- If a product bundle, offer-stack bundle, product mockup, hero/VSL thumbnail, buyer-situation photo, or ad creative is planned as PIL/HTML/CSS/canvas/screenshot/generated-by-code/manual, stop and replace it with an `imagegen-final` job or a provided/licensed asset.
+- If a primary conversion visual says `imagegen-composite` but does not record `imagegenNativeComposite: true`, `finalPixelsGeneratedBy: imagegen`, and `localCreativeOverlay: false`, stop and regenerate/edit the final asset through imagegen.
+- If local post-processing adds logo, headline text, labels, UI cards, badges, mockups, overlays, or product-stack composition after imagegen, stop and regenerate/edit with imagegen.
 - If any artifact is registered with `provenance: pil-generated`, stop and rebuild. Pillow may inspect or transform source images but must not be the creative source of an OfferOS output.
 - If a downstream imagegen row needs the logo and does not include `logoReference: assets/logo.png`, stop and rewrite the prompt.
 - If a downstream imagegen row asks for a logo but asks imagegen to invent, redesign, recolor, redraw, reinterpret, replace, or substitute it, stop and rewrite the prompt.

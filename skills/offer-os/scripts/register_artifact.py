@@ -25,13 +25,17 @@ def main() -> int:
         "--provenance",
         default="",
         help=(
-            "Image/source provenance: imagegen, imagegen-composite, provided, licensed, screenshot, "
+            "Image/source provenance: imagegen, imagegen-final, imagegen-composite, provided, licensed, screenshot, "
             "html-css, manual, or generated-by-code. Do not register pil-generated artifacts. "
             "Deep generated-design primary "
             "conversion visuals (product bundle, offer stack, hero/VSL thumbnail, product mockup, ads) "
-            "must be imagegen/imagegen-composite unless provided/licensed. Do not register generated SVG artifacts."
+            "must be imagegen-final unless provided/licensed. Do not register generated SVG artifacts."
         ),
     )
+    parser.add_argument("--final-pixels-generated-by", default="", help="For primary image assets: imagegen, provided, licensed, or real-artifact-screenshot.")
+    parser.add_argument("--local-postprocess", default="", help="Comma-separated non-creative operations only: crop, resize, compression, format-conversion.")
+    parser.add_argument("--local-creative-overlay", default="", help="For primary image assets this must be false.")
+    parser.add_argument("--imagegen-native-composite", action="store_true", help="Set only when imagegen performed the reference-image composition.")
     parser.add_argument("--buyer-value", type=int, default=0, help="Commercial audit score 1-5.")
     parser.add_argument("--usability", type=int, default=0, help="Commercial audit score 1-5.")
     parser.add_argument("--trust", type=int, default=0, help="Commercial audit score 1-5.")
@@ -56,6 +60,14 @@ def main() -> int:
     }
     if args.provenance:
         artifact["provenance"] = args.provenance
+    if args.final_pixels_generated_by:
+        artifact["finalPixelsGeneratedBy"] = args.final_pixels_generated_by
+    if args.local_postprocess:
+        artifact["localPostprocess"] = [item.strip() for item in args.local_postprocess.split(",") if item.strip()]
+    if args.local_creative_overlay:
+        artifact["localCreativeOverlay"] = args.local_creative_overlay.strip().lower() in {"true", "yes", "1"}
+    if args.imagegen_native_composite:
+        artifact["imagegenNativeComposite"] = True
     if args.buyer_value or args.usability or args.trust or args.quality_notes:
         artifact["quality"] = {
             "buyerValue": args.buyer_value,

@@ -25,4 +25,4 @@ A page kit sells the click; it does not collect payment details. Use CTA links t
 
 ## Theme Pattern
 
-Theme files should be portable across offers: brand name/logo, color tokens, type families, layout density, and named assets. Primary conversion visuals such as hero VSL thumbnails and product bundles need honest provenance and should be imagegen/imagegen-composite unless supplied or licensed.
+Theme files should be portable across offers: brand name/logo, color tokens, type families, layout density, and named assets. Primary conversion visuals such as hero VSL thumbnails and product bundles need honest provenance and should be `imagegen-final` unless supplied or licensed. `imagegen-composite` qualifies only when imagegen performed the reference-image composition; local script/PIL/canvas/HTML/CSS composition does not qualify.

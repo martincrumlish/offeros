@@ -62,7 +62,7 @@
   "preview": "index.html",
   "description": "Coded sales page for the offer.",
   "status": "complete",
-  "provenance": "imagegen|imagegen-composite|provided|licensed|screenshot|html-css|manual|generated-by-code",
+  "provenance": "imagegen|imagegen-final|imagegen-composite|provided|licensed|screenshot|html-css|manual|generated-by-code",
   "quality": {
     "buyerValue": 5,
     "usability": 5,
@@ -75,7 +75,8 @@
 Use `provenance` for all images and previews. Use honest labels:
 
 - `imagegen`: imagegen skill/tool output
-- `imagegen-composite`: imagegen output composited with deterministic rendered text/layout
+- `imagegen-final`: final buyer-facing creative pixels produced by the imagegen skill/tool
+- `imagegen-composite`: imagegen-native edit/composition using reference images; this is not a local PIL/canvas/HTML/CSS/script composite
 - `provided`: supplied by user
 - `licensed`: licensed external asset
 - `screenshot`: rendered screenshot from a real artifact
@@ -83,11 +84,11 @@ Use `provenance` for all images and previews. Use honest labels:
 - `manual`: hand-authored document/page/deck
 - `generated-by-code`: deterministic script output
 
-Do not use words like "generated image", "AI-generated", or "imagegen" in an artifact title or description unless provenance is `imagegen` or `imagegen-composite`.
+Do not use words like "generated image", "AI-generated", or "imagegen" in an artifact title or description unless provenance is `imagegen`, `imagegen-final`, or `imagegen-composite`.
 
-Do not register `pil-generated` artifacts. Pillow/PIL may be used for inspection, cropping, resizing, or compositing only when the underlying creative source is already `imagegen`, `provided`, or `licensed`.
+Do not register `pil-generated` artifacts. Pillow/PIL may be used for inspection, cropping, resizing, compression, or format conversion only when the underlying creative source is already `imagegen-final`, `imagegen`, `provided`, or `licensed`.
 
-For deep generated-design runs, primary conversion visuals must not use `html-css`, `generated-by-code`, `manual`, or `screenshot` provenance. Product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives require `imagegen` or `imagegen-composite` unless the asset is genuinely `provided` or `licensed`.
+For deep generated-design runs, primary conversion visuals must not use `html-css`, `generated-by-code`, `manual`, `screenshot`, or local `imagegen-composite` provenance. Product bundles, offer-stack bundles, product mockups, hero/VSL thumbnails, buyer-situation photos, and ad creatives require `imagegen-final` unless the asset is genuinely `provided` or `licensed`. If `imagegen-composite` is used for one of these assets, the artifact must also record `imagegenNativeComposite: true`, `finalPixelsGeneratedBy: "imagegen"`, `localCreativeOverlay: false`, and `localPostprocess` limited to crop, resize, compression, or format conversion.
 
 Do not use generated `scripts/build_offer_system.*` files as the production source of truth. Deep runs are built by plugin-owned OfferOS Studio scripts. Generated projects contain canonical source data and final artifacts.
 

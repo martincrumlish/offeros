@@ -47,6 +47,7 @@ DEEP_REQUIRED_IDS = [
 
 ALLOWED_PROVENANCE = {
     "imagegen",
+    "imagegen-final",
     "imagegen-composite",
     "provided",
     "licensed",
@@ -58,9 +59,28 @@ ALLOWED_PROVENANCE = {
 
 IMAGEGEN_CREATIVE_PROVENANCE = {
     "imagegen",
+    "imagegen-final",
     "imagegen-composite",
     "provided",
     "licensed",
+}
+
+PRIMARY_CONVERSION_CREATIVE_PROVENANCE = {
+    "imagegen-final",
+    "provided",
+    "licensed",
+}
+
+ALLOWED_LOCAL_POSTPROCESS = {
+    "crop",
+    "resize",
+    "compression",
+    "compress",
+    "format-conversion",
+    "format conversion",
+    "format_conversion",
+    "non-creative-qa-fix",
+    "qa-fix",
 }
 
 CODE_RENDERED_PROVENANCE = {
@@ -256,6 +276,24 @@ def markdown_section(text: str, heading: str) -> str:
 def field_values(text: str, field: str) -> list[str]:
     pattern = rf"(?im)\b{re.escape(field)}\s*:\s*`?([^`\n|]+)"
     return [item.strip().strip("\"' .").lower() for item in re.findall(pattern, text)]
+
+
+def markdown_field_rows(text: str) -> list[dict[str, str]]:
+    rows = []
+    current = {}
+    for line in text.splitlines():
+        match = re.match(r"\s*(?:-\s*)?([A-Za-z0-9_/-]+)\s*:\s*`?([^`\n|]+)", line)
+        if not match:
+            continue
+        key = match.group(1).strip()
+        value = match.group(2).strip().strip("\"' .")
+        if key == "artifactTarget" and current:
+            rows.append(current)
+            current = {}
+        current[key] = value
+    if current:
+        rows.append(current)
+    return rows
 
 
 def normalize_copy_anchor(value: str) -> str:
@@ -539,6 +577,62 @@ def is_imagegen_required_creative(artifact: dict) -> bool:
     return any(term in identity for term in IMAGEGEN_REQUIRED_CREATIVE_TERMS)
 
 
+def bool_field(value) -> bool | None:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "yes", "1"}:
+            return True
+        if lowered in {"false", "no", "0"}:
+            return False
+    return None
+
+
+def list_field(value) -> list[str]:
+    if isinstance(value, list):
+        return [str(item).strip().lower() for item in value if str(item).strip()]
+    if isinstance(value, str):
+        cleaned = value.strip().strip("[]")
+        if not cleaned:
+            return []
+        return [item.strip().strip("\"'` ").lower() for item in re.split(r"[,;]", cleaned) if item.strip()]
+    return []
+
+
+def primary_conversion_metadata_issues(item: dict, label: str) -> list[str]:
+    provenance = str(item.get("provenance") or item.get("source/provenance") or "").strip().lower()
+    if provenance in {"provided", "licensed"}:
+        return []
+    item_id = str(item.get("id") or item.get("artifactTarget") or item.get("filePath") or label)
+    issues = []
+    if provenance == "imagegen-composite" and bool_field(item.get("imagegenNativeComposite")) is not True:
+        issues.append(
+            f"{label} uses imagegen-composite without imagegenNativeComposite: true: {item_id}. "
+            "Local composition does not qualify."
+        )
+    elif provenance not in PRIMARY_CONVERSION_CREATIVE_PROVENANCE and provenance != "imagegen-composite":
+        issues.append(
+            f"{label} must use source/provenance imagegen-final, provided, or licensed: {item_id}. "
+            f"Found {provenance or 'missing'}."
+        )
+    if str(item.get("finalPixelsGeneratedBy", "")).strip().lower() != "imagegen":
+        issues.append(f"{label} must record finalPixelsGeneratedBy: imagegen: {item_id}.")
+    if bool_field(item.get("localCreativeOverlay")) is not False:
+        issues.append(f"{label} must record localCreativeOverlay: false: {item_id}.")
+    postprocess = list_field(item.get("localPostprocess"))
+    if not postprocess:
+        issues.append(f"{label} must record localPostprocess with only crop/resize/compression/format-conversion: {item_id}.")
+    disallowed = sorted({item for item in postprocess if item not in ALLOWED_LOCAL_POSTPROCESS})
+    if disallowed:
+        issues.append(
+            f"{label} localPostprocess contains creative operations, which are not allowed: "
+            + ", ".join(disallowed)
+            + f": {item_id}."
+        )
+    return issues
+
+
 def validate_registered_creative_src(html_text: str, marker: str, label: str, by_path: dict[str, dict], issues: list[str]) -> None:
     for tag in opening_tags_with_marker(html_text, marker):
         src = attr_value(tag, "src")
@@ -549,12 +643,8 @@ def validate_registered_creative_src(html_text: str, marker: str, label: str, by
         if not artifact:
             issues.append(f"{label} source must be registered in offer-os.json with imagegen provenance: {src}")
             continue
-        provenance = str(artifact.get("provenance", ""))
-        if provenance not in IMAGEGEN_CREATIVE_PROVENANCE:
-            issues.append(
-                f"{label} source must use imagegen/imagegen-composite, provided, or licensed provenance, "
-                f"not {provenance or 'missing'}: {src}"
-            )
+        for issue in primary_conversion_metadata_issues(artifact, label):
+            issues.append(f"{issue} Source: {src}")
 
 
 def quality_number(value) -> int:
@@ -1893,6 +1983,8 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         issues.append("Image quality metadata must confirm copyBlueprintUsed.")
     if image_quality.get("salesPageImageSystem") != "mixed-direct-response-v1":
         issues.append("Image quality metadata must record salesPageImageSystem: mixed-direct-response-v1.")
+    if image_quality.get("primaryConversionFinalPixelsPolicy") != "imagegen-final-v1":
+        issues.append("Image quality metadata must record primaryConversionFinalPixelsPolicy: imagegen-final-v1.")
     if image_quality.get("logoReference") != "assets/logo.png":
         issues.append("Image quality metadata must record logoReference: assets/logo.png.")
     if image_quality.get("logoUsagePolicy") != "use-locked-logo-reference":
@@ -1946,6 +2038,18 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         if image_quality.get("mockupHeavyUserRequested") is not True:
             issues.append("Sales-page visual plan is all mockup/UI-style visuals; use mixed-direct-response-v1 unless mockupHeavyUserRequested is true.")
 
+    sales_rows = markdown_field_rows(sales_visuals)
+    primary_plan_rows = [
+        row for row in sales_rows
+        if str(row.get("visualKind", "")).strip().lower() in IMAGEGEN_REQUIRED_VISUAL_KINDS
+    ]
+    for row in primary_plan_rows:
+        normalized = {key: value for key, value in row.items()}
+        normalized["id"] = normalized.get("artifactTarget") or normalized.get("filePath") or normalized.get("visualKind")
+        normalized["provenance"] = normalized.get("source/provenance", "")
+        for issue in primary_conversion_metadata_issues(normalized, "Sales-page primary conversion visual plan row"):
+            issues.append(issue)
+
     code_rendered_rows = []
     for line in text.splitlines():
         lower_line = line.lower()
@@ -1961,8 +2065,25 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         )
 
     ad_visuals = markdown_section(text, "## Ad Visuals")
-    if ad_visuals and len(re.findall(r"\bsource/provenance\s*:\s*`?imagegen(?:-composite)?`?", ad_visuals, flags=re.I)) < 3:
-        issues.append("Ad visual plan must include 3+ ad rows with source/provenance: imagegen or imagegen-composite.")
+    ad_rows = markdown_field_rows(ad_visuals)
+    ad_final_rows = [
+        row for row in ad_rows
+        if str(row.get("source/provenance", "")).strip().lower() in {"imagegen-final", "provided", "licensed"}
+        or (
+            str(row.get("source/provenance", "")).strip().lower() == "imagegen-composite"
+            and str(row.get("finalPixelsGeneratedBy", "")).strip().lower() == "imagegen"
+            and bool_field(row.get("imagegenNativeComposite")) is True
+        )
+    ]
+    if ad_visuals and len(ad_final_rows) < 3:
+        issues.append("Ad visual plan must include 3+ ad rows with final buyer-facing pixels from imagegen: source/provenance imagegen-final, or imagegen-composite with imagegenNativeComposite: true.")
+    for row in ad_rows:
+        if str(row.get("visualKind", "")).strip().lower() == "ad-creative":
+            normalized = {key: value for key, value in row.items()}
+            normalized["id"] = normalized.get("artifactTarget") or normalized.get("filePath") or "ad-creative"
+            normalized["provenance"] = normalized.get("source/provenance", "")
+            for issue in primary_conversion_metadata_issues(normalized, "Ad creative visual plan row"):
+                issues.append(issue)
 
 
 def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], warnings: list[str]) -> None:
@@ -1983,21 +2104,25 @@ def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], wa
         if manifest.get("mode") == "deep" and provenance == "pil-generated":
             issues.append(
                 f"Pillow/PIL-generated image artifacts are not allowed in OfferOS deep runs: {artifact.get('id', rel_path)}. "
-                "Use imagegen/imagegen-composite for creative images or render diagrams in HTML/CSS without registering a PIL-authored image."
+                "Use imagegen-final for primary creative images or render diagrams in HTML/CSS without registering a PIL-authored image."
             )
-        if generated_claim(artifact) and provenance not in {"imagegen", "imagegen-composite"}:
-            issues.append(f"Artifact claims generated imagery without imagegen/imagegen-composite provenance: {artifact.get('id', rel_path)}")
-        if deep_generated_design and is_imagegen_required_creative(artifact) and provenance not in IMAGEGEN_CREATIVE_PROVENANCE:
-            issues.append(
-                "Generated-design deep runs must create primary conversion visuals with imagegen/imagegen-composite "
-                f"(or provided/licensed source), not {provenance or 'missing'}: {artifact.get('id', rel_path)} ({rel_path}). "
-                "PIL/HTML/CSS/code-generated PNGs cannot satisfy product bundle, hero/VSL thumbnail, product mockup, or ad creative requirements."
-            )
-        if provenance in {"imagegen", "imagegen-composite"}:
+        if generated_claim(artifact) and provenance not in {"imagegen", "imagegen-final", "imagegen-composite"}:
+            issues.append(f"Artifact claims generated imagery without imagegen/imagegen-final/imagegen-composite provenance: {artifact.get('id', rel_path)}")
+        if deep_generated_design and is_imagegen_required_creative(artifact):
+            primary_issues = primary_conversion_metadata_issues(artifact, "Primary conversion image artifact")
+            if primary_issues:
+                issues.extend(primary_issues)
+                issues.append(
+                    "Generated-design deep runs must create primary conversion visuals with final buyer-facing pixels from imagegen "
+                    f"(or provided/licensed source), not local composition: {artifact.get('id', rel_path)} ({rel_path}). "
+                    "PIL/HTML/CSS/canvas/screenshot/generated-by-code/manual PNGs and local overlays cannot satisfy product bundle, "
+                    "hero/VSL thumbnail, product mockup, buyer-situation photo, or ad creative requirements."
+                )
+        if provenance in {"imagegen", "imagegen-final", "imagegen-composite"}:
             imagegen_count += 1
             if suffix == ".svg":
                 issues.append(f"Imagegen artifact should be bitmap, not SVG: {artifact.get('id', rel_path)}")
-        if provenance in {"imagegen", "imagegen-composite", "provided", "licensed"} and suffix in BITMAP_EXTS:
+        if provenance in {"imagegen", "imagegen-final", "imagegen-composite", "provided", "licensed"} and suffix in BITMAP_EXTS:
             real_bitmap_count += 1
 
     image_quality = manifest.get("quality", {}).get("images", {})

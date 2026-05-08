@@ -45,7 +45,7 @@ Production rule: follow the Visual Asset Plan Recipe in `references/exact-build-
 
 Output:
 
-1. Visual metadata: `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, `salesPageImageSystem: mixed-direct-response-v1`, and `mockupHeavyUserRequested`.
+1. Visual metadata: `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, `salesPageImageSystem: mixed-direct-response-v1`, `primaryConversionFinalPixelsPolicy: imagegen-final-v1`, and `mockupHeavyUserRequested`.
 2. Global brand assets: logo lockup, brand mark, product bundle/mockup, reusable pattern/frame.
 3. Sales page visuals: 4+ visuals with `visualKind`, `copyAnchor`, conversion job, file path, aspect ratio, and text rule.
 4. PDF product visuals: 6+ visuals/treatments, including 4+ PDF-specific visuals that are not reused from the sales page.
@@ -58,7 +58,7 @@ Output:
 
 Default sales-page image system: `mixed-direct-response-v1`. Use product/dashboard/offer-stack mockups where they sell the product or stack. Use diagrams, comparison visuals, proof/demo visuals, structured panels, screenshots, or restrained buyer-situation imagery for mechanism, failed alternatives, proof, objections, and feature specifics. Avoid treating the sales page as the master image pool. Avoid all-mockup sales pages unless the user explicitly requested mockup-heavy.
 
-Primary creative source rule: in deep generated-design runs, `hero-vsl-frame`, `product-mockup`, `offer-stack-bundle`, `buyer-situation-photo`, and `ad-creative` outputs must be created with the `imagegen` skill/tool or composed from imagegen output. Do not make those assets as HTML/CSS, canvas, screenshot, generated-by-code, or manual PNG placeholders. Those methods are only for diagrams, matrices, worksheet previews, real screenshots of built artifacts, or QA evidence. Do not use Pillow/PIL to author OfferOS image artifacts at all; it is allowed only for inspection, cropping, resizing, or compositing already-sourced images.
+Primary creative source rule: in deep generated-design runs, `hero-vsl-frame`, `product-mockup`, `offer-stack-bundle`, `buyer-situation-photo`, and `ad-creative` outputs must be final-pixel `imagegen` assets. Record `source/provenance: imagegen-final`, `finalPixelsGeneratedBy: imagegen`, `localCreativeOverlay: false`, and `localPostprocess` limited to crop, resize, compression, or format-conversion. Use `imagegen-composite` only when imagegen performed the composition with reference images and the row records `imagegenNativeComposite: true`. Do not make those assets as HTML/CSS, canvas, screenshot, generated-by-code, manual PNG placeholders, or local composites. Do not use Pillow/PIL/canvas/local scripts to add logo, headline text, labels, UI cards, badges, mockups, overlays, or product-stack composition after imagegen. If the creative is wrong, regenerate or edit with imagegen. Those local methods are only for diagrams, matrices, worksheet previews, real screenshots of built artifacts, or QA evidence.
 
 ## Logo And Brand
 
