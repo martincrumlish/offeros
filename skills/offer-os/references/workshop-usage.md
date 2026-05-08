@@ -104,7 +104,7 @@ Rewrite design.md into a practical production guide with colors, typography, lay
 For weak logo output:
 
 ```text
-The logo is a one-pass placeholder, icon-only mark, illustrative/page-curl/app-icon mark, rough text composite, SVG file, or non-imagegen bitmap. Re-run the Logo Gate: create 3 logo concepts, select one with rationale, use imagegen for 3 complete logo lockup candidates first, use a text-free symbol fallback only if exact text fails, reject illustrative marks, save assets/logo.png as a professional readable horizontal PNG/WebP logo lockup with the exact offer name, create output/qa/logo-lockup-preview.png, check small-size, one-color, typography, kerning, mark scale, and spacing, and record quality.logo metadata with `svgAssetCreated: false`.
+The logo is a placeholder, icon-only mark, illustrative/page-curl/app-icon mark, rough text composite, SVG file, non-imagegen bitmap, or one of several inconsistent logo options. Re-run the Logo Gate: define one final logo direction, use imagegen once for one complete readable logo lockup, save it as assets/logo.png, create output/qa/logo-lockup-preview.png, check small-size, one-color, typography, kerning, mark scale, and spacing, and record quality.logo metadata with `logoMode: single-final-logo-v1`, `finalLogoCount: 1`, `logoGenerationCount: 1`, `singleFinalLogoOnly: true`, `alternateLogosCreated: false`, and `svgAssetCreated: false`.
 ```
 
 For weak sales-page structure:

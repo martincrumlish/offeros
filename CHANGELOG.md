@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.5
+
+- Changes the logo workflow to single-final-logo mode: one imagegen logo lockup at `assets/logo.png`, not three options or alternate lockups.
+- Requires downstream imagegen jobs that need branding to use `assets/logo.png` as the exact supplied logo reference.
+- Replaces multi-logo metadata with `finalLogoCount`, `logoGenerationCount`, `singleFinalLogoOnly`, and `alternateLogosCreated`.
+- Removes the default imagegen-composite logo fallback from generated-design runs.
+
 ## 0.10.4
 
 - Removes `pil-generated` as an allowed registered artifact provenance.
@@ -15,9 +22,9 @@
 
 ## 0.10.2
 
-- Adds a brand-lock step after logo selection so `assets/logo.png` is the only downstream logo reference.
+- Adds a brand-lock step after final logo creation so `assets/logo.png` is the only downstream logo reference.
 - Forbids downstream imagegen prompts from generating, redrawing, reinterpreting, or placing new logos/wordmarks in product, ad, PDF, VSL, dashboard, or page images.
-- Excludes rejected logo concepts/candidates from visual worker context and visual asset plans.
+- Excludes rejected logo attempts from visual worker context and visual asset plans.
 - Adds validator and self-test coverage for logo drift in downstream asset plans.
 
 ## 0.10.1
@@ -49,7 +56,7 @@
 
 ## 0.7.0
 
-- Hardens the logo recipe so imagegen must first generate complete logo lockup candidates with symbol plus exact wordmark before any mark-only fallback is allowed.
+- Hardens the logo recipe so imagegen must generate complete logo lockups with symbol plus exact wordmark before any mark-only fallback is allowed.
 - Requires final `assets/logo.png` to be a professional horizontal lockup with exact offer-name preservation, typography, kerning, mark scale, spacing, and nav/cover preview checks.
 - Adds validator checks so `logo-mark` files, rough text composites, and missing professional lockup metadata cannot pass as the primary logo.
 

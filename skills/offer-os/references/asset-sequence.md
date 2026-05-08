@@ -6,7 +6,7 @@ Generate assets in dependency order. Earlier assets define constraints for later
 
 1. Offer/page direction
 2. Design guide
-3. Logo or wordmark
+3. Single final logo lockup
 4. Product outline and offer stack
 5. Sales copy and section-by-section copy blueprint
 6. `visual-asset-plan.md` v2 anchored to the copy blueprint
@@ -32,7 +32,7 @@ Record provenance for every visual artifact in `offer-os.json`.
 
 Deep mode should include at least:
 
-- one professional logo lockup made from imagegen complete-lockup candidates first, exact readable wordmark, and lockup preview
+- one professional logo lockup made from a single final imagegen logo call, exact readable wordmark, and lockup preview
 - one hero or product image that sells the offer visually
 - three ad images with actual creative direction
 - 6+ PDF-specific visuals/treatments, with 4+ not reused from the sales page
@@ -54,7 +54,7 @@ The plan must split visuals into:
 - dashboard visuals
 - reuse rules
 
-Record `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, and `salesPageImageSystem: mixed-direct-response-v1`.
+Record `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, `salesPageImageSystem: mixed-direct-response-v1`, `logoReference: assets/logo.png`, `logoUsagePolicy: use-locked-logo-reference`, and `alternateLogosCreated: false`.
 
 Do not treat sales-page graphics as the default image library for every artifact. Each artifact has its own job:
 
@@ -86,7 +86,7 @@ When agents are authorized, dispatch imagegen visual workers immediately after t
 - VSL visuals: `output/presentation/assets/`
 - ad visuals: `assets/ads/`
 
-Use the same `design.md`, `copy.md`, frozen final `assets/logo.png`, and visual plan as references for every worker. Do not give workers rejected logo concepts, rejected logo candidates, or `logo-mark` alternatives as style references.
+Use the same `design.md`, `copy.md`, frozen final `assets/logo.png`, and visual plan as references for every worker. Do not give workers any other logo image, old logo attempt, rejected logo attempt, or `logo-mark` alternative as a style reference.
 
 ## Dependencies
 
@@ -105,7 +105,7 @@ Defines audience, promise, mechanism, category, price point, tone, and conversio
 
 ### Design Guide
 
-Required before page design, logo refinement, graphics, bundle visuals, dashboard, and VSL style frames.
+Required before page design, graphics, bundle visuals, dashboard, and VSL style frames.
 
 ### Logo
 
@@ -118,21 +118,20 @@ Minimum logo prerequisites:
 - core promise
 - market category
 - desired tone
-- 3 concept directions
-- selected concept rationale
+- one final logo direction
 - small-size and one-color checks
 - bitmap preview/export for QA
 
-In deep generated-design runs, the primary logo artifact must be an `imagegen` or `imagegen-composite` `.png` or `.webp` horizontal logo lockup that includes the readable offer name. Start with imagegen complete logo lockup candidates. The imagegen brand mark alone can be saved as `assets/logo-mark.png` only as a fallback after complete-lockup attempts fail exact text; it is not the primary logo. Do not create or register SVG logo files, even as secondary exports or drafts. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
+In deep generated-design runs, the primary logo artifact must be an `imagegen` `.png` or `.webp` horizontal logo lockup that includes the readable offer name. Create exactly one final logo with imagegen and save it as `assets/logo.png`. Do not create a 3-option logo set, option sheet, alternate lockups, `logo-mark` fallback, SVG logo, or script-composited text logo. If imagegen was blocked, record the blocker in `quality.logo.imagegenNotUsedReason` and keep the logo/run out of complete status.
 
 The mark must be a simple logo-grade symbol, not an illustration, page-curl/folded-paper image, app icon, mockup, or rough cover graphic. The final `assets/logo.png` must preserve the exact offer name and pass typography, kerning, mark scale, and spacing checks. A bad mark with text composited beside it is still a failed logo.
 
 After the final logo is accepted, freeze the brand lockup:
 
 - `assets/logo.png` is the only downstream logo reference.
-- Rejected concept images and rejected candidate lockups are QA artifacts only and must not be used as imagegen references.
-- Do not ask imagegen to generate or redraw the logo in product mockups, ads, VSL visuals, PDF visuals, or page graphics.
-- If a visual needs the logo, leave a blank/safe logo area in the generated image and composite or place `assets/logo.png` later using the build script, HTML/CSS, or PPTX placement.
+- No alternate logo files should exist in the production asset set.
+- Do not ask imagegen to invent, redesign, recolor, redraw, reinterpret, replace, or substitute the logo in product mockups, ads, VSL visuals, PDF visuals, or page graphics.
+- If a visual needs the logo, pass `assets/logo.png` to imagegen as the only logo reference and instruct imagegen to use the supplied logo exactly.
 
 ### Sales Copy Blueprint
 

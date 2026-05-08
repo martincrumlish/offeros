@@ -64,23 +64,23 @@ Primary creative source rule: in deep generated-design runs, `hero-vsl-frame`, `
 
 Purpose: create a usable identity system across all offer assets.
 
-Production rule: follow the Logo Recipe in `references/exact-build-recipes.md`. The primary logo for a deep generated-design run is `assets/logo.png`, created first through imagegen complete logo lockup candidates with symbol plus exact readable offer-name wordmark. Use a text-free imagegen symbol plus professional wordmark compositor only as a fallback after complete-lockup attempts fail exact text. Register it with `provenance: "imagegen"` only if imagegen produced the final readable lockup directly; otherwise use `provenance: "imagegen-composite"`. No SVG logo files at all, no icon-only primary logo, no illustrative mark, and no rough "mark plus default text" composite.
+Production rule: follow the Logo Recipe in `references/exact-build-recipes.md`. The primary logo for a deep generated-design run is `assets/logo.png`, created through one single-final-logo imagegen call with symbol plus exact readable offer-name wordmark. Do not create 3 logo options, option sheets, alternate lockups, symbol-only fallbacks, or text-composited repairs unless the user explicitly asks for options or a non-imagegen repair. Register the generated logo with `provenance: "imagegen"`. No SVG logo files at all, no icon-only primary logo, no illustrative mark, and no rough "mark plus default text" composite.
 
-After the final logo is accepted, freeze it. Later imagegen prompts must not generate, redraw, reinterpret, or place a new logo/wordmark. Downstream product, ad, PDF, VSL, dashboard, and page images must use `assets/logo.png` only, composited or placed by the build after image generation. Rejected logo concepts and rejected logo candidates are QA-only and must not be passed as references.
+After the final logo is accepted, freeze it. Later imagegen prompts that need branding must pass `assets/logo.png` as the only logo reference and instruct imagegen to use the supplied logo exactly. Downstream product, ad, PDF, VSL, dashboard, and page images must not invent, redesign, recolor, redraw, reinterpret, replace, or substitute another logo/wordmark. No alternate logo attempts may be passed as references.
 
 Output:
 
 1. Brand position: promise, personality, buyer perception, category signal, differentiation.
-2. Three logo concepts: idea, shape language, category signal, why it fits the buyer, and why it was rejected or selected.
+2. One final logo direction: idea, shape language, category signal, why it fits the buyer, and exact execution notes.
 3. Final logo direction: symbol/wordmark type, proportions, small-size behavior, one-color behavior, production path, final selected lockup path `assets/logo.png`, and brand-lock status.
 4. Identity system: color, typography, icon, pattern/texture, image rules, product badge rules.
 5. Brand voice: tone, sentence style, words to use, words to avoid, claims style, CTA style.
 6. Usage rules: sales page, PDF, ads, emails, VSL, dashboard.
-7. `imagegen` prompts for 3 complete logo lockup candidates, plus the fallback text-free symbol prompt and professional wordmark-compositor plan only if exact text fails.
+7. `imagegen` prompt for one final complete logo lockup, plus downstream logo-reference rule for product/mockup imagegen jobs.
 8. No vector/SVG export prompt. Generated OfferOS logo output is PNG/WebP bitmap only.
 9. Logo QA: nav-size preview, one-color check, exact-name preservation check, wordmark kerning/spacing check, bitmap export/preview, and `quality.logo` metadata.
 
-Avoid abstract swooshes, generic marks, fragile details, page-curl/folded-paper graphics, app-icon marks, illustrative cover-art marks, and visual ideas that cannot extend to product assets. In deep generated-design runs, do not use a hand-coded SVG, HTML/CSS render, or PIL text graphic as the primary complete logo. The primary logo must be a horizontal bitmap lockup such as `.png` or `.webp`, must include the exact readable offer name, must use imagegen for complete lockup candidates before any symbol-only fallback, and must pass professional wordmark composition checks. Do not create or register SVG logo assets.
+Avoid abstract swooshes, generic marks, fragile details, page-curl/folded-paper graphics, app-icon marks, illustrative cover-art marks, and visual ideas that cannot extend to product assets. In deep generated-design runs, do not use a hand-coded SVG, HTML/CSS render, PIL text graphic, or text compositor as the primary complete logo. The primary logo must be a horizontal bitmap lockup such as `.png` or `.webp`, must include the exact readable offer name, must use one final imagegen logo call, and must pass professional wordmark checks. Do not create or register SVG logo assets.
 
 ## Sales Copy
 
@@ -121,7 +121,7 @@ Use the direct-response section contract from `assets/templates/sales-page/secti
 
 If the page uses HTML/CSS diagrams as temporary visuals, mark them as fallbacks and do not describe them as generated images. Do not create SVG diagram files.
 
-Do not ask imagegen to render the logo inside sales-page graphics. If a sales-page visual needs brand presence, generate the image without a logo and place `assets/logo.png` in the HTML/CSS layer.
+For sales-page graphics that need brand presence, pass `assets/logo.png` as the exact logo reference to imagegen. Do not let imagegen invent, redraw, recolor, reinterpret, replace, or substitute another logo.
 
 ## PDF Product
 

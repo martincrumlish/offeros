@@ -42,15 +42,15 @@ def browser_safe_preview(artifact: dict, artifacts: list[dict]) -> str:
     kind = infer_type(path, artifact.get("type", ""))
     if kind == "deck" and Path(preview).suffix.lower() in DECK_EXTS:
         category = artifact.get("category")
-        for candidate in artifacts:
-            if candidate is artifact:
+        for peer_artifact in artifacts:
+            if peer_artifact is artifact:
                 continue
-            if category and candidate.get("category") != category:
+            if category and peer_artifact.get("category") != category:
                 continue
-            candidate_path = candidate.get("path", "")
-            candidate_suffix = Path(candidate_path).suffix.lower()
-            if candidate_suffix in HTML_EXTS or candidate_suffix in IMAGE_EXTS:
-                return candidate.get("preview") or candidate_path
+            peer_path = peer_artifact.get("path", "")
+            peer_suffix = Path(peer_path).suffix.lower()
+            if peer_suffix in HTML_EXTS or peer_suffix in IMAGE_EXTS:
+                return peer_artifact.get("preview") or peer_path
     return preview
 
 

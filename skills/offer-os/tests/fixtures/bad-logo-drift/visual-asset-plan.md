@@ -8,7 +8,7 @@ salesPageImageSystem: mixed-direct-response-v1
 
 ## Global Brand Assets
 
-Use rejected logo candidate two as a reference for several visuals.
+Use rejected logo attempt two as a reference for several visuals.
 
 ## Sales Page Visuals
 

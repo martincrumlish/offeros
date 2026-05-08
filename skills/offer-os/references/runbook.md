@@ -80,12 +80,18 @@ Required result:
 - `assets/logo.png`
 - `brand.logo = "assets/logo.png"`
 - primary logo is a complete lockup with readable offer name, not an icon-only mark
-- imagegen was first used for complete logo lockup candidates with symbol plus exact offer-name wordmark
-- any fallback imagegen symbol is a logo-grade brand symbol, not an illustration, page-curl/app-icon graphic, or rough cover-art mark
+- imagegen was used for exactly one final complete logo lockup with symbol plus exact offer-name wordmark
+- no 3-option logo set, option sheet, alternate lockups, symbol-only fallback, or script-composited wordmark was created
 - wordmark preserves the exact offer name and has checked typography, kerning, mark scale, and spacing
 - `output/qa/logo-lockup-preview.png` shows nav-size and cover-size logo previews
-- `logo` artifact registered with `provenance: "imagegen"` or `provenance: "imagegen-composite"`
+- `logo` artifact registered with `provenance: "imagegen"`
 - `quality.logo.brandMarkSource = "imagegen"`
+- `quality.logo.logoMode = "single-final-logo-v1"`
+- `quality.logo.logoDirectionCount = 1`
+- `quality.logo.finalLogoCount = 1`
+- `quality.logo.logoGenerationCount = 1`
+- `quality.logo.singleFinalLogoOnly = true`
+- `quality.logo.alternateLogosCreated = false`
 - `quality.logo.logoLockup = true`
 - `quality.logo.includesReadableOfferName = true`
 - `quality.logo.imagegenCompleteLogoLockupAttempted = true`
@@ -93,11 +99,12 @@ Required result:
 - `quality.logo.professionalLockupApproved = true`
 - `quality.logo.finalLogoLocked = true`
 - `quality.logo.downstreamLogoReference = "assets/logo.png"`
-- `quality.logo.rejectedLogoConceptsExcluded = true`
+- `quality.logo.downstreamImagegenLogoReference = "assets/logo.png"`
+- `quality.logo.downstreamImagegenMustUseLogoReference = true`
 
 Do not create or register any SVG logo file. Do not create an icon-only mark, illustrative mark, rough text composite, PIL/HTML/CSS raster fallback, or text-only graphic and call it complete.
 
-After logo approval, freeze the brand lockup. Downstream imagegen work must not generate new logos or use rejected logo concepts/candidates. If a visual needs a logo, place `assets/logo.png` with the build script, HTML/CSS, or PPTX tooling after the visual asset is generated.
+After logo approval, freeze the brand lockup. Downstream imagegen work must use `assets/logo.png` as the exact supplied logo reference whenever the visual needs a logo. It must not invent, redesign, recolor, redraw, reinterpret, replace, or substitute the logo, and it must not use old logo attempts or alternate logo files.
 
 Update `offer-os.json`:
 

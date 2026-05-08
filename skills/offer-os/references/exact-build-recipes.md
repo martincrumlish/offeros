@@ -32,26 +32,25 @@ Stop conditions:
 Use this recipe for every deep generated-design run.
 
 1. Read `offer-os.json`, `offer-architecture.md`, and `design.md`.
-2. Write 3 logo concepts in `design.md` under `## Logo Concepts`. Each concept must include: concept name, visual idea, buyer/category signal, reason to select/reject.
-3. Select 1 concept and write the reason in `design.md` under `## Selected Logo Concept`.
-4. Call the `imagegen` skill/tool for the selected concept to generate at least 3 complete logo lockup candidates. The first logo task is not a mark-only task. It must ask imagegen for a complete commercial logo with a symbol and exact wordmark in one bitmap. Do not create any logo or brand asset as SVG. Do not create the primary logo with HTML/CSS, PIL, canvas, screenshots, icon fonts, or CSS text alone.
-5. Use this prompt structure for each complete-lockup `imagegen` call:
+2. Write exactly one final logo direction in `design.md` under `## Logo Direction`. Do not create a set of 3 logo options. The direction must include: symbol/wordmark idea, exact color treatment, buyer/category signal, small-size behavior, and why it fits the offer.
+3. Call the `imagegen` skill/tool once for that final direction to generate one complete commercial logo lockup. Do not create 3 logo files, option sheets, alternate lockups, or a variation grid. The logo task is not a mark-only task. It must ask imagegen for a complete commercial logo with a symbol and exact wordmark in one bitmap. Do not create any logo or brand asset as SVG. Do not create the primary logo with HTML/CSS, PIL, canvas, screenshots, icon fonts, CSS text alone, or deterministic text compositing.
+4. Use this prompt structure for the single final logo `imagegen` call:
 
 ```text
 Use case: logo-brand
-Asset type: complete bitmap logo lockup, symbol plus exact wordmark
+Asset type: one final complete bitmap logo lockup, symbol plus exact wordmark
 Offer name: [exact offer name]
 Audience: [specific audience]
 Positioning: [one-sentence promise/mechanism]
-Visual direction: [selected concept from design.md]
+Visual direction: [single final logo direction from design.md]
 Style: flat, premium, simple, high-contrast, commercial identity logo, usable at 24px in a website header and at large size on a product cover
 Composition: complete horizontal logo lockup on a plain background; simple symbol on the left; professionally designed wordmark on the right; strong silhouette; 1-2 main symbol shapes; minimal internal detail
 Text handling: include the exact offer name "[exact offer name]" once as the wordmark. Do not insert spaces, split camel-case names, change capitalization, add slogans, add tiny text, or add secondary lines.
-Avoid: mark-only output, icon-only output, illustration, app icon, map pin unless absolutely core to the concept, page curl, folded paper, 3D, shadows, photorealism, mockup scenes, tiny UI diagrams, busy funnel layers, clip art, stock icons, watermarks, fake UI, illegible letters, extra words, gradients that destroy small-size clarity
+Avoid: multiple logo options, option sheet, mark-only output, icon-only output, illustration, app icon, map pin unless absolutely core to the direction, page curl, folded paper, 3D, shadows, photorealism, mockup scenes, tiny UI diagrams, busy funnel layers, clip art, stock icons, watermarks, fake UI, illegible letters, extra words, gradients that destroy small-size clarity
 Output: finished complete logo lockup suitable to save as assets/logo.png
 ```
 
-6. Inspect the complete logo candidates against this logo-lockup acceptance contract:
+5. Inspect the single final logo against this logo-lockup acceptance contract:
    - exact offer name appears once, readable, unbroken, and with the same capitalization as `offer-os.json.offerName`
    - wordmark looks integrated and designed, not default typed text pasted beside a mark
    - symbol is a simple flat logo symbol, not an illustration or rough cover graphic
@@ -59,76 +58,51 @@ Output: finished complete logo lockup suitable to save as assets/logo.png
    - no tiny UI/detail that disappears at nav size
    - usable at 24px in a header
    - usable in one color
-   - visually connected to the selected logo concept, not a generic icon
-7. If one complete logo candidate passes every item, crop or place it onto a horizontal logo canvas if needed, save it as `assets/logo.png`, set provenance to `imagegen`, and record `quality.logo.imagegenCompleteLogoAccepted = true`. The final `assets/logo.png` must be a horizontal lockup file, not a square raw imagegen canvas.
-8. If all complete logo candidates fail because imagegen mangled the exact wordmark, do a second imagegen round for a text-free logo-grade symbol only. Use this prompt structure:
-
-```text
-Use case: logo-symbol-fallback
-Asset type: text-free bitmap brand symbol for a complete logo lockup
-Offer name context: [exact offer name]
-Audience: [specific audience]
-Positioning: [one-sentence promise/mechanism]
-Visual direction: [selected concept from design.md]
-Style: flat, premium, simple, high-contrast, commercial identity symbol, usable at 24px in a website header and at large size on a product cover
-Composition: centered standalone symbol on a plain background, generous padding, strong silhouette, 1-2 main shapes, minimal internal detail
-Text handling: no text, no letters, no slogans, no tiny labels
-Avoid: illustration, app icon, map pin unless absolutely core to the concept, page curl, folded paper, 3D, shadows, photorealism, mockup scenes, tiny UI diagrams, busy funnel layers, clip art, stock icons, watermarks, fake UI, gradients that destroy small-size clarity
-Output: finished text-free bitmap symbol suitable to combine into assets/logo.png
-```
-
-9. Inspect the fallback symbol against this symbol acceptance contract:
-   - simple flat symbol, not an illustration or rough cover graphic
-   - no page curl, folded paper, 3D lighting, photoreal texture, mockup, or scene
-   - no tiny UI/detail that disappears at nav size
-   - usable at 24px in a header
-   - usable in one color
-   - visually connected to the selected logo concept, not a generic icon
-10. If the fallback symbol fails any item, do not use it. Retry imagegen with a simpler prompt. Do not composite a bad symbol with text and call it complete.
-11. If the fallback symbol passes, build the final lockup with a professional wordmark compositor, not a rough "mark plus default text" image:
-   - preserve the exact offer name string from `offer-os.json.offerName`; do not insert spaces, split camel-case names, change capitalization, or create accidental two-word spacing
-   - use the typography system from `design.md`; if none exists, choose one professional display wordmark font and record the choice in `design.md`
-   - use a real scalable font available on the machine or bundled into the project; do not use a default bitmap font or browser-default font
-   - adjust weight, optical alignment, tracking, and mark-to-wordmark spacing intentionally
-   - mark height must be visually balanced with the wordmark, usually 0.85-1.15x the wordmark cap height for header use
-   - export as a horizontal lockup on transparent or plain background, not a square icon canvas
-   - create a nav-size and cover-size preview at `output/qa/logo-lockup-preview.png`
-12. Move or copy the fallback symbol imagegen output into the project as `assets/logo-mark.png` only when the complete-lockup attempts failed exact text. Build `assets/logo.png` as the complete horizontal logo lockup. The final primary logo must include the readable offer name in the bitmap itself and must not look like a rough text paste-up.
-13. Set `brand.logo` in `offer-os.json` to `assets/logo.png`.
-14. Freeze the selected logo before any other image generation:
-   - write the final selected candidate name/file in `design.md` under `## Final Logo Lockup`
+   - visually connected to the final logo direction, not a generic icon
+6. If the generated logo fails the contract, discard it and rerun the same single-final-logo step with a simpler final direction. Do not keep multiple alternatives in the project, do not show three options, and do not let rejected attempts become downstream references.
+7. When the single final logo passes, save it as `assets/logo.png`, set provenance to `imagegen`, and record `quality.logo.imagegenCompleteLogoAccepted = true`. The final `assets/logo.png` must be a horizontal lockup file, not a square raw imagegen canvas.
+8. Do not use a symbol-only fallback or professional wordmark compositor unless the user explicitly approves a non-imagegen logo repair. In normal deep generated-design runs, a failed wordmark means rerun the single final imagegen logo, not build a separate text composite.
+9. Set `brand.logo` in `offer-os.json` to `assets/logo.png`.
+10. Freeze the final logo before any other image generation:
+   - write the final single logo file in `design.md` under `## Final Logo Lockup`
    - set `quality.logo.finalLogoLocked = true`
    - set `quality.logo.downstreamLogoReference = "assets/logo.png"`
-   - set `quality.logo.rejectedLogoConceptsExcluded = true`
-   - move rejected logo candidates into `output/qa/logo-candidates/` or another QA-only folder; do not reference them in `visual-asset-plan.md`, imagegen prompts, or worker instructions
-   - do not ask imagegen to recreate, redraw, reinterpret, or place the logo in downstream product, ad, PDF, VSL, dashboard, or page images
-   - downstream imagegen prompts must say: `Do not generate or redraw the logo or wordmark; leave any logo area blank or use neutral brand-colored shapes. The final logo will be composited from assets/logo.png by the build.`
-   - if an asset needs the logo visible, composite `assets/logo.png` deterministically after image generation or place it in HTML/CSS/PPTX using the actual file
-15. Register the logo artifact. Use `imagegen` only when the final `assets/logo.png` came directly from imagegen as a complete readable lockup. Use `imagegen-composite` only when complete-lockup imagegen attempts failed exact text and `assets/logo.png` combines an imagegen fallback symbol with exact rendered professional wordmark text:
+   - set `quality.logo.downstreamImagegenLogoReference = "assets/logo.png"`
+   - set `quality.logo.singleFinalLogoOnly = true`
+   - set `quality.logo.alternateLogosCreated = false`
+   - set `quality.logo.downstreamImagegenMustUseLogoReference = true`
+   - do not pass any old logo attempts, sketches, rejected images, or screenshots as downstream logo references
+   - for downstream imagegen visuals that need the logo visible, pass `assets/logo.png` as the only logo reference image and prompt: `Use the supplied assets/logo.png exactly as the product/brand logo. Do not invent, redesign, recolor, redraw, reinterpret, replace, or substitute the logo or wordmark.`
+11. Register the logo artifact with `provenance: imagegen`. Do not register a generated-design logo as `imagegen-composite` unless the user explicitly approved a non-imagegen repair:
 
 ```powershell
-.\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\register_artifact.py --id logo --title "Primary Logo" --type image --category Brand --path assets/logo.png --provenance imagegen-composite --buyer-value 4 --usability 4 --trust 4
+.\.venv\Scripts\python.exe plugins\offer-os\skills\offer-os\scripts\register_artifact.py --id logo --title "Primary Logo" --type image --category Brand --path assets/logo.png --provenance imagegen --buyer-value 4 --usability 4 --trust 4
 ```
 
-16. Set `quality.logo`:
+12. Set `quality.logo`:
 
 ```json
 {
-  "conceptCount": 3,
-  "selectedConcept": "[concept name]",
+  "logoMode": "single-final-logo-v1",
+  "logoDirectionCount": 1,
+  "finalLogoDirection": "[single final direction name]",
   "finalLogoLocked": true,
   "downstreamLogoReference": "assets/logo.png",
-  "rejectedLogoConceptsExcluded": true,
+  "downstreamImagegenLogoReference": "assets/logo.png",
+  "singleFinalLogoOnly": true,
+  "alternateLogosCreated": false,
+  "downstreamImagegenMustUseLogoReference": true,
   "primaryFormat": "png",
-  "generationTool": "imagegen-complete-logo-attempts+imagegen-symbol+professional-wordmark-compositor",
+  "generationTool": "imagegen-single-final-logo",
   "imagegenNotUsedReason": "",
   "imagegenCompleteLogoLockupAttempted": true,
-  "imagegenLogoCandidateCount": 3,
-  "imagegenCompleteLogoAccepted": false,
-  "fallbackWordmarkCompositeReason": "complete imagegen logo candidates failed exact-name text check",
+  "finalLogoCount": 1,
+  "logoGenerationCount": 1,
+  "imagegenCompleteLogoAccepted": true,
+  "fallbackWordmarkCompositeReason": "",
   "brandMarkSource": "imagegen",
-  "wordmarkSource": "professional-wordmark-compositor",
-  "wordmarkCompositeMethod": "scripted-professional-compositor",
+  "wordmarkSource": "imagegen",
+  "wordmarkCompositeMethod": "",
   "logoLockup": true,
   "includesReadableOfferName": true,
   "exactOfferNamePreserved": true,
@@ -153,17 +127,20 @@ Stop conditions:
 - If any generated logo, brand, ad, page, PDF, VSL, or visual artifact path is `.svg`, stop and rebuild it as PNG/WebP/JPG or HTML/CSS with no SVG file.
 - If the primary `logo` artifact points to `assets/logo-mark.png` or any mark-only file, stop and rebuild the logo.
 - If the primary logo is an icon or mark without the readable offer name, stop and rebuild the logo lockup.
-- If imagegen was not first used for complete logo lockup candidates, stop and run the required complete-logo imagegen step.
-- If `quality.logo.imagegenLogoCandidateCount` is less than `3`, stop and generate more complete-lockup candidates.
-- If `quality.logo.imagegenCompleteLogoAccepted` is false and `quality.logo.fallbackWordmarkCompositeReason` is empty, stop and document why the fallback compositor was used.
-- If the imagegen complete logo or fallback symbol is illustrative, page-curl/folded-paper, 3D, app-icon-like, a rough cover graphic, or too detailed for nav use, stop and regenerate it.
+- If imagegen was not used for the single final complete logo lockup, stop and run the required single-final-logo imagegen step.
+- If `quality.logo.finalLogoCount` is not `1`, stop and remove the multi-logo workflow.
+- If `quality.logo.logoGenerationCount` is not `1`, stop and remove the multi-logo workflow.
+- If `quality.logo.singleFinalLogoOnly` is not true, stop before downstream visuals.
+- If `quality.logo.alternateLogosCreated` is not false, stop and remove alternate logo files from the run.
+- If the imagegen complete logo is illustrative, page-curl/folded-paper, 3D, app-icon-like, a rough cover graphic, or too detailed for nav use, stop and regenerate it as the single final logo.
 - If the wordmark is just default text pasted beside the mark, has awkward spacing, splits the exact offer name incorrectly, or looks like a rough composite, stop and rebuild the lockup.
-- If provenance is not `imagegen` or `imagegen-composite`, stop and rebuild the logo.
+- If provenance is not `imagegen`, stop and rebuild the generated logo.
 - If `quality.logo.svgAssetCreated` is not false, stop and remove the SVG path from the generated artifact set.
 - If `quality.logo.finalLogoLocked` is not true, stop before creating downstream visuals.
 - If `quality.logo.downstreamLogoReference` is not `assets/logo.png`, stop before dispatching image workers or building visual assets.
-- If `quality.logo.rejectedLogoConceptsExcluded` is not true, stop and remove rejected candidates from prompts, plans, and worker context.
-- If any downstream imagegen prompt asks for a logo, wordmark, or brand name to be generated inside the image instead of compositing `assets/logo.png`, stop and rewrite the prompt.
+- If `quality.logo.downstreamImagegenLogoReference` is not `assets/logo.png`, stop before dispatching image workers or building visual assets.
+- If any downstream imagegen prompt asks for a logo, wordmark, or brand name but does not pass `assets/logo.png` as the exact logo reference, stop and rewrite the prompt.
+- If any downstream imagegen prompt asks imagegen to invent, redesign, recolor, redraw, reinterpret, replace, or substitute the logo, stop and rewrite the prompt.
 - If `quality.logo.brandMarkSource` is not `imagegen`, stop and rebuild the logo.
 - If `quality.logo.logoLockup`, `quality.logo.includesReadableOfferName`, `quality.logo.imagegenCompleteLogoLockupAttempted`, `quality.logo.exactOfferNamePreserved`, `quality.logo.markNotIllustration`, `quality.logo.wordmarkTypographyChecked`, `quality.logo.wordmarkKerningChecked`, or `quality.logo.professionalLockupApproved` is not `true`, stop and rebuild the logo.
 - If `output/qa/logo-lockup-preview.png` does not exist, create the preview and inspect it before marking the logo complete.
@@ -189,6 +166,9 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - `visualPlanStage: post-content-blueprint`
    - `copyBlueprintUsed: true`
    - `salesPageImageSystem: mixed-direct-response-v1`
+   - `logoReference: assets/logo.png`
+   - `logoUsagePolicy: use-locked-logo-reference`
+   - `alternateLogosCreated: false`
    - `mockupHeavyUserRequested: false` unless the user explicitly requested mockup-heavy art direction
    - `sourceBlueprints: copy.md, product blueprint/page archetypes, VSL slide plan, ad angle map`
 4. For every planned visual, list these exact fields: `artifactTarget`, `filePath`, `visualKind`, `copyAnchor`, `conversionJob`, `aspectRatio`, `textRule`, `source/provenance`, `reusePermission`, `artifactSpecific`, and `generationPrompt` or `productionMethod`.
@@ -201,6 +181,7 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - avoid busy fake UI, hallucinated dashboards, illegible tiny text, decorative abstract mockups, and visuals that do not support a specific copy claim
    - set `source/provenance: imagegen` or `imagegen-composite` for `hero-vsl-frame`, `product-mockup`, `offer-stack-bundle`, `buyer-situation-photo`, and `ad-creative` rows unless the asset is user-provided or licensed
    - do not set `productionMethod`, `source/provenance`, or fallback notes for those rows to `Pillow`, `PIL`, `html-css`, `canvas`, `screenshot`, `generated-by-code`, or `manual`; HTML/CSS, canvas, screenshots, and generated-by-code are allowed only for diagrams, worksheets, matrices, previews, QA screenshots, and real screenshots of built artifacts. Pillow/PIL is never allowed as an output authoring method.
+   - if a row needs the logo visible inside a generated product bundle, product mockup, dashboard mockup, ad, PDF visual, or VSL visual, its `generationPrompt` must include `logoReference: assets/logo.png` and must instruct imagegen to use that supplied logo exactly with no redesign, recolor, redraw, reinterpretation, replacement, or substitute logo
 8. Use these minimum visual budgets in deep mode:
    - Global/shared: logo lockup, brand mark, product bundle/mockup, and one reusable texture/pattern or brand frame.
    - Sales page: 4+ page-specific visuals anchored to copy sections: hero/VSL thumbnail, mechanism/framework, failed-alternative or before/after visual, proof/demo or product-stack visual.
@@ -208,7 +189,7 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - VSL deck: 12+ unique visual assets or distinct diagram treatments, with 8+ not reused from the sales page. Include pattern interrupt, problem map, failed-alternatives comparison, mechanism diagram, product reveal, offer stack, price/value contrast, guarantee, objection, and final CTA visuals.
    - Ads: 3+ ad-specific imagegen creatives. Do not crop sales-page art and call it ad creative.
    - Dashboard: logo, product bundle/preview, and thumbnail/preview choices for the main assets.
-9. If agents are authorized, load `references/agent-dispatch.md` and dispatch imagegen visual workers after this plan exists. Use separate workers for page visuals, PDF visuals, VSL visuals, and ad visuals. Each worker gets `offer-architecture.md`, `design.md`, `copy.md`, `visual-asset-plan.md`, the frozen final `assets/logo.png`, the product blueprint/page archetypes, VSL slide plan, ad angle map, and its assigned output folder. Do not give workers rejected logo candidates or ask them to generate logos. The main agent keeps ownership of integration, deterministic logo compositing, manifest registration, and QA.
+9. If agents are authorized, load `references/agent-dispatch.md` and dispatch imagegen visual workers after this plan exists. Use separate workers for page visuals, PDF visuals, VSL visuals, and ad visuals. Each worker gets `offer-architecture.md`, `design.md`, `copy.md`, `visual-asset-plan.md`, the frozen final `assets/logo.png`, the product blueprint/page archetypes, VSL slide plan, ad angle map, and its assigned output folder. Do not give workers any other logo image. The main agent keeps ownership of integration, manifest registration, and QA.
 10. If agents are not authorized or not available, create the visuals locally and set `quality.images.agentDispatchUsed` to `false` with a short `agentDispatchNotUsedReason`.
 11. Register `visual-asset-plan` in `offer-os.json`:
 
@@ -226,6 +207,9 @@ Use this recipe for every deep generated-design run after the logo, product outl
   "copyBlueprintUsed": true,
   "visualReusePolicy": "artifact-specific-v1",
   "salesPageImageSystem": "mixed-direct-response-v1",
+  "logoReference": "assets/logo.png",
+  "logoUsagePolicy": "use-locked-logo-reference",
+  "alternateLogosCreated": false,
   "mockupHeavyUserRequested": false,
   "agentDispatchUsed": true,
   "agentDispatchNotUsedReason": "",
@@ -251,6 +235,8 @@ Stop conditions:
 - If every sales-page visual is a mockup-style visual and `mockupHeavyUserRequested` is not `true`, revise to a mixed direct-response visual system.
 - If a product bundle, offer-stack bundle, product mockup, hero/VSL thumbnail, buyer-situation photo, or ad creative is planned as PIL/HTML/CSS/canvas/screenshot/generated-by-code/manual, stop and replace it with an imagegen/imagegen-composite job or a provided/licensed asset.
 - If any artifact is registered with `provenance: pil-generated`, stop and rebuild. Pillow may inspect or transform source images but must not be the creative source of an OfferOS output.
+- If a downstream imagegen row needs the logo and does not include `logoReference: assets/logo.png`, stop and rewrite the prompt.
+- If a downstream imagegen row asks for a logo but asks imagegen to invent, redesign, recolor, redraw, reinterpret, replace, or substitute it, stop and rewrite the prompt.
 - If the user explicitly allowed agents and no imagegen visual workers were dispatched, record the reason in `quality.images.agentDispatchNotUsedReason`.
 - If the PDF visuals are only sales-page images, create PDF-specific visuals/treatments before building the PDF.
 - If the VSL visuals are only sales-page images or the same few bitmaps repeated, create slide-specific visuals/treatments before generating the PPTX.

@@ -2,7 +2,7 @@
 
 OfferOS is a Codex plugin for building complete commercial offer systems: offer architecture, design direction, professional no-SVG imagegen-based locked logo lockups/images, copy-blueprint-driven visual plans, direct-response long-form sales pages, imagegen visual worker dispatch, long-form sales copy, coded sales page, PDF product, ads, launch emails, VSL deck, delivery dashboard, and QA.
 
-Current version: `0.10.4`.
+Current version: `0.10.5`.
 
 ## Repository Shape
 
@@ -65,7 +65,7 @@ Restart Codex after installing or changing the marketplace file.
 Plugin install is preferred. If a user only wants the skill, ask Codex:
 
 ```text
-Install the OfferOS skill from https://github.com/martincrumlish/offeros/tree/v0.10.4/skills/offer-os
+Install the OfferOS skill from https://github.com/martincrumlish/offeros/tree/v0.10.5/skills/offer-os
 ```
 
 Restart Codex after installing the skill.
@@ -84,7 +84,7 @@ To pin a specific release:
 
 ```powershell
 git -C "$HOME\plugins\offer-os" fetch --tags
-git -C "$HOME\plugins\offer-os" checkout v0.10.4
+git -C "$HOME\plugins\offer-os" checkout v0.10.5
 ```
 
 To return to the latest main branch:
@@ -113,8 +113,8 @@ Then:
 ```powershell
 git status
 git add .
-git commit -m "Release OfferOS v0.10.4"
-git tag v0.10.4
+git commit -m "Release OfferOS v0.10.5"
+git tag v0.10.5
 git remote add origin git@github.com:martincrumlish/offeros.git
 git push -u origin main --tags
 ```

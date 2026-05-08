@@ -47,8 +47,8 @@ Check:
 - no mobile horizontal overflow
 - text is readable
 - buttons are consistent
-- logo is not a one-pass placeholder, icon-only mark, illustrative/page-curl/app-icon mark, or rough text composite; imagegen complete-lockup candidates were attempted first, it includes the exact readable offer name, professional wordmark typography/kerning checks, concept count, small-size check, one-color check, and bitmap lockup preview are recorded
-- logo is frozen as `assets/logo.png`; rejected logo candidates were not used as downstream image references, and later imagegen prompts did not generate or redraw the logo
+- logo is not a placeholder, icon-only mark, illustrative/page-curl/app-icon mark, or rough text composite; exactly one final imagegen logo lockup was created, it includes the exact readable offer name, professional wordmark typography/kerning checks, small-size check, one-color check, and bitmap lockup preview are recorded
+- logo is frozen as `assets/logo.png`; no alternate logo options were created, and later imagegen prompts that need branding use `assets/logo.png` as the exact supplied logo reference
 - generated graphics fit their containers
 - image provenance is recorded honestly
 - no SVG files were created or registered as generated visual artifacts

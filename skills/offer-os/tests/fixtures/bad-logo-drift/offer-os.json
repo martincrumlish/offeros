@@ -32,13 +32,13 @@
   ],
   "quality": {
     "logo": {
-      "conceptCount": 3,
-      "selectedConcept": "route badge",
+      "logoDirectionCount": 3,
+      "finalLogoDirection": "route badge",
       "primaryFormat": "png",
       "generationTool": "imagegen-complete-logo-attempts",
       "imagegenNotUsedReason": "",
       "imagegenCompleteLogoLockupAttempted": true,
-      "imagegenLogoCandidateCount": 3,
+      "logoGenerationCount": 3,
       "imagegenCompleteLogoAccepted": true,
       "fallbackWordmarkCompositeReason": "",
       "brandMarkSource": "imagegen",

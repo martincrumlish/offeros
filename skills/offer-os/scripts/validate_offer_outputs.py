@@ -1271,8 +1271,9 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
     if not isinstance(logo_quality, dict):
         logo_quality = {}
 
-    if quality_number(logo_quality.get("conceptCount")) < 3:
-        issues.append("Logo quality metadata must record 3+ explored concepts.")
+    logo_direction_count = quality_number(logo_quality.get("logoDirectionCount"))
+    if logo_direction_count != 1:
+        issues.append("Logo quality metadata must record logoDirectionCount: 1 for single-final-logo mode.")
     if logo_quality.get("smallSizeChecked") is not True:
         issues.append("Logo quality metadata must confirm smallSizeChecked.")
     if logo_quality.get("oneColorChecked") is not True:
@@ -1299,10 +1300,18 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
             issues.append(f"Logo quality metadata must confirm {label}.")
     if logo_quality.get("finalLogoLocked") is not True:
         issues.append("Logo quality metadata must confirm finalLogoLocked.")
-    if logo_quality.get("rejectedLogoConceptsExcluded") is not True:
-        issues.append("Logo quality metadata must confirm rejectedLogoConceptsExcluded.")
+    if logo_quality.get("singleFinalLogoOnly") is not True:
+        issues.append("Logo quality metadata must confirm singleFinalLogoOnly.")
+    if logo_quality.get("alternateLogosCreated") is not False:
+        issues.append("Logo quality metadata must confirm alternateLogosCreated: false.")
     if str(logo_quality.get("downstreamLogoReference", "")).replace("\\", "/") != "assets/logo.png":
         issues.append("Logo quality metadata must record downstreamLogoReference: assets/logo.png.")
+    if str(logo_quality.get("downstreamImagegenLogoReference", "")).replace("\\", "/") != "assets/logo.png":
+        issues.append("Logo quality metadata must record downstreamImagegenLogoReference: assets/logo.png.")
+    if logo_quality.get("downstreamImagegenMustUseLogoReference") is not True:
+        issues.append("Logo quality metadata must confirm downstreamImagegenMustUseLogoReference.")
+    if str(logo_quality.get("logoMode", "")).strip() != "single-final-logo-v1":
+        issues.append("Logo quality metadata must record logoMode: single-final-logo-v1.")
     preview_path = str(logo_quality.get("lockupPreviewPath", "")).strip()
     if not preview_path:
         issues.append("Logo quality metadata must record lockupPreviewPath.")
@@ -1324,8 +1333,10 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
     logo_requires_imagegen = deep_run and provenance not in {"provided", "licensed"}
     if logo_requires_imagegen and logo_quality.get("imagegenCompleteLogoLockupAttempted") is not True:
         issues.append("Logo quality metadata must confirm imagegenCompleteLogoLockupAttempted.")
-    if logo_requires_imagegen and quality_number(logo_quality.get("imagegenLogoCandidateCount")) < 3:
-        issues.append("Logo quality metadata must record 3+ imagegen complete logo lockup candidates.")
+    if logo_requires_imagegen and quality_number(logo_quality.get("finalLogoCount")) != 1:
+        issues.append("Logo quality metadata must record finalLogoCount: 1; do not create multiple logo options.")
+    if logo_requires_imagegen and quality_number(logo_quality.get("logoGenerationCount")) != 1:
+        issues.append("Logo quality metadata must record logoGenerationCount: 1; do not create multiple logo options.")
     if logo_path.suffix.lower() == ".svg":
         issues.append("OfferOS generated runs must not create or register SVG logo files. Rebuild the logo as PNG/WebP.")
     if logo_quality.get("svgAssetCreated") is not False:
@@ -1365,27 +1376,15 @@ def validate_logo(root: Path, manifest: dict, by_id: dict[str, dict], issues: li
     if logo_requires_imagegen and primary_format not in {"png", "webp", "jpg", "jpeg"}:
         issues.append("Logo quality metadata must record bitmap primaryFormat for generated-design deep runs.")
     imagegen_blocker = str(logo_quality.get("imagegenNotUsedReason", "")).strip()
-    if logo_requires_imagegen and not imagegen_blocker and provenance not in {"imagegen", "imagegen-composite"}:
-        issues.append("Deep generated-design runs must register the primary logo with provenance: imagegen or imagegen-composite.")
+    if logo_requires_imagegen and not imagegen_blocker and provenance != "imagegen":
+        issues.append("Deep generated-design runs must register the primary logo with provenance: imagegen.")
     generation_tool = str(logo_quality.get("generationTool", "")).strip().lower()
-    if logo_requires_imagegen and "imagegen-complete-logo" not in generation_tool:
-        issues.append("Logo generationTool must record imagegen-complete-logo attempts before any fallback compositor.")
+    if logo_requires_imagegen and generation_tool != "imagegen-single-final-logo":
+        issues.append("Logo generationTool must record imagegen-single-final-logo.")
     if provenance == "imagegen" and logo_quality.get("imagegenCompleteLogoAccepted") is not True:
         issues.append("Imagegen logos must confirm imagegenCompleteLogoAccepted.")
     if provenance == "imagegen-composite":
-        wordmark_source = str(logo_quality.get("wordmarkSource", "")).strip().lower()
-        wordmark_method = str(logo_quality.get("wordmarkCompositeMethod", "")).strip().lower()
-        fallback_reason = str(logo_quality.get("fallbackWordmarkCompositeReason", "")).strip()
-        if "professional-wordmark-compositor" not in generation_tool:
-            issues.append("Imagegen-composite logos must record generationTool with professional-wordmark-compositor after complete-logo attempts fail.")
-        if logo_quality.get("imagegenCompleteLogoAccepted") is True:
-            issues.append("Imagegen-composite logos should only be used when complete imagegen logo candidates failed exact text.")
-        if not fallback_reason:
-            issues.append("Imagegen-composite logos must record fallbackWordmarkCompositeReason.")
-        if wordmark_source != "professional-wordmark-compositor":
-            issues.append("Imagegen-composite logos must record wordmarkSource: professional-wordmark-compositor.")
-        if wordmark_method != "scripted-professional-compositor":
-            issues.append("Imagegen-composite logos must record wordmarkCompositeMethod: scripted-professional-compositor.")
+        issues.append("Generated-design logos must not use imagegen-composite by default; create one complete logo with imagegen.")
     if logo_requires_imagegen and imagegen_blocker and (logo_artifact or {}).get("status") == "complete":
         issues.append("Logo cannot be complete when quality.logo.imagegenNotUsedReason is set.")
 
@@ -1641,17 +1640,36 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
     missing_headings = [heading for heading in required_headings if heading.lower() not in text.lower()]
     if missing_headings:
         issues.append("Visual asset plan missing required headings: " + ", ".join(missing_headings))
-    if re.search(r"\b(?:generate|redraw|create|render|include|place)\b.{0,80}\b(?:logo|wordmark)\b", lower_text, flags=re.I | re.S):
-        issues.append("Visual asset plan must not ask imagegen to generate/redraw/place logos or wordmarks; use frozen assets/logo.png by deterministic compositing.")
-    if re.search(r"\b(?:rejected|alternate|alternative|candidate)\b.{0,50}\b(?:logo|lockup|mark)\b", lower_text, flags=re.I | re.S):
-        issues.append("Visual asset plan must not reference rejected or alternate logo candidates for downstream assets.")
+    if re.search(r"\b(?:generate|redraw|create|invent|redesign|recolor|reinterpret|replace|substitute)\b.{0,80}\b(?:logo|wordmark)\b", lower_text, flags=re.I | re.S):
+        issues.append("Visual asset plan must not ask imagegen to generate/redraw/reinvent logos or wordmarks; pass assets/logo.png as the exact logo reference.")
+    if re.search(r"\b(?:rejected|alternate|alternative|old)\b.{0,50}\b(?:logo|lockup|mark)\b", lower_text, flags=re.I | re.S):
+        issues.append("Visual asset plan must not reference rejected, old, or alternate logos for downstream assets.")
+    compact_plan = re.sub(r"\s+", "", text.lower())
+    for token, label in {
+        "logoreference:assets/logo.png": "logoReference: assets/logo.png",
+        "logousagepolicy:use-locked-logo-reference": "logoUsagePolicy: use-locked-logo-reference",
+        "alternatelogoscreated:false": "alternateLogosCreated: false",
+    }.items():
+        if token not in compact_plan:
+            issues.append(f"Visual asset plan metadata must include {label}.")
+    logo_prompt_leaks = []
+    for line in text.splitlines():
+        lower_line = line.lower()
+        if "prompt" not in lower_line and "generationprompt" not in lower_line:
+            continue
+        if re.search(r"\b(?:logo|wordmark|brand mark)\b", lower_line) and "assets/logo.png" not in lower_line:
+            logo_prompt_leaks.append(line.strip()[:140])
+    if logo_prompt_leaks:
+        issues.append(
+            "Downstream imagegen prompts that need a logo must reference assets/logo.png as the exact supplied logo: "
+            + "; ".join(logo_prompt_leaks[:5])
+        )
 
     sales_copy = by_id.get("sales-copy")
     sales_copy_path = artifact_path(root, sales_copy)
     if not sales_copy_path or not sales_copy_path.exists():
         issues.append("Visual asset plan v2 requires copy.md/sales-copy with a section blueprint before visual planning.")
 
-    compact_plan = re.sub(r"\s+", "", text.lower())
     for token, label in {
         "visualplanstage:post-content-blueprint": "visualPlanStage: post-content-blueprint",
         "copyblueprintused:true": "copyBlueprintUsed: true",
@@ -1678,6 +1696,12 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         issues.append("Image quality metadata must confirm copyBlueprintUsed.")
     if image_quality.get("salesPageImageSystem") != "mixed-direct-response-v1":
         issues.append("Image quality metadata must record salesPageImageSystem: mixed-direct-response-v1.")
+    if image_quality.get("logoReference") != "assets/logo.png":
+        issues.append("Image quality metadata must record logoReference: assets/logo.png.")
+    if image_quality.get("logoUsagePolicy") != "use-locked-logo-reference":
+        issues.append("Image quality metadata must record logoUsagePolicy: use-locked-logo-reference.")
+    if image_quality.get("alternateLogosCreated") is not False:
+        issues.append("Image quality metadata must confirm alternateLogosCreated: false.")
 
     required_counts = {
         "salesPageVisualCount": 4,
