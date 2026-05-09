@@ -318,7 +318,7 @@ def support_visual(src: str, alt: str, kind: str, anchor: str) -> str:
         return ""
     return (
         f'<figure class="oo-support-visual" data-offeros-page-visual data-offeros-visual-kind="{html_text(kind)}" '
-        f'data-offeros-copy-anchor="{html_text(anchor)}">'
+        f'data-offeros-copy-anchor="{html_text(anchor)}" data-offeros-image-display="constrained">'
         f'<img src="{src}" alt="{html_text(alt)}">'
         "</figure>"
     )
@@ -359,7 +359,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-section oo-section-dark" data-offeros-section="vsl">
       <div class="oo-container oo-narrow">
-        <p class="oo-eyebrow">Watch this first</p>
+        <p class="oo-eyebrow">What the breakdown covers</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="The short pitch shows the whole path before the buy box."))}</h2>
         <p>{html_text(first_value(data.get("copy"), fallback=f"In a few minutes, the {offer} VSL explains the gap, the mechanism, and the finished outcome so you can make a grounded buying decision."))}</p>
         <ul>{list_items(bullets)}</ul>
@@ -438,7 +438,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
       <div class="oo-container">
         <p class="oo-eyebrow">Get the complete stack</p>
         <h2>{html_text(first_value(data.get("headline"), fallback=f"Everything inside {offer}"))}</h2>
-        <img class="oo-bundle" src="{context["productBundleImage"]}" alt="{html_text(offer)} product bundle" data-offeros-product-bundle>
+        <img class="oo-bundle" src="{context["productBundleImage"]}" alt="{html_text(offer)} product bundle" data-offeros-product-bundle data-offeros-image-display="constrained">
         <ul class="oo-checklist" data-offeros-offer-checklist>{list_items(items[:10])}</ul>
         <div class="oo-value-row" data-offeros-value-row><span>{html_text(first_value(data.get("normalValue"), fallback="Normally assembled across strategy, copy, design, and QA"))}</span><strong>{html_text(first_value(data.get("todayValue"), fallback=f"Today: {price}"))}</strong></div>
         <a class="oo-cta" data-offeros-cta data-offeros-stack-cta data-offeros-post-hero-cta href="{checkout}">{html_text(first_value(data.get("cta"), fallback="Get instant access"))}</a>
@@ -574,18 +574,20 @@ def css(theme: dict) -> str:
     header a, footer a {{ color: #fff; }}
     .oo-container {{ width: min(1120px, calc(100% - 40px)); margin: 0 auto; }}
     .oo-narrow {{ width: min(820px, calc(100% - 40px)); }}
-    .oo-section, .oo-stack {{ padding: clamp(56px, 8vw, 108px) 0; }}
+    .oo-section, .oo-stack {{ padding: clamp(76px, 9vw, 132px) 0; }}
     .oo-section-dark {{ background: var(--oo-dark); color: #fff; }}
     .oo-hero {{ padding: clamp(52px, 9vw, 118px) 0 72px; background: var(--oo-dark); color: #fff; }}
     .oo-hero-inner {{ width: min(1080px, calc(100% - 36px)); margin: 0 auto; text-align: center; }}
     .oo-hero-copy-stack {{ max-width: 920px; margin: 0 auto; display: grid; gap: 14px; justify-items: center; }}
-    .oo-buyer-pill, .oo-eyebrow {{ display: inline-flex; align-items: center; border-radius: 999px; padding: 7px 12px; background: rgba(242,184,75,.16); color: var(--oo-accent); font-weight: 800; text-transform: uppercase; font-size: 12px; letter-spacing: 0; }}
-    .oo-prehead {{ margin: 0; color: rgba(255,255,255,.78); font-weight: 800; }}
+    .oo-buyer-pill, .oo-eyebrow {{ display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 11px; background: rgba(242,184,75,.14); color: var(--oo-accent); font-weight: 700; text-transform: none; font-size: 12px; letter-spacing: 0; }}
+    .oo-prehead {{ margin: 0; color: rgba(255,255,255,.78); font-weight: 700; }}
     h1, h2, h3 {{ font-family: var(--oo-heading); line-height: 1.04; letter-spacing: 0; margin: 0 0 16px; }}
-    h1 {{ font-size: clamp(46px, 8vw, 86px); max-width: 940px; }}
-    h2 {{ font-size: clamp(32px, 5vw, 56px); }}
+    h1 {{ font-size: clamp(42px, 7vw, 78px); max-width: 940px; }}
+    h2 {{ font-size: clamp(31px, 4.7vw, 54px); max-width: 980px; margin-left: auto; margin-right: auto; text-align: center; }}
     h3 {{ font-size: 22px; }}
     p {{ margin: 0 0 18px; color: inherit; }}
+    .oo-section > .oo-container > .oo-eyebrow, .oo-stack > .oo-container > .oo-eyebrow {{ margin-left: auto; margin-right: auto; }}
+    .oo-section > .oo-container > p, .oo-section > .oo-narrow > p {{ max-width: 900px; margin-left: auto; margin-right: auto; text-align: center; }}
     .oo-hero-copy {{ max-width: 780px; font-size: clamp(18px, 2.5vw, 23px); color: rgba(255,255,255,.86); }}
     .oo-vsl-frame {{ position: relative; width: min(980px, 100%); aspect-ratio: 16 / 9; margin: 34px auto 0; border: 8px solid rgba(255,255,255,.12); border-radius: 8px; overflow: hidden; background: #24312d; box-shadow: 0 28px 80px rgba(0,0,0,.36); }}
     .oo-vsl-frame img {{ width: 100%; height: 100%; object-fit: cover; }}
@@ -600,18 +602,24 @@ def css(theme: dict) -> str:
     .oo-grid-3, .oo-grid-2, .oo-checklist {{ display: grid; gap: 16px; margin-top: 24px; }}
     .oo-grid-3 {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
     .oo-grid-2 {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
-    .oo-card {{ background: var(--oo-surface); color: var(--oo-ink); border: 1px solid rgba(0,0,0,.08); border-radius: 8px; padding: 22px; }}
+    .oo-card {{ position: relative; overflow: hidden; background: var(--oo-surface); color: var(--oo-ink); border: 1px solid rgba(0,0,0,.08); border-radius: 8px; padding: 24px; }}
+    .oo-card::after {{ content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(180deg, var(--oo-accent), var(--oo-primary)); opacity: .72; }}
+    .oo-card h3 {{ display: flex; align-items: center; gap: 10px; }}
+    .oo-card h3::before {{ content: ""; width: 20px; height: 20px; flex: 0 0 20px; border-radius: 8px; background: linear-gradient(135deg, var(--oo-accent), var(--oo-primary)); box-shadow: inset 0 0 0 5px rgba(255,255,255,.62); }}
     .oo-section-dark .oo-card {{ background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.14); }}
-    .oo-support-visual {{ margin: 28px 0; border: 1px solid rgba(0,0,0,.08); border-radius: 8px; overflow: hidden; background: var(--oo-surface); box-shadow: 0 18px 46px rgba(17,24,39,.08); }}
-    .oo-support-visual img {{ width: 100%; max-height: 420px; object-fit: cover; }}
+    .oo-section-dark .oo-card h3::before {{ box-shadow: inset 0 0 0 5px rgba(17,24,39,.68); }}
+    .oo-support-visual {{ width: min(960px, 100%); margin: 34px auto; border: 1px solid rgba(0,0,0,.08); border-radius: 8px; overflow: hidden; background: var(--oo-surface); box-shadow: 0 18px 46px rgba(17,24,39,.08); }}
+    .oo-support-visual img {{ width: 100%; height: auto; max-height: 560px; object-fit: contain; }}
     .oo-section-dark .oo-support-visual {{ border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.08); }}
     .oo-table {{ width: 100%; border-collapse: collapse; margin-top: 24px; background: var(--oo-surface); border-radius: 8px; overflow: hidden; }}
     .oo-table th, .oo-table td {{ padding: 16px; border: 1px solid rgba(0,0,0,.1); text-align: left; vertical-align: top; }}
     .oo-table th {{ background: var(--oo-primary); color: #fff; }}
     .oo-stack {{ background: var(--oo-primary); color: #fff; text-align: center; }}
-    .oo-bundle {{ width: min(760px, 100%); margin: 24px auto; border-radius: 8px; background: rgba(255,255,255,.1); }}
+    .oo-bundle {{ width: min(860px, 100%); max-height: 560px; object-fit: contain; margin: 30px auto; border-radius: 8px; background: rgba(255,255,255,.1); }}
     .oo-checklist {{ grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; list-style: none; text-align: left; }}
-    .oo-checklist li {{ background: rgba(255,255,255,.12); border-radius: 8px; padding: 14px; }}
+    .oo-checklist li {{ position: relative; background: rgba(255,255,255,.12); border-radius: 8px; padding: 14px 14px 14px 46px; }}
+    .oo-checklist li::before {{ content: ""; position: absolute; left: 15px; top: 18px; width: 19px; height: 19px; border-radius: 999px; background: var(--oo-accent); }}
+    .oo-checklist li::after {{ content: ""; position: absolute; left: 22px; top: 21px; width: 5px; height: 10px; border: solid #111; border-width: 0 2px 2px 0; transform: rotate(45deg); }}
     .oo-value-row {{ display: flex; justify-content: space-between; gap: 16px; align-items: center; max-width: 760px; margin: 24px auto; padding: 18px; background: rgba(0,0,0,.22); border-radius: 8px; }}
     .oo-faq .oo-card {{ margin-bottom: 14px; }}
     @media (max-width: 760px) {{
@@ -619,6 +627,7 @@ def css(theme: dict) -> str:
       .oo-price-strip, .oo-value-row {{ text-align: center; display: grid; }}
       .oo-cta {{ width: 100%; white-space: normal; }}
       .oo-video-caption {{ position: static; border-radius: 0; }}
+      .oo-support-visual img, .oo-bundle {{ max-height: 420px; }}
     }}
     {custom}
 """
@@ -785,6 +794,10 @@ def update_manifest(
             "pageKitBlueprintUsed": True,
             "themeTokensUsed": True,
             "orderFormIncluded": False,
+            "navigationPolicy": "no-section-nav",
+            "iconSystem": "branded-icons-v1",
+            "imageDisplay": "viewport-constrained-v1",
+            "vslSectionCommand": "overview-not-watch-first",
             "salesPageVisualCount": len(re.findall(r"<img\b", html_text_value, flags=re.I)),
             "supportingVisualSlotsUsed": len(re.findall(r"data-offeros-page-visual", html_text_value, flags=re.I)),
             "approvedPartialsUsed": used_partials,

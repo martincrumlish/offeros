@@ -1355,6 +1355,30 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
     if page_type == "direct-response-long-form-vsl" and quality_number(sales_quality.get("postHeroCtaCount")) < 3:
         issues.append("Direct-response long-form VSL page must record 3+ post-hero CTA placements.")
     if page_type == "direct-response-long-form-vsl":
+        if sales_quality.get("navigationPolicy") != "no-section-nav":
+            issues.append('Direct-response sales page quality metadata must record navigationPolicy: no-section-nav.')
+        if sales_quality.get("iconSystem") != "branded-icons-v1":
+            issues.append('Direct-response sales page quality metadata must record iconSystem: branded-icons-v1.')
+        if sales_quality.get("imageDisplay") != "viewport-constrained-v1":
+            issues.append('Direct-response sales page quality metadata must record imageDisplay: viewport-constrained-v1.')
+        if re.search(r"<nav\b", html_text, flags=re.I):
+            issues.append("Direct-response long-form sales pages must not include a nav menu or section-jump navigation.")
+        if re.search(r"\bposition\s*:\s*sticky\b", html_text, flags=re.I):
+            issues.append("Direct-response long-form sales pages must not use sticky header/navigation behavior.")
+        if "watch this first" in visible_text_from_html(section_html(html_text, "vsl")).lower():
+            issues.append('Post-hero VSL section must not say "Watch this first" when the hero already contains the primary VSL frame.')
+        for label, marker in [
+            ("support visual", "data-offeros-page-visual"),
+            ("product bundle", "data-offeros-product-bundle"),
+        ]:
+            tags = re.findall(
+                rf"<(?:figure|img)\b(?=[^>]*{re.escape(marker)})[^>]*>",
+                html_text,
+                flags=re.I | re.S,
+            )
+            unconstrained = [tag for tag in tags if "data-offeros-image-display" not in tag.lower()]
+            if unconstrained:
+                issues.append(f"Direct-response {label} elements must be marked data-offeros-image-display=\"constrained\".")
         vsl_words = html_word_count(section_html(html_text, "vsl"))
         if vsl_words > 220:
             issues.append(f"Direct-response VSL setup section is too text-heavy: {vsl_words} visible words found, 220 maximum.")

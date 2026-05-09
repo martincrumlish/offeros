@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.2
+
+- Hardens the Page Kit against long-form sales-page UI drift: no sticky/hover section nav, no post-hero "Watch this first" label when the hero already contains the main VSL, and quieter eyebrow/prehead treatment.
+- Adds branded icon/checkmark treatments to builder card grids and offer-stack checklists.
+- Constrains sales-page support/product/bundle image display and records `data-offeros-image-display="constrained"` plus `quality.salesPage.imageDisplay`.
+- Extends validation and self-tests for no-section-nav policy, branded icon metadata, constrained image display, and duplicate VSL instruction wording.
+
 ## 0.13.1
 
 - Reverts the failed `0.13.0` Sales Page Studio rewrite, restoring the previous Page Kit behavior.

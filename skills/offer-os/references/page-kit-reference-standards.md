@@ -16,6 +16,8 @@ These standards define a release-grade OfferOS sales page kit: `offer-intake.jso
 - Framework: `direct-response-long-form-v1`.
 - Composition: `direct-response-composition-v2`.
 - Hero: `stacked-vsl-hero-v2`, `stacked-vsl`, `offeros-stacked-vsl-v2`, large 16:9 VSL frame.
+- Header/navigation: `navigationPolicy: "no-section-nav"`; logo/brand and optional primary CTA only, no sticky/hover section navigation.
+- Visual polish contract: `iconSystem: "branded-icons-v1"` and `imageDisplay: "viewport-constrained-v1"`; card grids/checklists use branded icon/checkmark treatment and support images are constrained rather than rendered at full source size.
 - Required section order: `header -> hero -> vsl -> problem -> agitation -> failed-alternatives -> mechanism -> proof -> before-after -> product -> offer-stack -> fit -> pricing -> guarantee -> faq -> final-cta`.
 - Proof or proof substitute appears before the main offer stack.
 - Offer stack uses `direct-response-buy-box-v1` with bundle visual, 8+ deliverables, value row, CTA, and access/guarantee copy.

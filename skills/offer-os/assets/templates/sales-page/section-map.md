@@ -8,9 +8,9 @@ Each section must include `data-offeros-section="<id>"` so QA can validate struc
 
 | Section | ID | Conversion Job | Required Content | Visual/Asset |
 | --- | --- | --- | --- | --- |
-| Header | `header` | Establish brand and orientation | Logo, minimal links if needed | Logo |
+| Header | `header` | Establish brand and orientation | Logo/brand and optional primary CTA only; no section navigation | Logo |
 | Hero | `hero` | Create immediate desire and buying momentum | Centered buyer filter pill, prehead, specific headline, benefit lead, large stacked VSL/video frame, price strip, CTA to `#checkout`, trust row | Large hero VSL thumbnail/video frame |
-| VSL | `vsl` | Deepen the pitch after the hero | VSL thumbnail/preview, play CTA, short promise, bridge from hero | VSL thumbnail |
+| VSL | `vsl` | Deepen the pitch after the hero | Short promise, bullets, bridge from hero; if the main VSL is already in the hero, do not repeat "Watch this first" | Optional supporting visual |
 | Problem Diagnosis | `problem` | Make the buyer feel understood | Specific pain, hidden cost, current state | Problem visual |
 | Agitation | `agitation` | Make inaction feel expensive | Cost of delay, compounding consequence, emotional frustration, business/operational drag | Cost-of-delay graphic or callout |
 | Failed Alternatives | `failed-alternatives` | Invalidate what they already tried | Common fixes and why they fail | Comparison table |
@@ -53,6 +53,8 @@ Required hero contract:
 - Keep the hero section classes `oo-hero oo-hero-stacked-vsl`, the wrapper marked `data-offeros-hero-inner`, and the critical inline CSS for `.oo-hero`, `.oo-hero-inner`, `.oo-hero-copy-stack`, `.oo-vsl-frame`, `.oo-price-strip`, and `.oo-trust-row`.
 - The hero must stack vertically in this order: buyer filter/prehead/H1/benefit lead, then large VSL/video frame, then price strip/CTA, then trust row.
 - The hero copy stack must be centered and marked `data-offeros-hero-copy-stack`.
+- The header must not include sticky/hover section navigation, nav menus, or section jump links. Long-form pages are built for sequential consumption; use only logo/brand and an optional CTA.
+- Buyer filters, preheads, and eyebrows are quiet signposts. Do not use loud all-caps badge treatment or make them bolder than the surrounding headline hierarchy.
 - The VSL/video frame must be centered below the headline, visually dominant, and marked `data-offeros-hero-video`, `data-offeros-hero-video-prominence="primary"`, and `data-offeros-hero-video-size="large"`.
 - The hero video frame must use the `.oo-vsl-frame` 16:9 frame, include a real thumbnail marked `data-offeros-video-thumbnail`, a visible play button marked `data-offeros-video-play`, and a short caption marked `data-offeros-video-caption`. Do not fake the VSL with a small UI card, checklist panel, dashboard mockup, or decorative product screen.
 - The price strip must sit below the VSL/video frame, show the actual price, normal/total value or value context, a short stack summary, and the primary CTA.
@@ -89,4 +91,6 @@ Hard requirements for `direct-response-long-form-vsl`:
 - 4+ CTA links/buttons marked with `data-offeros-cta`.
 - 3+ CTA links/buttons after the hero marked with `data-offeros-post-hero-cta`.
 - Unique buyer-facing copy for every offer-stack, angle, bonus, and product card.
+- Branded icon/checkmark treatment for card groups, proof blocks, and offer-stack checklist items. Plain unadorned text boxes fail the Page Kit.
+- Sales-page support images, product reveals, proof/demo visuals, and bundle images displayed in constrained frames marked `data-offeros-image-display="constrained"` so a source bitmap cannot consume most of the viewport.
 - Repeated-text scan completed before QA.

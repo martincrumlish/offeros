@@ -13,11 +13,17 @@ The hero is a centered vertical stack, not a split product hero:
 
 Do not use two-column, split-screen, dashboard mockup, product mockup, or SaaS feature hero layouts for the default page kit.
 
+## Long-Form Header
+
+The header is not a website navigation system. Use logo/brand and, at most, one primary CTA. Do not add sticky/hover nav bars, section jump links, or menus that encourage skipping the sales argument.
+
 ## Section Blocks
 
 Required sections carry the persuasion arc. Optional blocks may deepen a section, but cannot replace it. Valid optional choices are founder note, case study, demo screens, comparison table, bonus stack, use cases, implementation roadmap, risk-reversal callout, testimonial strip, and technical requirements.
 
 Place proof before the offer stack. Place fit/not-fit before or near pricing. Keep the VSL setup short and make long explanations scannable with tables, checklists, and callouts.
+
+Use restrained eyebrow/prehead labels, wider centered H2s for major sections, and enough vertical space for the argument to breathe. Card grids and checklist stacks need branded icon or checkmark treatments; plain boxes with text are not enough. Sales-page images must use constrained display frames so support visuals and bundles do not dominate the viewport.
 
 ## No Order Form
 

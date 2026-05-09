@@ -301,9 +301,14 @@ Use this recipe for every complete paid front-end offer unless the user explicit
 12. Follow this DOM order: `hero`, `vsl`, `problem`, `agitation`, `failed-alternatives`, `mechanism`, `proof`, `before-after`, `product`, `offer-stack`, `fit`, `pricing`, `guarantee`, `faq`, `final-cta`.
 13. Write unique benefit copy for every offer-stack item. Do not map a repeated sentence over multiple cards.
 14. Use direct-response composition rules:
+    - Header: simple logo/brand area and optional primary CTA only. Do not add sticky/hover section navigation, nav menus, or section jump links for long-form sales pages.
+    - Eyebrows/preheads/buyer filters: quiet signposts, not loud mini-headlines. Use restrained weight, no heavy all-caps badge treatment by default, and do not let these labels visually overpower the actual H1/H2.
+    - Section rhythm: H2s should be wide enough for direct-response readability, generally centered for major sections, with enough vertical space that the page does not become a tight stack of boxes.
+    - Cards/checklists: use a branded icon or checkmark treatment for card groups, proof blocks, and deliverable lists. Plain text boxes with no iconography or visual hierarchy fail the page kit.
+    - Image display: render every support image, product reveal, offer-stack bundle, and proof/demo visual inside a constrained frame marked `data-offeros-image-display="constrained"`. Do not leave full-size source images to dominate an entire viewport. Default desktop max visual height is about 560px; mobile is about 420px unless a specific image type requires less.
     - Hero visible copy: 90-180 words, plus price strip and trust bullets.
     - Hero layout: stacked VSL-first only. Do not use a two-column, side-by-side, split-screen, `hero-grid`, `hero-split`, `hero-visual`, `hero-mockup`, product/dashboard mockup hero art, or SaaS product hero with the video small on the right.
-    - VSL section: 80-220 words, one thumbnail/video block, 3-5 bullets, and one CTA. Do not put the whole sales letter in the VSL section.
+    - VSL section: 80-220 words, 3-5 bullets, and one CTA. Do not put the whole sales letter in the VSL section. If the hero already contains the main VSL frame, do not label the later section "Watch this first"; use a label like "What the breakdown covers" or "The pitch in plain English".
     - Problem, agitation, failed alternatives, mechanism, proof, product, offer stack, guarantee, FAQ, and close must be separate visible sections.
     - Proof/demo must appear before the main offer stack. If real testimonials are unavailable, use proof substitutes: worked examples, sample outputs, screenshots, mini demos, process logic, or transparent caveated examples.
     - No normal paragraph may exceed 55 words. Split long explanations into bullets, comparison rows, labeled callouts, or short copy blocks.
@@ -313,7 +318,7 @@ Use this recipe for every complete paid front-end offer unless the user explicit
 15. Include at least 7 FAQ objections, at least 4 CTA placements, at least 3 post-hero CTA placements, and at least 2,500 visible words for `direct-response-long-form-vsl`.
 16. Mark every FAQ item with `data-offeros-faq-item`.
 17. Mark every CTA link or button with `data-offeros-cta`; mark post-hero CTA placements with `data-offeros-post-hero-cta`; purchase CTAs must link to `#checkout` by default.
-18. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `framework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, `offerStackContract: "direct-response-buy-box-v1"`, `pageKit: "offeros-page-kit-v1"`, `pageKitBuilder: "offeros-page-kit-builder-v1"`, `pageKitArchetype`, `themePreset`, `pageKitBlueprintUsed: true`, `themeTokensUsed: true`, `checkoutTarget: "#checkout"`, `vslPlacement: "main-column-stacked"`, and `orderFormIncluded: false`.
+18. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `framework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, `offerStackContract: "direct-response-buy-box-v1"`, `pageKit: "offeros-page-kit-v1"`, `pageKitBuilder: "offeros-page-kit-builder-v1"`, `pageKitArchetype`, `themePreset`, `pageKitBlueprintUsed: true`, `themeTokensUsed: true`, `navigationPolicy: "no-section-nav"`, `iconSystem: "branded-icons-v1"`, `imageDisplay: "viewport-constrained-v1"`, `vslSectionCommand: "overview-not-watch-first"`, `checkoutTarget: "#checkout"`, `vslPlacement: "main-column-stacked"`, and `orderFormIncluded: false`.
 
 Stop conditions:
 
@@ -322,6 +327,10 @@ Stop conditions:
 - If the page reads as `hero/features/price/FAQ`, revise before QA.
 - If `index.html` has fewer than 2,500 visible words for `direct-response-long-form-vsl`, revise before QA.
 - If the VSL section becomes a wall of text or exceeds 220 visible words, revise before QA.
+- If the page contains a `<nav>` menu, sticky section navigation, or header section jump links, remove them before QA.
+- If the post-hero VSL section says "Watch this first" when the hero already contains the primary VSL frame, revise the label and section framing before QA.
+- If card grids, proof blocks, or offer-stack lists are plain boxes with no branded icon/checkmark treatment, revise before QA.
+- If any support/product/offer-stack visual is not marked `data-offeros-image-display="constrained"` or renders as an unconstrained full-size image, revise before QA.
 - If any normal paragraph exceeds 55 words, revise before QA.
 - If any required direct-response section has fewer than the minimum buyer-facing words, revise before QA.
 - If required comparison/card sections contain blank-looking cells or empty cards, revise before QA.

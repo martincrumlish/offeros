@@ -61,12 +61,10 @@ select {
 }
 
 .opk-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 20;
   border-bottom: 1px solid var(--opk-line);
-  background: color-mix(in srgb, var(--opk-bg) 92%, transparent);
-  backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--opk-bg) 96%, transparent);
 }
 
 .opk-header__inner {
@@ -109,9 +107,9 @@ select {
   margin: 0;
   color: var(--opk-primary);
   font-size: 0.82rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .opk-pill {
@@ -144,7 +142,10 @@ select {
 }
 
 .opk-section h2 {
-  font-size: clamp(2.1rem, 4.8vw, 3.75rem);
+  max-width: 1040px;
+  margin-inline: auto;
+  text-align: center;
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
 }
 
 .opk-lead {
@@ -289,7 +290,7 @@ select {
 }
 
 .opk-section {
-  padding: 76px 0;
+  padding: clamp(82px, 9vw, 136px) 0;
   background: var(--opk-paper);
   color: var(--opk-ink);
 }
@@ -301,6 +302,7 @@ select {
 
 .opk-section p {
   max-width: 820px;
+  margin-inline: auto;
   font-size: 1.08rem;
 }
 
@@ -319,6 +321,8 @@ select {
 }
 
 .opk-card {
+  position: relative;
+  overflow: hidden;
   padding: 22px;
   border: 1px solid color-mix(in srgb, var(--opk-ink) 16%, transparent);
   border-radius: var(--opk-radius);
@@ -327,15 +331,37 @@ select {
   box-shadow: 0 18px 42px -34px var(--opk-shadow);
 }
 
+.opk-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--opk-primary), var(--opk-accent));
+  opacity: 0.75;
+}
+
 .opk-section--dark .opk-card {
   border-color: var(--opk-line);
   background: var(--opk-surface-alt);
 }
 
 .opk-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 0 10px;
   font-size: 1.28rem;
   line-height: 1.15;
+}
+
+.opk-card h3::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--opk-primary), var(--opk-accent));
+  box-shadow: inset 0 0 0 5px color-mix(in srgb, var(--opk-surface) 72%, transparent);
 }
 
 .opk-card p,
@@ -380,7 +406,9 @@ select {
 }
 
 .opk-bundle {
-  width: min(760px, 100%);
+  width: min(860px, 100%);
+  max-height: 560px;
+  object-fit: contain;
   margin: 28px auto;
   border: 1px solid var(--opk-line);
   border-radius: calc(var(--opk-radius) + 4px);
@@ -397,11 +425,35 @@ select {
 }
 
 .opk-checklist li {
-  padding: 14px 16px;
+  position: relative;
+  padding: 14px 16px 14px 48px;
   border: 1px solid var(--opk-line);
   border-radius: var(--opk-radius);
   background: var(--opk-surface);
   font-weight: 800;
+}
+
+.opk-checklist li::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--opk-primary);
+}
+
+.opk-checklist li::after {
+  content: "";
+  position: absolute;
+  left: 23px;
+  top: 21px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--opk-ink);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .opk-value-row {
@@ -507,6 +559,10 @@ select {
   }
 
   .opk-section {
-    padding: 58px 0;
+    padding: 68px 0;
+  }
+
+  .opk-bundle {
+    max-height: 420px;
   }
 }
