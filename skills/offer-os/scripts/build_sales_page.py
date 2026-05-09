@@ -47,6 +47,16 @@ REQUIRED_ORDER = [
     "final-cta",
 ]
 DEFAULT_CHECKOUT_TARGET = "#checkout"
+EYEBROW_POLICY = "sparse-key-signposts-v1"
+EYEBROW_ALIGNMENT = "centered-with-section-heading"
+EYEBROW_SECTIONS = {
+    "problem": "The real problem",
+    "mechanism": "The mechanism",
+    "proof": "Proof before the pitch",
+    "offer-stack": "Get the complete stack",
+    "guarantee": "Risk reversal",
+}
+EYEBROW_MAX_COUNT = len(EYEBROW_SECTIONS)
 
 
 def read_json(path: Path, default=None):
@@ -334,6 +344,14 @@ def support_visual(src: str, alt: str, kind: str, anchor: str) -> str:
     )
 
 
+def section_eyebrow(section_id: str, data: dict | None = None, fallback: str = "") -> str:
+    if section_id not in EYEBROW_SECTIONS:
+        return ""
+    data = data or {}
+    text = first_value(data.get("eyebrow"), fallback, EYEBROW_SECTIONS[section_id])
+    return f'<p class="oo-eyebrow">{html_text(text)}</p>'
+
+
 def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict, context: dict[str, str]) -> str:
     offer = manifest_offer(manifest, blueprint)
     audience = first_value(blueprint.get("audience"), manifest.get("audience"), fallback="operators")
@@ -369,7 +387,6 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-section oo-section-dark" data-offeros-section="vsl">
       <div class="oo-container oo-narrow">
-        <p class="oo-eyebrow">What the breakdown covers</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="The short pitch shows the whole path before the buy box."))}</h2>
         <p>{html_text(first_value(data.get("copy"), fallback=f"In a few minutes, the {offer} VSL explains the gap, the mechanism, and the finished outcome so you can make a grounded buying decision."))}</p>
         <ul>{list_items(bullets)}</ul>
@@ -402,10 +419,11 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
             visual = support_visual(context["mechanismVisual"], f"{offer} mechanism diagram", "mechanism-diagram", "mechanism")
         elif section_id == "proof":
             visual = support_visual(context["proofVisual"], f"{offer} proof or demo visual", "proof-demo-visual", "proof")
+        eyebrow_html = section_eyebrow(section_id, data, headline)
         return f"""
     <section class="oo-section{' oo-section-dark' if section_id in {'agitation', 'mechanism'} else ''}" data-offeros-section="{section_id}">
       <div class="oo-container">
-        <p class="oo-eyebrow">{html_text(first_value(data.get("eyebrow"), fallback=headline))}</p>
+        {eyebrow_html}
         <h2>{html_text(first_value(data.get("headline"), fallback=headline))}</h2>
         {paragraph(first_value(data.get("copy"), fallback=copy))}
         {visual}
@@ -423,7 +441,6 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-section" data-offeros-section="failed-alternatives">
       <div class="oo-container">
-        <p class="oo-eyebrow">Why the usual fixes fail</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="The old fixes do not create enough buying momentum."))}</h2>
         {support_visual(context["failedAlternativesVisual"], f"{offer} failed alternatives comparison", "comparison-visual", "failed-alternatives")}
         <table class="oo-table" data-offeros-failed-alternatives-table><thead><tr><th>What they tried</th><th>Why it did not fix the real issue</th><th>What is needed instead</th></tr></thead><tbody>{body}</tbody></table>
@@ -433,7 +450,6 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-section oo-section-dark" data-offeros-section="before-after">
       <div class="oo-container">
-        <p class="oo-eyebrow">Before and after</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="The buying journey changes when the sequence does the selling work."))}</h2>
         {support_visual(context["beforeAfterVisual"], f"{offer} before and after visual", "structured-panel", "before-after")}
         <div class="oo-grid-2" data-offeros-before-after>{card("Before", first_value(data.get("before"), fallback="The offer depends on scattered claims, vague proof, and a checkout link that appears before trust is earned."), icon="circle-alert")}{card("After", first_value(data.get("after"), fallback="The page diagnoses the problem, installs the mechanism, proves credibility, then presents the stack with a low-friction next step."), icon="circle-check")}</div>
@@ -453,7 +469,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-stack" data-offeros-section="offer-stack" id="checkout" data-offeros-buy-section data-offeros-checkout-anchor>
       <div class="oo-container">
-        <p class="oo-eyebrow">Get the complete stack</p>
+        {section_eyebrow("offer-stack", data)}
         <h2>{html_text(first_value(data.get("headline"), fallback=f"Everything inside {offer}"))}</h2>
         <img class="oo-bundle" src="{context["productBundleImage"]}" alt="{html_text(offer)} product bundle" data-offeros-product-bundle data-offeros-image-display="constrained">
         <ul class="oo-checklist" data-offeros-offer-checklist>{icon_list_items(items[:10])}</ul>
@@ -468,7 +484,6 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-section" data-offeros-section="fit">
       <div class="oo-container">
-        <p class="oo-eyebrow">Fit check</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="This is for buyers who want the full selling sequence."))}</h2>
         <div class="oo-grid-2">
           <article class="oo-card"><h3><span class="oo-icon" aria-hidden="true"><i data-lucide="user-check"></i></span>For you if...</h3><ul>{list_items(fit)}</ul></article>
@@ -480,7 +495,6 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-section oo-section-dark" data-offeros-section="pricing">
       <div class="oo-container oo-narrow">
-        <p class="oo-eyebrow">Price and access</p>
         <h2>{html_text(first_value(data.get("headline"), fallback=f"Get {offer} for {price} today."))}</h2>
         <p>{html_text(first_value(data.get("copy"), fallback="The checkout target defaults to the page anchor so the static build links buyers to the purchase step without embedding payment fields."))}</p>
         <a class="oo-cta" data-offeros-cta data-offeros-post-hero-cta href="{checkout}">Review the stack</a>
@@ -490,7 +504,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-section" data-offeros-section="guarantee">
       <div class="oo-container oo-narrow">
-        <p class="oo-eyebrow">Risk reversal</p>
+        {section_eyebrow("guarantee", data)}
         <h2>{html_text(first_value(data.get("headline"), fallback="Use it, inspect it, and keep the buying decision low risk."))}</h2>
         {support_visual(context["guaranteeBadge"], f"{offer} guarantee badge", "structured-panel", "guarantee")}
         <p>{html_text(first_value(data.get("copy"), fallback="If the page kit does not give you a clearer offer path, use the stated guarantee terms and support contact in your customer-facing policies."))}</p>
@@ -509,7 +523,6 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-section oo-faq" data-offeros-section="faq">
       <div class="oo-container">
-        <p class="oo-eyebrow">Questions before you buy</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="Questions before you decide"))}</h2>
         {''.join(card(first_value(item.get('q'), fallback='Question'), first_value(item.get('a'), fallback='Answer'), 'data-offeros-faq-item', 'circle-help') for item in faqs[:9])}
       </div>
@@ -518,7 +531,6 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         return f"""
     <section class="oo-section oo-section-dark" data-offeros-section="final-cta">
       <div class="oo-container oo-narrow">
-        <p class="oo-eyebrow">Final decision</p>
         <h2>{html_text(first_value(data.get("headline"), fallback=f"Start with {offer} today."))}</h2>
         <p>{html_text(first_value(data.get("copy"), fallback="You have seen the problem, mechanism, proof, product, stack, fit, price, guarantee, and objections. The next step is the checkout target."))}</p>
         <a class="oo-cta" data-offeros-cta data-offeros-post-hero-cta href="{checkout}">{html_text(first_value(data.get("cta"), fallback="Get instant access"))}</a>
@@ -603,7 +615,7 @@ def css(theme: dict) -> str:
     h2 {{ font-size: clamp(31px, 4.7vw, 54px); max-width: 980px; margin-left: auto; margin-right: auto; text-align: center; }}
     h3 {{ font-size: 22px; }}
     p {{ margin: 0 0 18px; color: inherit; }}
-    .oo-section > .oo-container > .oo-eyebrow, .oo-section > .oo-narrow > .oo-eyebrow, .oo-stack > .oo-container > .oo-eyebrow {{ display: flex; width: max-content; max-width: 100%; margin-left: auto; margin-right: auto; }}
+    .oo-section > .oo-container > .oo-eyebrow, .oo-section > .oo-narrow > .oo-eyebrow, .oo-stack > .oo-container > .oo-eyebrow {{ display: flex; justify-content: center; width: max-content; max-width: 100%; margin-left: auto; margin-right: auto; text-align: center; }}
     .oo-section > .oo-container > p, .oo-section > .oo-narrow > p {{ max-width: 900px; margin-left: auto; margin-right: auto; text-align: center; }}
     .oo-hero-copy {{ max-width: 780px; font-size: clamp(18px, 2.5vw, 23px); color: rgba(255,255,255,.86); }}
     .oo-vsl-frame {{ position: relative; width: min(980px, 100%); aspect-ratio: 16 / 9; margin: 34px auto 0; border: 8px solid rgba(255,255,255,.12); border-radius: 8px; overflow: hidden; background: #24312d; box-shadow: 0 28px 80px rgba(0,0,0,.36); }}
@@ -826,6 +838,11 @@ def update_manifest(
             "iconLibrary": "lucide",
             "imageDisplay": "viewport-constrained-v1",
             "vslSectionCommand": "overview-not-watch-first",
+            "eyebrowPolicy": EYEBROW_POLICY,
+            "eyebrowAlignment": EYEBROW_ALIGNMENT,
+            "eyebrowCount": len(re.findall(r"class=[\"'][^\"']*\boo-eyebrow\b", html_text_value, flags=re.I)),
+            "eyebrowMaxCount": EYEBROW_MAX_COUNT,
+            "eyebrowSections": sorted(EYEBROW_SECTIONS),
             "salesPageVisualCount": len(re.findall(r"<img\b", html_text_value, flags=re.I)),
             "supportingVisualSlotsUsed": len(re.findall(r"data-offeros-page-visual", html_text_value, flags=re.I)),
             "approvedPartialsUsed": used_partials,

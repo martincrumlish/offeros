@@ -17,6 +17,7 @@ These standards define a release-grade OfferOS sales page kit: `offer-intake.jso
 - Composition: `direct-response-composition-v2`.
 - Hero: `stacked-vsl-hero-v2`, `stacked-vsl`, `offeros-stacked-vsl-v2`, large 16:9 VSL frame.
 - Header/navigation: `navigationPolicy: "no-section-nav"`; logo/brand and optional primary CTA only, no sticky/hover section navigation.
+- Eyebrow/pill policy: `eyebrowPolicy: "sparse-key-signposts-v1"` and `eyebrowAlignment: "centered-with-section-heading"`; do not put an eyebrow/pill on every section. Default visible section eyebrows are limited to key signposts such as problem, mechanism, proof, offer stack, and guarantee.
 - Visual polish contract: `iconSystem: "lucide-icons-v1"`, `iconLibrary: "lucide"`, and `imageDisplay: "viewport-constrained-v1"`; card grids/checklists use Lucide icon markers with CSS fallback and support images are content-hugging/constrained rather than rendered at full source size or placed in mismatched colored mattes. Outer image figures stay transparent/unbordered; border and shadow belong on the image itself.
 - Required section order: `header -> hero -> vsl -> problem -> agitation -> failed-alternatives -> mechanism -> proof -> before-after -> product -> offer-stack -> fit -> pricing -> guarantee -> faq -> final-cta`.
 - Proof or proof substitute appears before the main offer stack.

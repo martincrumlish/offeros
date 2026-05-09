@@ -306,6 +306,8 @@ Use this recipe for every complete paid front-end offer unless the user explicit
 14. Use direct-response composition rules:
     - Header: simple logo/brand area and optional primary CTA only. Do not add sticky/hover section navigation, nav menus, or section jump links for long-form sales pages.
     - Eyebrows/preheads/buyer filters: quiet signposts, not loud mini-headlines. Use restrained weight, no heavy all-caps badge treatment by default, and do not let these labels visually overpower the actual H1/H2.
+    - Section eyebrows/pills: use `eyebrowPolicy: "sparse-key-signposts-v1"` by default. Do not put an eyebrow/pill on every section. Use them only for key signposts such as problem, mechanism, proof, offer stack, and guarantee unless the page type explicitly needs fewer/more.
+    - Eyebrow alignment: every visible section eyebrow/pill must use `eyebrowAlignment: "centered-with-section-heading"` and be centered with the H2 it precedes; no floating left-offset pills above centered H2s.
     - Section rhythm: H2s should be wide enough for direct-response readability, generally centered for major sections, with enough vertical space that the page does not become a tight stack of boxes.
     - Cards/checklists: use a branded icon or checkmark treatment for card groups, proof blocks, and deliverable lists. Plain text boxes with no iconography or visual hierarchy fail the page kit.
     - Icons: use Lucide icon markers (`data-lucide`) with CSS fallback for card groups and checklist treatments.
@@ -322,7 +324,7 @@ Use this recipe for every complete paid front-end offer unless the user explicit
 15. Include at least 7 FAQ objections, at least 4 CTA placements, at least 3 post-hero CTA placements, and at least 2,500 visible words for `direct-response-long-form-vsl`.
 16. Mark every FAQ item with `data-offeros-faq-item`.
 17. Mark every CTA link or button with `data-offeros-cta`; mark post-hero CTA placements with `data-offeros-post-hero-cta`; purchase CTAs must link to `#checkout` by default.
-18. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `framework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, `offerStackContract: "direct-response-buy-box-v1"`, `pageKit: "offeros-page-kit-v1"`, `pageKitBuilder: "offeros-page-kit-builder-v1"`, `pageKitArchetype`, `themePreset`, `pageKitBlueprintUsed: true`, `themeTokensUsed: true`, `navigationPolicy: "no-section-nav"`, `iconSystem: "lucide-icons-v1"`, `iconLibrary: "lucide"`, `imageDisplay: "viewport-constrained-v1"`, `vslSectionCommand: "overview-not-watch-first"`, `checkoutTarget: "#checkout"`, `vslPlacement: "main-column-stacked"`, and `orderFormIncluded: false`.
+18. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `framework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, `offerStackContract: "direct-response-buy-box-v1"`, `pageKit: "offeros-page-kit-v1"`, `pageKitBuilder: "offeros-page-kit-builder-v1"`, `pageKitArchetype`, `themePreset`, `pageKitBlueprintUsed: true`, `themeTokensUsed: true`, `navigationPolicy: "no-section-nav"`, `iconSystem: "lucide-icons-v1"`, `iconLibrary: "lucide"`, `imageDisplay: "viewport-constrained-v1"`, `eyebrowPolicy: "sparse-key-signposts-v1"`, `eyebrowAlignment: "centered-with-section-heading"`, `vslSectionCommand: "overview-not-watch-first"`, `checkoutTarget: "#checkout"`, `vslPlacement: "main-column-stacked"`, and `orderFormIncluded: false`.
 
 Stop conditions:
 
@@ -335,6 +337,8 @@ Stop conditions:
 - If the post-hero VSL section says "Watch this first" when the hero already contains the primary VSL frame, revise the label and section framing before QA.
 - If card grids, proof blocks, or offer-stack lists are plain boxes with no branded icon/checkmark treatment, revise before QA.
 - If the page has no `data-lucide` icon markers, revise before QA.
+- If section eyebrows/pills appear on every section, or more than 6 section eyebrows are visible by default, revise before QA.
+- If any visible section eyebrow/pill is not centered with the H2 it precedes, revise before QA.
 - If any support/product/offer-stack visual is not marked `data-offeros-image-display="constrained"`, renders as an unconstrained full-size image, or sits in a visibly larger colored matte/frame because the frame and source aspect ratios do not match, revise before QA.
 - If any normal paragraph exceeds 55 words, revise before QA.
 - If any required direct-response section has fewer than the minimum buyer-facing words, revise before QA.

@@ -1365,6 +1365,16 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
             issues.append("Direct-response sales page must include Lucide icon markers via data-lucide.")
         if sales_quality.get("imageDisplay") != "viewport-constrained-v1":
             issues.append('Direct-response sales page quality metadata must record imageDisplay: viewport-constrained-v1.')
+        if sales_quality.get("eyebrowPolicy") != "sparse-key-signposts-v1":
+            issues.append('Direct-response sales page quality metadata must record eyebrowPolicy: sparse-key-signposts-v1.')
+        if sales_quality.get("eyebrowAlignment") != "centered-with-section-heading":
+            issues.append('Direct-response sales page quality metadata must record eyebrowAlignment: centered-with-section-heading.')
+        eyebrow_count = len(re.findall(r"class=[\"'][^\"']*\boo-eyebrow\b", html_text, flags=re.I))
+        if eyebrow_count > 6:
+            issues.append(f"Direct-response Page Kit must use sparse section eyebrows/pills, not one on every section: {eyebrow_count} found, 6 maximum.")
+        recorded_eyebrow_count = quality_number(sales_quality.get("eyebrowCount"))
+        if recorded_eyebrow_count and recorded_eyebrow_count > 6:
+            issues.append("Direct-response sales page quality metadata eyebrowCount exceeds sparse policy maximum of 6.")
         if re.search(r"<nav\b", html_text, flags=re.I):
             issues.append("Direct-response long-form sales pages must not include a nav menu or section-jump navigation.")
         if re.search(r"\bposition\s*:\s*sticky\b", html_text, flags=re.I):

@@ -308,9 +308,11 @@ select {
 
 .opk-eyebrow {
   display: flex;
+  justify-content: center;
   width: max-content;
   max-width: 100%;
   margin-inline: auto;
+  text-align: center;
 }
 
 .opk-grid {

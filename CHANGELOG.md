@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.4
+
+- Adds the Page Kit sparse eyebrow/pill policy: key signposts only, not one badge on every section.
+- Centers section eyebrows with the H2 they precede and records `eyebrowPolicy`, `eyebrowAlignment`, and eyebrow counts in sales-page quality metadata.
+- Updates validation and self-tests so overused/floating section pills fail instead of becoming the default page style.
+
 ## 0.13.3
 
 - Adds Lucide icon markers as the Page Kit default for card grids, proof blocks, and checklist stacks.

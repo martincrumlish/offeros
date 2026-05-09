@@ -54,7 +54,7 @@ Required hero contract:
 - The hero must stack vertically in this order: buyer filter/prehead/H1/benefit lead, then large VSL/video frame, then price strip/CTA, then trust row.
 - The hero copy stack must be centered and marked `data-offeros-hero-copy-stack`.
 - The header must not include sticky/hover section navigation, nav menus, or section jump links. Long-form pages are built for sequential consumption; use only logo/brand and an optional CTA.
-- Buyer filters, preheads, and eyebrows are quiet signposts. Do not use loud all-caps badge treatment or make them bolder than the surrounding headline hierarchy.
+- Buyer filters, preheads, and eyebrows are quiet signposts. Do not use loud all-caps badge treatment or make them bolder than the surrounding headline hierarchy. Do not place an eyebrow/pill on every section; use sparse section eyebrows only for key signposts by default, and center each visible eyebrow with the H2 it precedes.
 - The VSL/video frame must be centered below the headline, visually dominant, and marked `data-offeros-hero-video`, `data-offeros-hero-video-prominence="primary"`, and `data-offeros-hero-video-size="large"`.
 - The hero video frame must use the `.oo-vsl-frame` 16:9 frame, include a real thumbnail marked `data-offeros-video-thumbnail`, a visible play button marked `data-offeros-video-play`, and a short caption marked `data-offeros-video-caption`. Do not fake the VSL with a small UI card, checklist panel, dashboard mockup, or decorative product screen.
 - The price strip must sit below the VSL/video frame, show the actual price, normal/total value or value context, a short stack summary, and the primary CTA.
