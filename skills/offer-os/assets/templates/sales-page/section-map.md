@@ -91,6 +91,6 @@ Hard requirements for `direct-response-long-form-vsl`:
 - 4+ CTA links/buttons marked with `data-offeros-cta`.
 - 3+ CTA links/buttons after the hero marked with `data-offeros-post-hero-cta`.
 - Unique buyer-facing copy for every offer-stack, angle, bonus, and product card.
-- Branded icon/checkmark treatment for card groups, proof blocks, and offer-stack checklist items. Plain unadorned text boxes fail the Page Kit.
-- Sales-page support images, product reveals, proof/demo visuals, and bundle images displayed in constrained frames marked `data-offeros-image-display="constrained"` so a source bitmap cannot consume most of the viewport.
+- Lucide icon markers (`data-lucide`) with CSS fallback for card groups, proof blocks, and offer-stack checklist items. Plain unadorned text boxes fail the Page Kit.
+- Sales-page support images, product reveals, proof/demo visuals, and bundle images displayed in content-hugging constrained frames marked `data-offeros-image-display="constrained"` so a source bitmap cannot consume most of the viewport or sit inside a mismatched colored matte.
 - Repeated-text scan completed before QA.

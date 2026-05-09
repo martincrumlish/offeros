@@ -306,6 +306,13 @@ select {
   font-size: 1.08rem;
 }
 
+.opk-eyebrow {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
 .opk-grid {
   display: grid;
   gap: 18px;
@@ -354,14 +361,26 @@ select {
   line-height: 1.15;
 }
 
-.opk-card h3::before {
-  content: "";
+.opk-icon,
+.opk-check-icon {
+  display: inline-grid;
+  place-items: center;
   width: 20px;
   height: 20px;
   flex: 0 0 20px;
   border-radius: 8px;
   background: linear-gradient(135deg, var(--opk-primary), var(--opk-accent));
   box-shadow: inset 0 0 0 5px color-mix(in srgb, var(--opk-surface) 72%, transparent);
+  color: var(--opk-ink);
+}
+
+.opk-icon i,
+.opk-icon svg,
+.opk-check-icon i,
+.opk-check-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 3;
 }
 
 .opk-card p,
@@ -406,12 +425,14 @@ select {
 }
 
 .opk-bundle {
-  width: min(860px, 100%);
+  width: auto;
+  max-width: min(860px, 100%);
   max-height: 560px;
   object-fit: contain;
   margin: 28px auto;
-  border: 1px solid var(--opk-line);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: calc(var(--opk-radius) + 4px);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
 }
 
 .opk-checklist {
@@ -425,35 +446,19 @@ select {
 }
 
 .opk-checklist li {
-  position: relative;
-  padding: 14px 16px 14px 48px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 14px 16px;
   border: 1px solid var(--opk-line);
   border-radius: var(--opk-radius);
   background: var(--opk-surface);
   font-weight: 800;
 }
 
-.opk-checklist li::before {
-  content: "";
-  position: absolute;
-  left: 16px;
-  top: 18px;
-  width: 20px;
-  height: 20px;
+.opk-check-icon {
   border-radius: 999px;
-  background: var(--opk-primary);
-}
-
-.opk-checklist li::after {
-  content: "";
-  position: absolute;
-  left: 23px;
-  top: 21px;
-  width: 5px;
-  height: 10px;
-  border: solid var(--opk-ink);
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  box-shadow: none;
 }
 
 .opk-value-row {

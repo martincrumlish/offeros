@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.3
+
+- Adds Lucide icon markers as the Page Kit default for card grids, proof blocks, and checklist stacks.
+- Makes sales-page image planning slot-aware with varied aspect ratios, `aspectRatioReason`, `displayIntent`, and `maxDisplayHeight`.
+- Changes support-image framing so generated visuals render in content-hugging transparent frames with the border/shadow on the image itself, avoiding mismatched colored mattes.
+- Extends validation and self-tests for Lucide metadata, slot-aware image metadata, and varied sales-page aspect ratios.
+
 ## 0.13.2
 
 - Hardens the Page Kit against long-form sales-page UI drift: no sticky/hover section nav, no post-hero "Watch this first" label when the hero already contains the main VSL, and quieter eyebrow/prehead treatment.

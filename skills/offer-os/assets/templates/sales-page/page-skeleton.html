@@ -226,7 +226,9 @@
     }
     .oo-section > .oo-container > .oo-eyebrow,
     .oo-section > .oo-narrow > .oo-eyebrow {
-      width: fit-content;
+      display: flex;
+      width: max-content;
+      max-width: 100%;
       margin-left: auto;
       margin-right: auto;
     }
@@ -280,17 +282,29 @@
       font-size: 22px;
       line-height: 1.15;
     }
-    .oo-card h3::before {
-      content: "";
+    .oo-icon,
+    .oo-check-icon {
+      display: inline-grid;
+      place-items: center;
       width: 20px;
       height: 20px;
       flex: 0 0 20px;
       border-radius: 8px;
       background: linear-gradient(135deg, var(--oo-primary), var(--oo-accent));
       box-shadow: inset 0 0 0 5px rgba(255,255,255,.72);
+      color: var(--oo-ink);
     }
-    .oo-section-dark .oo-card h3::before {
+    .oo-section-dark .oo-icon,
+    .oo-section-dark .oo-check-icon {
       box-shadow: inset 0 0 0 5px rgba(6,6,6,.68);
+    }
+    .oo-icon i,
+    .oo-icon svg,
+    .oo-check-icon i,
+    .oo-check-icon svg {
+      width: 13px;
+      height: 13px;
+      stroke-width: 3;
     }
     .oo-card p, .oo-card li { font-size: 16px; }
     .oo-table {
@@ -317,35 +331,17 @@
       list-style: none;
     }
     .oo-checklist li {
-      position: relative;
-      padding: 14px 16px 14px 48px;
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      padding: 14px 16px;
       border: 1px solid rgba(0,0,0,.12);
       border-radius: 8px;
       background: #fff;
       color: var(--oo-ink);
       font-weight: 800;
     }
-    .oo-checklist li::before {
-      content: "";
-      position: absolute;
-      left: 16px;
-      top: 18px;
-      width: 20px;
-      height: 20px;
-      border-radius: 999px;
-      background: var(--oo-primary);
-    }
-    .oo-checklist li::after {
-      content: "";
-      position: absolute;
-      left: 23px;
-      top: 21px;
-      width: 5px;
-      height: 10px;
-      border: solid var(--oo-ink);
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-    }
+    .oo-check-icon { border-radius: 999px; box-shadow: none; }
     .oo-stack {
       padding: clamp(82px, 9vw, 136px) 18px;
       background: #060606;
@@ -353,12 +349,14 @@
       text-align: center;
     }
     .oo-bundle {
-      width: min(860px, 100%);
+      width: auto;
+      max-width: min(860px, 100%);
       max-height: 560px;
       object-fit: contain;
       margin: 28px auto;
       border-radius: 12px;
-      border: 1px solid var(--oo-line);
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 24px 70px rgba(0,0,0,.28);
     }
     .oo-value-row {
       display: flex;
@@ -383,6 +381,7 @@
       .oo-bundle { max-height: 420px; }
     }
   </style>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer data-offeros-icon-library="lucide"></script>
 </head>
 <body>
   <header data-offeros-section="header">
@@ -452,9 +451,9 @@
         <h2>{{PROBLEM_HEADLINE}}</h2>
         <p>{{PROBLEM_DIAGNOSIS}}</p>
         <div class="oo-grid-3">
-          <article class="oo-card"><h3>{{SYMPTOM_ONE}}</h3><p>{{SYMPTOM_ONE_COPY}}</p></article>
-          <article class="oo-card"><h3>{{SYMPTOM_TWO}}</h3><p>{{SYMPTOM_TWO_COPY}}</p></article>
-          <article class="oo-card"><h3>{{SYMPTOM_THREE}}</h3><p>{{SYMPTOM_THREE_COPY}}</p></article>
+          <article class="oo-card"><h3><span class="oo-icon" aria-hidden="true"><i data-lucide="circle-alert"></i></span>{{SYMPTOM_ONE}}</h3><p>{{SYMPTOM_ONE_COPY}}</p></article>
+          <article class="oo-card"><h3><span class="oo-icon" aria-hidden="true"><i data-lucide="circle-alert"></i></span>{{SYMPTOM_TWO}}</h3><p>{{SYMPTOM_TWO_COPY}}</p></article>
+          <article class="oo-card"><h3><span class="oo-icon" aria-hidden="true"><i data-lucide="circle-alert"></i></span>{{SYMPTOM_THREE}}</h3><p>{{SYMPTOM_THREE_COPY}}</p></article>
         </div>
       </div>
     </section>
@@ -543,14 +542,14 @@
         <h2>{{OFFER_STACK_HEADLINE}}</h2>
         <img class="oo-bundle" src="{{PRODUCT_BUNDLE_IMAGE}}" alt="{{OFFER_NAME}} product bundle" data-offeros-product-bundle data-offeros-image-display="constrained">
         <ul class="oo-checklist" data-offeros-offer-checklist>
-          <li>{{DELIVERABLE_ONE}}</li>
-          <li>{{DELIVERABLE_TWO}}</li>
-          <li>{{DELIVERABLE_THREE}}</li>
-          <li>{{DELIVERABLE_FOUR}}</li>
-          <li>{{DELIVERABLE_FIVE}}</li>
-          <li>{{DELIVERABLE_SIX}}</li>
-          <li>{{DELIVERABLE_SEVEN}}</li>
-          <li>{{DELIVERABLE_EIGHT}}</li>
+          <li><span class="oo-check-icon" aria-hidden="true"><i data-lucide="check"></i></span>{{DELIVERABLE_ONE}}</li>
+          <li><span class="oo-check-icon" aria-hidden="true"><i data-lucide="check"></i></span>{{DELIVERABLE_TWO}}</li>
+          <li><span class="oo-check-icon" aria-hidden="true"><i data-lucide="check"></i></span>{{DELIVERABLE_THREE}}</li>
+          <li><span class="oo-check-icon" aria-hidden="true"><i data-lucide="check"></i></span>{{DELIVERABLE_FOUR}}</li>
+          <li><span class="oo-check-icon" aria-hidden="true"><i data-lucide="check"></i></span>{{DELIVERABLE_FIVE}}</li>
+          <li><span class="oo-check-icon" aria-hidden="true"><i data-lucide="check"></i></span>{{DELIVERABLE_SIX}}</li>
+          <li><span class="oo-check-icon" aria-hidden="true"><i data-lucide="check"></i></span>{{DELIVERABLE_SEVEN}}</li>
+          <li><span class="oo-check-icon" aria-hidden="true"><i data-lucide="check"></i></span>{{DELIVERABLE_EIGHT}}</li>
         </ul>
         <div class="oo-value-row" data-offeros-value-row>
           <span>{{NORMAL_VALUE}}</span>
@@ -616,5 +615,15 @@
   <footer data-offeros-section="footer">
     <!-- Compliance, affiliation, contact/support notes. -->
   </footer>
+  <script>
+    function hydrateOfferOSIcons() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+    hydrateOfferOSIcons();
+    window.addEventListener('DOMContentLoaded', hydrateOfferOSIcons);
+    window.addEventListener('load', hydrateOfferOSIcons);
+  </script>
 </body>
 </html>

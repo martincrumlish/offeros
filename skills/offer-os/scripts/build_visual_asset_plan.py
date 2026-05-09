@@ -7,11 +7,11 @@ import re
 
 SALES_VISUALS = [
     ("hero-vsl-frame", "hero", "Make the opening video feel worth watching", "assets/page/hero-vsl-thumbnail.png", "16:9", "no tiny UI text"),
-    ("comparison-visual", "failed-alternatives", "Show why the old options fail", "assets/page/failed-alternatives.png", "4:3", "labels only"),
-    ("mechanism-diagram", "mechanism", "Make the unique mechanism easy to understand", "assets/page/mechanism-diagram.png", "4:3", "short labels only"),
-    ("proof-demo-visual", "proof", "Show proof or a transparent proof substitute", "assets/page/proof-demo.png", "4:3", "no fake testimonials"),
-    ("structured-panel", "before-after", "Make the before/after contrast concrete", "assets/page/before-after.png", "4:3", "short captions only"),
-    ("offer-stack-bundle", "offer-stack", "Make the stack feel tangible at the buy box", "assets/page/product-bundle.png", "4:3", "use supplied logo exactly"),
+    ("comparison-visual", "failed-alternatives", "Show why the old options fail", "assets/page/failed-alternatives.png", "16:9", "labels only"),
+    ("mechanism-diagram", "mechanism", "Make the unique mechanism easy to understand", "assets/page/mechanism-diagram.png", "3:2", "short labels only"),
+    ("proof-demo-visual", "proof", "Show proof or a transparent proof substitute", "assets/page/proof-demo.png", "16:10", "no fake testimonials"),
+    ("structured-panel", "before-after", "Make the before/after contrast concrete", "assets/page/before-after.png", "2:1", "short captions only"),
+    ("offer-stack-bundle", "offer-stack", "Make the stack feel tangible at the buy box", "assets/page/product-bundle.png", "16:9", "use supplied logo exactly"),
 ]
 
 PDF_VISUALS = [
@@ -82,6 +82,9 @@ def visual_row(kind: str, anchor: str, job: str, path: str, ratio: str, text_rul
         "copyAnchor": anchor,
         "conversionJob": job,
         "aspectRatio": ratio,
+        "aspectRatioReason": f"Chosen for the {anchor} page slot, not copied from a generic default.",
+        "displayIntent": "content-hugging-constrained-frame",
+        "maxDisplayHeight": "560px desktop / 420px mobile",
         "textRule": text_rule,
         "source/provenance": provenance,
         "finalPixelsGeneratedBy": "imagegen" if provenance in {"imagegen-final", "imagegen-composite"} else provenance,
@@ -89,7 +92,7 @@ def visual_row(kind: str, anchor: str, job: str, path: str, ratio: str, text_rul
         "localCreativeOverlay": False,
         "reusePermission": "artifact-specific",
         "artifactSpecific": True,
-        "generationPrompt": f"{kind} for {anchor}. {job}. Final buyer-facing image must be produced by imagegen; do not add logo, text, UI cards, badges, mockups, overlays, or product-stack composition locally after imagegen. Avoid busy fake UI/mockup filler.{logo_prompt}",
+        "generationPrompt": f"{kind} for {anchor}. {job}. Aspect ratio {ratio}; compose for the actual page slot and a content-hugging constrained frame, not a generic repeated 4:3 mockup. Final buyer-facing image must be produced by imagegen; do not add logo, text, UI cards, badges, mockups, overlays, or product-stack composition locally after imagegen. Avoid busy fake UI/mockup filler.{logo_prompt}",
     }
     if provenance == "imagegen-composite":
         row["imagegenNativeComposite"] = True
@@ -107,6 +110,9 @@ def markdown_rows(rows: list[dict]) -> str:
                 f"  copyAnchor: `{row['copyAnchor']}`",
                 f"  conversionJob: `{row['conversionJob']}`",
                 f"  aspectRatio: `{row['aspectRatio']}`",
+                f"  aspectRatioReason: `{row['aspectRatioReason']}`",
+                f"  displayIntent: `{row['displayIntent']}`",
+                f"  maxDisplayHeight: `{row['maxDisplayHeight']}`",
                 f"  textRule: `{row['textRule']}`",
                 f"  source/provenance: `{row['source/provenance']}`",
                 f"  finalPixelsGeneratedBy: `{row['finalPixelsGeneratedBy']}`",
@@ -145,6 +151,7 @@ def build_plan(root: Path, manifest: dict) -> dict:
         "copyBlueprintUsed": copy_blueprint_exists(root),
         "salesPageImageSystem": "mixed-direct-response-v1",
         "primaryConversionFinalPixelsPolicy": "imagegen-final-v1",
+        "aspectRatioPolicy": "slot-aware-v1",
         "logoReference": "assets/logo.png",
         "logoUsagePolicy": "use-locked-logo-reference",
         "alternateLogosCreated": False,
@@ -179,6 +186,7 @@ def write_markdown(path: Path, plan: dict) -> None:
         f"- copyBlueprintUsed: {str(plan['copyBlueprintUsed']).lower()}",
         f"- salesPageImageSystem: {plan['salesPageImageSystem']}",
         f"- primaryConversionFinalPixelsPolicy: {plan['primaryConversionFinalPixelsPolicy']}",
+        f"- aspectRatioPolicy: {plan['aspectRatioPolicy']}",
         f"- logoReference: {plan['logoReference']}",
         f"- logoUsagePolicy: {plan['logoUsagePolicy']}",
         f"- alternateLogosCreated: {str(plan['alternateLogosCreated']).lower()}",
@@ -243,6 +251,7 @@ def update_manifest(root: Path, manifest: dict, plan: dict) -> None:
             "visualReusePolicy": "artifact-specific-v1",
             "salesPageImageSystem": "mixed-direct-response-v1",
             "primaryConversionFinalPixelsPolicy": "imagegen-final-v1",
+            "aspectRatioPolicy": "slot-aware-v1",
             "logoReference": "assets/logo.png",
             "logoUsagePolicy": "use-locked-logo-reference",
             "alternateLogosCreated": False,

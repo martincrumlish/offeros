@@ -1357,8 +1357,12 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
     if page_type == "direct-response-long-form-vsl":
         if sales_quality.get("navigationPolicy") != "no-section-nav":
             issues.append('Direct-response sales page quality metadata must record navigationPolicy: no-section-nav.')
-        if sales_quality.get("iconSystem") != "branded-icons-v1":
-            issues.append('Direct-response sales page quality metadata must record iconSystem: branded-icons-v1.')
+        if sales_quality.get("iconSystem") != "lucide-icons-v1":
+            issues.append('Direct-response sales page quality metadata must record iconSystem: lucide-icons-v1.')
+        if sales_quality.get("iconLibrary") != "lucide":
+            issues.append('Direct-response sales page quality metadata must record iconLibrary: lucide.')
+        if "data-lucide" not in html_text:
+            issues.append("Direct-response sales page must include Lucide icon markers via data-lucide.")
         if sales_quality.get("imageDisplay") != "viewport-constrained-v1":
             issues.append('Direct-response sales page quality metadata must record imageDisplay: viewport-constrained-v1.')
         if re.search(r"<nav\b", html_text, flags=re.I):
@@ -1982,6 +1986,7 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         "visualplanstage:post-content-blueprint": "visualPlanStage: post-content-blueprint",
         "copyblueprintused:true": "copyBlueprintUsed: true",
         "salespageimagesystem:mixed-direct-response-v1": "salesPageImageSystem: mixed-direct-response-v1",
+        "aspectratiopolicy:slot-aware-v1": "aspectRatioPolicy: slot-aware-v1",
     }.items():
         if token not in compact_plan:
             issues.append(f"Visual asset plan metadata must include {label}.")
@@ -2009,6 +2014,8 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         issues.append("Image quality metadata must record salesPageImageSystem: mixed-direct-response-v1.")
     if image_quality.get("primaryConversionFinalPixelsPolicy") != "imagegen-final-v1":
         issues.append("Image quality metadata must record primaryConversionFinalPixelsPolicy: imagegen-final-v1.")
+    if image_quality.get("aspectRatioPolicy") != "slot-aware-v1":
+        issues.append("Image quality metadata must record aspectRatioPolicy: slot-aware-v1.")
     if image_quality.get("logoReference") != "assets/logo.png":
         issues.append("Image quality metadata must record logoReference: assets/logo.png.")
     if image_quality.get("logoUsagePolicy") != "use-locked-logo-reference":
@@ -2051,6 +2058,13 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
     for field, values in required_sales_fields.items():
         if len(values) < 4:
             issues.append(f"Sales-page visual plan must include 4+ {field} fields tied to copy sections.")
+    aspect_values = field_values(sales_visuals, "aspectRatio")
+    if len(set(aspect_values)) < 3:
+        issues.append("Sales-page visual plan must use slot-aware varied aspect ratios, not one repeated default ratio.")
+    if len(field_values(sales_visuals, "aspectRatioReason")) < 4:
+        issues.append("Sales-page visual plan must include aspectRatioReason fields explaining page-slot fit.")
+    if len(field_values(sales_visuals, "displayIntent")) < 4:
+        issues.append("Sales-page visual plan must include displayIntent fields for page-slot fit.")
     invalid_kinds = sorted({kind for kind in visual_kinds if kind not in ALLOWED_VISUAL_KINDS})
     if invalid_kinds:
         issues.append("Sales-page visual plan uses invalid visualKind values: " + ", ".join(invalid_kinds))

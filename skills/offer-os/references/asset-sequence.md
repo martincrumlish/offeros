@@ -69,7 +69,8 @@ Sales-page visual kinds:
 
 - use `product-mockup`, `dashboard-mockup`, and `offer-stack-bundle` for product reveal, dashboard preview, offer stack, and CTA bundle visuals
 - use `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `structured-panel`, `buyer-situation-photo`, or `hero-vsl-frame` for mechanism, failed alternatives, proof/demo, objections, problem/agitation, and feature specifics
-- require `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, and `textRule` for every planned sales-page visual
+- require `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, `aspectRatioReason`, `displayIntent`, `maxDisplayHeight`, and `textRule` for every planned sales-page visual
+- choose aspect ratios by page slot instead of using one default image size for every asset; record `aspectRatioPolicy: slot-aware-v1`
 - avoid busy fake UI, random SaaS mockups, tiny hallucinated screen text, and decorative images that do not support a specific claim
 
 Minimum deep-mode budgets:

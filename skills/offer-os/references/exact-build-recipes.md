@@ -184,12 +184,13 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - `copyBlueprintUsed: true`
    - `salesPageImageSystem: mixed-direct-response-v1`
    - `primaryConversionFinalPixelsPolicy: imagegen-final-v1`
+   - `aspectRatioPolicy: slot-aware-v1`
    - `logoReference: assets/logo.png`
    - `logoUsagePolicy: use-locked-logo-reference`
    - `alternateLogosCreated: false`
    - `mockupHeavyUserRequested: false` unless the user explicitly requested mockup-heavy art direction
    - `sourceBlueprints: copy.md, product blueprint/page archetypes, VSL slide plan, ad angle map`
-4. For every planned visual, list these exact fields: `artifactTarget`, `filePath`, `visualKind`, `copyAnchor`, `conversionJob`, `aspectRatio`, `textRule`, `source/provenance`, `finalPixelsGeneratedBy`, `localPostprocess`, `localCreativeOverlay`, `reusePermission`, `artifactSpecific`, and `generationPrompt` or `productionMethod`.
+4. For every planned visual, list these exact fields: `artifactTarget`, `filePath`, `visualKind`, `copyAnchor`, `conversionJob`, `aspectRatio`, `aspectRatioReason`, `displayIntent`, `maxDisplayHeight`, `textRule`, `source/provenance`, `finalPixelsGeneratedBy`, `localPostprocess`, `localCreativeOverlay`, `reusePermission`, `artifactSpecific`, and `generationPrompt` or `productionMethod`.
 5. Use only these `visualKind` values unless the user supplied a specific visual system that requires an extra kind: `hero-vsl-frame`, `product-mockup`, `dashboard-mockup`, `offer-stack-bundle`, `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `buyer-situation-photo`, `structured-panel`, `worksheet-preview`, `matrix-visual`, `checklist-visual`, `slide-pattern-interrupt`, `ad-creative`, `brand-frame`.
 6. For `## Sales Page Visuals`, every row must include a `copyAnchor` matching a real sales-page section from `copy.md` and the page skeleton, such as `hero`, `vsl`, `failed-alternatives`, `mechanism`, `proof`, `product`, `offer-stack`, `pricing`, `guarantee`, or `faq`.
 7. Use `mixed-direct-response-v1` by default:
@@ -197,6 +198,8 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - use `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `structured-panel`, or restrained `buyer-situation-photo` for mechanism, failed alternatives, proof/demo, objections, feature specifics, and problem/agitation sections
    - do not make every sales-page image a polished fake UI/product mockup unless `mockupHeavyUserRequested: true`
    - avoid busy fake UI, hallucinated dashboards, illegible tiny text, decorative abstract mockups, and visuals that do not support a specific copy claim
+   - use slot-aware aspect ratios instead of repeating one default size: hero/VSL and offer-stack visuals are usually wide 16:9, comparison visuals often need 16:9, mechanism diagrams often work as 3:2, proof/demo visuals often work as 16:10, and before/after panels may need a wide 2:1 composition
+   - add `aspectRatioReason`, `displayIntent`, and `maxDisplayHeight` so imagegen workers know the actual destination shape before generation
    - set `source/provenance: imagegen-final`, `finalPixelsGeneratedBy: imagegen`, `localCreativeOverlay: false`, and `localPostprocess` limited to crop, resize, compression, or format-conversion for `hero-vsl-frame`, `product-mockup`, `offer-stack-bundle`, `buyer-situation-photo`, and `ad-creative` rows unless the asset is user-provided or licensed
    - use `imagegen-composite` only when the composition itself was performed by imagegen using reference images; in that case also set `imagegenNativeComposite: true`, `finalPixelsGeneratedBy: imagegen`, and `localCreativeOverlay: false`
    - do not set `productionMethod`, `source/provenance`, or fallback notes for those rows to `Pillow`, `PIL`, `html-css`, `canvas`, `screenshot`, `generated-by-code`, or `manual`; HTML/CSS, canvas, screenshots, and generated-by-code are allowed only for diagrams, worksheets, matrices, previews, QA screenshots, and real screenshots of built artifacts. Pillow/PIL is never allowed as an output authoring method.
@@ -305,7 +308,8 @@ Use this recipe for every complete paid front-end offer unless the user explicit
     - Eyebrows/preheads/buyer filters: quiet signposts, not loud mini-headlines. Use restrained weight, no heavy all-caps badge treatment by default, and do not let these labels visually overpower the actual H1/H2.
     - Section rhythm: H2s should be wide enough for direct-response readability, generally centered for major sections, with enough vertical space that the page does not become a tight stack of boxes.
     - Cards/checklists: use a branded icon or checkmark treatment for card groups, proof blocks, and deliverable lists. Plain text boxes with no iconography or visual hierarchy fail the page kit.
-    - Image display: render every support image, product reveal, offer-stack bundle, and proof/demo visual inside a constrained frame marked `data-offeros-image-display="constrained"`. Do not leave full-size source images to dominate an entire viewport. Default desktop max visual height is about 560px; mobile is about 420px unless a specific image type requires less.
+    - Icons: use Lucide icon markers (`data-lucide`) with CSS fallback for card groups and checklist treatments.
+    - Image display: render every support image, product reveal, offer-stack bundle, and proof/demo visual inside a content-hugging constrained frame marked `data-offeros-image-display="constrained"`. The outer figure/frame must be transparent and unbordered; apply border/shadow to the image itself. Do not leave full-size source images to dominate an entire viewport, and do not place contained images inside visibly larger colored mattes. Default desktop max visual height is about 560px; mobile is about 420px unless a specific image type requires less.
     - Hero visible copy: 90-180 words, plus price strip and trust bullets.
     - Hero layout: stacked VSL-first only. Do not use a two-column, side-by-side, split-screen, `hero-grid`, `hero-split`, `hero-visual`, `hero-mockup`, product/dashboard mockup hero art, or SaaS product hero with the video small on the right.
     - VSL section: 80-220 words, 3-5 bullets, and one CTA. Do not put the whole sales letter in the VSL section. If the hero already contains the main VSL frame, do not label the later section "Watch this first"; use a label like "What the breakdown covers" or "The pitch in plain English".
@@ -318,7 +322,7 @@ Use this recipe for every complete paid front-end offer unless the user explicit
 15. Include at least 7 FAQ objections, at least 4 CTA placements, at least 3 post-hero CTA placements, and at least 2,500 visible words for `direct-response-long-form-vsl`.
 16. Mark every FAQ item with `data-offeros-faq-item`.
 17. Mark every CTA link or button with `data-offeros-cta`; mark post-hero CTA placements with `data-offeros-post-hero-cta`; purchase CTAs must link to `#checkout` by default.
-18. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `framework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, `offerStackContract: "direct-response-buy-box-v1"`, `pageKit: "offeros-page-kit-v1"`, `pageKitBuilder: "offeros-page-kit-builder-v1"`, `pageKitArchetype`, `themePreset`, `pageKitBlueprintUsed: true`, `themeTokensUsed: true`, `navigationPolicy: "no-section-nav"`, `iconSystem: "branded-icons-v1"`, `imageDisplay: "viewport-constrained-v1"`, `vslSectionCommand: "overview-not-watch-first"`, `checkoutTarget: "#checkout"`, `vslPlacement: "main-column-stacked"`, and `orderFormIncluded: false`.
+18. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `framework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, `offerStackContract: "direct-response-buy-box-v1"`, `pageKit: "offeros-page-kit-v1"`, `pageKitBuilder: "offeros-page-kit-builder-v1"`, `pageKitArchetype`, `themePreset`, `pageKitBlueprintUsed: true`, `themeTokensUsed: true`, `navigationPolicy: "no-section-nav"`, `iconSystem: "lucide-icons-v1"`, `iconLibrary: "lucide"`, `imageDisplay: "viewport-constrained-v1"`, `vslSectionCommand: "overview-not-watch-first"`, `checkoutTarget: "#checkout"`, `vslPlacement: "main-column-stacked"`, and `orderFormIncluded: false`.
 
 Stop conditions:
 
@@ -330,7 +334,8 @@ Stop conditions:
 - If the page contains a `<nav>` menu, sticky section navigation, or header section jump links, remove them before QA.
 - If the post-hero VSL section says "Watch this first" when the hero already contains the primary VSL frame, revise the label and section framing before QA.
 - If card grids, proof blocks, or offer-stack lists are plain boxes with no branded icon/checkmark treatment, revise before QA.
-- If any support/product/offer-stack visual is not marked `data-offeros-image-display="constrained"` or renders as an unconstrained full-size image, revise before QA.
+- If the page has no `data-lucide` icon markers, revise before QA.
+- If any support/product/offer-stack visual is not marked `data-offeros-image-display="constrained"`, renders as an unconstrained full-size image, or sits in a visibly larger colored matte/frame because the frame and source aspect ratios do not match, revise before QA.
 - If any normal paragraph exceeds 55 words, revise before QA.
 - If any required direct-response section has fewer than the minimum buyer-facing words, revise before QA.
 - If required comparison/card sections contain blank-looking cells or empty cards, revise before QA.

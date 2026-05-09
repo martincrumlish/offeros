@@ -23,7 +23,7 @@ Required sections carry the persuasion arc. Optional blocks may deepen a section
 
 Place proof before the offer stack. Place fit/not-fit before or near pricing. Keep the VSL setup short and make long explanations scannable with tables, checklists, and callouts.
 
-Use restrained eyebrow/prehead labels, wider centered H2s for major sections, and enough vertical space for the argument to breathe. Card grids and checklist stacks need branded icon or checkmark treatments; plain boxes with text are not enough. Sales-page images must use constrained display frames so support visuals and bundles do not dominate the viewport.
+Use restrained eyebrow/prehead labels, wider centered H2s for major sections, and enough vertical space for the argument to breathe. Card grids and checklist stacks need Lucide icon markers (`data-lucide`) with CSS fallback; plain boxes with text are not enough. Sales-page images must use content-hugging constrained display frames so support visuals and bundles do not dominate the viewport or sit inside mismatched colored mattes; the outer figure is transparent/unbordered and the visual treatment belongs on the image itself.
 
 ## No Order Form
 

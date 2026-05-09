@@ -304,13 +304,23 @@ def paragraph(text: str) -> str:
     return f"<p>{html_text(text)}</p>"
 
 
-def card(title: str, copy: str, marker: str = "") -> str:
+def card(title: str, copy: str, marker: str = "", icon: str = "circle-check") -> str:
     marker_attr = f" {marker}" if marker else ""
-    return f'<article class="oo-card"{marker_attr}><h3>{html_text(title)}</h3><p>{html_text(copy)}</p></article>'
+    return (
+        f'<article class="oo-card"{marker_attr}><h3><span class="oo-icon" aria-hidden="true">'
+        f'<i data-lucide="{html_text(icon)}"></i></span>{html_text(title)}</h3><p>{html_text(copy)}</p></article>'
+    )
 
 
 def list_items(items: list[str]) -> str:
     return "".join(f"<li>{html_text(item)}</li>" for item in items)
+
+
+def icon_list_items(items: list[str], icon: str = "check") -> str:
+    return "".join(
+        f'<li><span class="oo-check-icon" aria-hidden="true"><i data-lucide="{html_text(icon)}"></i></span>{html_text(item)}</li>'
+        for item in items
+    )
 
 
 def support_visual(src: str, alt: str, kind: str, anchor: str) -> str:
@@ -376,6 +386,13 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         }
         headline, copy, cards = defaults[section_id]
         items = dict_list(data.get("cards"), [{"title": title, "copy": f"{title} is handled with specific buyer-facing copy instead of placeholder filler."} for title in cards])
+        section_icon = {
+            "problem": "circle-alert",
+            "agitation": "timer-reset",
+            "mechanism": "route",
+            "proof": "badge-check",
+            "product": "package-check",
+        }.get(section_id, "circle-check")
         marker = 'data-offeros-proof-card' if section_id == "proof" else ""
         extra_cta = ""
         if section_id == "proof":
@@ -392,7 +409,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         <h2>{html_text(first_value(data.get("headline"), fallback=headline))}</h2>
         {paragraph(first_value(data.get("copy"), fallback=copy))}
         {visual}
-        <div class="oo-grid-3" {'data-offeros-proof-grid' if section_id == 'proof' else 'data-offeros-product-modules' if section_id == 'product' else 'data-offeros-mechanism-steps' if section_id == 'mechanism' else ''}>{''.join(card(first_value(item.get('title'), fallback='Key point'), first_value(item.get('copy'), fallback='Specific copy goes here.'), marker) for item in items[:3])}</div>
+        <div class="oo-grid-3" {'data-offeros-proof-grid' if section_id == 'proof' else 'data-offeros-product-modules' if section_id == 'product' else 'data-offeros-mechanism-steps' if section_id == 'mechanism' else ''}>{''.join(card(first_value(item.get('title'), fallback='Key point'), first_value(item.get('copy'), fallback='Specific copy goes here.'), marker, section_icon) for item in items[:3])}</div>
         {extra_cta}
       </div>
     </section>"""
@@ -419,7 +436,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         <p class="oo-eyebrow">Before and after</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="The buying journey changes when the sequence does the selling work."))}</h2>
         {support_visual(context["beforeAfterVisual"], f"{offer} before and after visual", "structured-panel", "before-after")}
-        <div class="oo-grid-2" data-offeros-before-after>{card("Before", first_value(data.get("before"), fallback="The offer depends on scattered claims, vague proof, and a checkout link that appears before trust is earned."))}{card("After", first_value(data.get("after"), fallback="The page diagnoses the problem, installs the mechanism, proves credibility, then presents the stack with a low-friction next step."))}</div>
+        <div class="oo-grid-2" data-offeros-before-after>{card("Before", first_value(data.get("before"), fallback="The offer depends on scattered claims, vague proof, and a checkout link that appears before trust is earned."), icon="circle-alert")}{card("After", first_value(data.get("after"), fallback="The page diagnoses the problem, installs the mechanism, proves credibility, then presents the stack with a low-friction next step."), icon="circle-check")}</div>
       </div>
     </section>"""
     if section_id == "offer-stack":
@@ -439,7 +456,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         <p class="oo-eyebrow">Get the complete stack</p>
         <h2>{html_text(first_value(data.get("headline"), fallback=f"Everything inside {offer}"))}</h2>
         <img class="oo-bundle" src="{context["productBundleImage"]}" alt="{html_text(offer)} product bundle" data-offeros-product-bundle data-offeros-image-display="constrained">
-        <ul class="oo-checklist" data-offeros-offer-checklist>{list_items(items[:10])}</ul>
+        <ul class="oo-checklist" data-offeros-offer-checklist>{icon_list_items(items[:10])}</ul>
         <div class="oo-value-row" data-offeros-value-row><span>{html_text(first_value(data.get("normalValue"), fallback="Normally assembled across strategy, copy, design, and QA"))}</span><strong>{html_text(first_value(data.get("todayValue"), fallback=f"Today: {price}"))}</strong></div>
         <a class="oo-cta" data-offeros-cta data-offeros-stack-cta data-offeros-post-hero-cta href="{checkout}">{html_text(first_value(data.get("cta"), fallback="Get instant access"))}</a>
         <p data-offeros-access-copy>{html_text(first_value(data.get("accessCopy"), fallback="Instant access. Clear implementation path. Covered by the guarantee described below."))}</p>
@@ -454,8 +471,8 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
         <p class="oo-eyebrow">Fit check</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="This is for buyers who want the full selling sequence."))}</h2>
         <div class="oo-grid-2">
-          <article class="oo-card"><h3>For you if...</h3><ul>{list_items(fit)}</ul></article>
-          <article class="oo-card"><h3>Not for you if...</h3><ul>{list_items(not_fit)}</ul></article>
+          <article class="oo-card"><h3><span class="oo-icon" aria-hidden="true"><i data-lucide="user-check"></i></span>For you if...</h3><ul>{list_items(fit)}</ul></article>
+          <article class="oo-card"><h3><span class="oo-icon" aria-hidden="true"><i data-lucide="user-x"></i></span>Not for you if...</h3><ul>{list_items(not_fit)}</ul></article>
         </div>
       </div>
     </section>"""
@@ -494,7 +511,7 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
       <div class="oo-container">
         <p class="oo-eyebrow">Questions before you buy</p>
         <h2>{html_text(first_value(data.get("headline"), fallback="Questions before you decide"))}</h2>
-        {''.join(card(first_value(item.get('q'), fallback='Question'), first_value(item.get('a'), fallback='Answer'), 'data-offeros-faq-item') for item in faqs[:9])}
+        {''.join(card(first_value(item.get('q'), fallback='Question'), first_value(item.get('a'), fallback='Answer'), 'data-offeros-faq-item', 'circle-help') for item in faqs[:9])}
       </div>
     </section>"""
     if section_id == "final-cta":
@@ -586,7 +603,7 @@ def css(theme: dict) -> str:
     h2 {{ font-size: clamp(31px, 4.7vw, 54px); max-width: 980px; margin-left: auto; margin-right: auto; text-align: center; }}
     h3 {{ font-size: 22px; }}
     p {{ margin: 0 0 18px; color: inherit; }}
-    .oo-section > .oo-container > .oo-eyebrow, .oo-stack > .oo-container > .oo-eyebrow {{ margin-left: auto; margin-right: auto; }}
+    .oo-section > .oo-container > .oo-eyebrow, .oo-section > .oo-narrow > .oo-eyebrow, .oo-stack > .oo-container > .oo-eyebrow {{ display: flex; width: max-content; max-width: 100%; margin-left: auto; margin-right: auto; }}
     .oo-section > .oo-container > p, .oo-section > .oo-narrow > p {{ max-width: 900px; margin-left: auto; margin-right: auto; text-align: center; }}
     .oo-hero-copy {{ max-width: 780px; font-size: clamp(18px, 2.5vw, 23px); color: rgba(255,255,255,.86); }}
     .oo-vsl-frame {{ position: relative; width: min(980px, 100%); aspect-ratio: 16 / 9; margin: 34px auto 0; border: 8px solid rgba(255,255,255,.12); border-radius: 8px; overflow: hidden; background: #24312d; box-shadow: 0 28px 80px rgba(0,0,0,.36); }}
@@ -605,21 +622,22 @@ def css(theme: dict) -> str:
     .oo-card {{ position: relative; overflow: hidden; background: var(--oo-surface); color: var(--oo-ink); border: 1px solid rgba(0,0,0,.08); border-radius: 8px; padding: 24px; }}
     .oo-card::after {{ content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(180deg, var(--oo-accent), var(--oo-primary)); opacity: .72; }}
     .oo-card h3 {{ display: flex; align-items: center; gap: 10px; }}
-    .oo-card h3::before {{ content: ""; width: 20px; height: 20px; flex: 0 0 20px; border-radius: 8px; background: linear-gradient(135deg, var(--oo-accent), var(--oo-primary)); box-shadow: inset 0 0 0 5px rgba(255,255,255,.62); }}
+    .oo-icon, .oo-check-icon {{ display: inline-grid; place-items: center; width: 22px; height: 22px; flex: 0 0 22px; border-radius: 8px; background: linear-gradient(135deg, var(--oo-accent), var(--oo-primary)); color: #111; box-shadow: inset 0 0 0 5px rgba(255,255,255,.62); }}
+    .oo-icon i, .oo-icon svg, .oo-check-icon i, .oo-check-icon svg {{ width: 14px; height: 14px; stroke-width: 3; }}
     .oo-section-dark .oo-card {{ background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.14); }}
-    .oo-section-dark .oo-card h3::before {{ box-shadow: inset 0 0 0 5px rgba(17,24,39,.68); }}
-    .oo-support-visual {{ width: min(960px, 100%); margin: 34px auto; border: 1px solid rgba(0,0,0,.08); border-radius: 8px; overflow: hidden; background: var(--oo-surface); box-shadow: 0 18px 46px rgba(17,24,39,.08); }}
-    .oo-support-visual img {{ width: 100%; height: auto; max-height: 560px; object-fit: contain; }}
-    .oo-section-dark .oo-support-visual {{ border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.08); }}
+    .oo-section-dark .oo-icon, .oo-section-dark .oo-check-icon {{ box-shadow: inset 0 0 0 5px rgba(17,24,39,.68); }}
+    .oo-support-visual {{ display: block; width: fit-content; max-width: min(960px, 100%); margin: 34px auto; border: 0; border-radius: 8px; overflow: visible; background: transparent; box-shadow: none; }}
+    .oo-support-visual img {{ width: auto; max-width: 100%; height: auto; max-height: 560px; object-fit: contain; border: 1px solid rgba(0,0,0,.08); border-radius: 8px; box-shadow: 0 18px 46px rgba(17,24,39,.08); }}
+    .oo-section-dark .oo-support-visual {{ background: transparent; }}
+    .oo-section-dark .oo-support-visual img {{ border-color: rgba(255,255,255,.14); box-shadow: 0 22px 58px rgba(0,0,0,.28); }}
     .oo-table {{ width: 100%; border-collapse: collapse; margin-top: 24px; background: var(--oo-surface); border-radius: 8px; overflow: hidden; }}
     .oo-table th, .oo-table td {{ padding: 16px; border: 1px solid rgba(0,0,0,.1); text-align: left; vertical-align: top; }}
     .oo-table th {{ background: var(--oo-primary); color: #fff; }}
     .oo-stack {{ background: var(--oo-primary); color: #fff; text-align: center; }}
-    .oo-bundle {{ width: min(860px, 100%); max-height: 560px; object-fit: contain; margin: 30px auto; border-radius: 8px; background: rgba(255,255,255,.1); }}
+    .oo-bundle {{ width: auto; max-width: min(860px, 100%); max-height: 560px; object-fit: contain; margin: 30px auto; border-radius: 8px; border: 1px solid rgba(255,255,255,.16); box-shadow: 0 24px 70px rgba(0,0,0,.28); }}
     .oo-checklist {{ grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; list-style: none; text-align: left; }}
-    .oo-checklist li {{ position: relative; background: rgba(255,255,255,.12); border-radius: 8px; padding: 14px 14px 14px 46px; }}
-    .oo-checklist li::before {{ content: ""; position: absolute; left: 15px; top: 18px; width: 19px; height: 19px; border-radius: 999px; background: var(--oo-accent); }}
-    .oo-checklist li::after {{ content: ""; position: absolute; left: 22px; top: 21px; width: 5px; height: 10px; border: solid #111; border-width: 0 2px 2px 0; transform: rotate(45deg); }}
+    .oo-checklist li {{ display: flex; align-items: flex-start; gap: 11px; background: rgba(255,255,255,.12); border-radius: 8px; padding: 14px; }}
+    .oo-check-icon {{ width: 20px; height: 20px; flex-basis: 20px; border-radius: 999px; box-shadow: none; }}
     .oo-value-row {{ display: flex; justify-content: space-between; gap: 16px; align-items: center; max-width: 760px; margin: 24px auto; padding: 18px; background: rgba(0,0,0,.22); border-radius: 8px; }}
     .oo-faq .oo-card {{ margin-bottom: 14px; }}
     @media (max-width: 760px) {{
@@ -635,6 +653,14 @@ def css(theme: dict) -> str:
 
 def js() -> str:
     return """
+    function hydrateOfferOSIcons() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+    hydrateOfferOSIcons();
+    window.addEventListener('DOMContentLoaded', hydrateOfferOSIcons);
+    window.addEventListener('load', hydrateOfferOSIcons);
     document.querySelectorAll('[data-offeros-video-play]').forEach((button) => {
       button.addEventListener('click', () => {
         const caption = button.closest('[data-offeros-hero-video]')?.querySelector('[data-offeros-video-caption] span');
@@ -658,6 +684,7 @@ def render_page(root: Path, manifest: dict, blueprint: dict, theme: dict, partia
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html_text(offer)} Sales Page</title>
   <meta name="generator" content="OfferOS {BUILDER_VERSION}">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer data-offeros-icon-library="lucide"></script>
   <style data-offeros-page-kit-css>
 {css(theme)}
   </style>
@@ -795,7 +822,8 @@ def update_manifest(
             "themeTokensUsed": True,
             "orderFormIncluded": False,
             "navigationPolicy": "no-section-nav",
-            "iconSystem": "branded-icons-v1",
+            "iconSystem": "lucide-icons-v1",
+            "iconLibrary": "lucide",
             "imageDisplay": "viewport-constrained-v1",
             "vslSectionCommand": "overview-not-watch-first",
             "salesPageVisualCount": len(re.findall(r"<img\b", html_text_value, flags=re.I)),
