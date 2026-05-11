@@ -29,9 +29,55 @@
       "localPostprocess": ["crop", "logo-overlay", "headline-text"],
       "localCreativeOverlay": true,
       "status": "complete"
+    },
+    {
+      "id": "mechanism-diagram",
+      "title": "Mechanism Diagram",
+      "type": "image",
+      "category": "Images",
+      "path": "assets/page/mechanism-diagram.png",
+      "provenance": "generated-by-code",
+      "finalPixelsGeneratedBy": "local-script",
+      "localPostprocess": ["html-css-screenshot"],
+      "localCreativeOverlay": true,
+      "status": "complete"
+    },
+    {
+      "id": "sales-page",
+      "title": "Sales Page",
+      "type": "page",
+      "category": "Sales",
+      "path": "index.html",
+      "provenance": "generated-by-code",
+      "status": "complete"
     }
   ],
   "quality": {
+    "salesPage": {
+      "pageType": "direct-response-long-form-vsl",
+      "requiredSectionContract": "direct-response-v1",
+      "sectionMarkersPresent": true,
+      "sectionDepthChecked": true,
+      "repeatedTextChecked": true,
+      "offerStackItemsUnique": true,
+      "studio": "sales-page-studio-v1",
+      "framework": "modern-brunson-long-form-v1",
+      "pageFramework": "direct-response-long-form-v1",
+      "copyStudioUsed": true,
+      "copyPlanPath": "copy-plan.json",
+      "standaloneCopyRequired": true,
+      "copyBlueprintPresent": true,
+      "compositionContract": "direct-response-composition-v2",
+      "navigationPolicy": "no-section-nav",
+      "iconSystem": "lucide-icons-v1",
+      "iconLibrary": "lucide",
+      "imageDisplay": "viewport-constrained-v1",
+      "buyerFacingImagePolicy": "imagegen-final-or-provided-v1",
+      "pageVisualImagegenFinalRequired": true,
+      "localCreativeImageFallbackAllowed": false,
+      "eyebrowPolicy": "sparse-key-signposts-v1",
+      "eyebrowAlignment": "centered-with-section-heading"
+    },
     "images": {
       "imagegenNotUsedReason": ""
     }

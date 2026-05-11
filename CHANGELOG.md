@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.15.1
+
+- Closes the sales-page support-image loophole: every buyer-facing image rendered into `data-offeros-page-visual`, `data-offeros-video-thumbnail`, or `data-offeros-product-bundle` must be imagegen-final/provided/licensed.
+- Makes `build_sales_page.py` refuse local/code-made page visuals that exist on disk but are not registered with final imagegen provenance and no local creative overlay.
+- Extends visual planning so sales-page mechanism diagrams, comparison visuals, proof/demo visuals, structured panels, product reveals, offer stacks, and hero thumbnails are all imagegen-final jobs by default.
+- Adds regression coverage for code-rendered sales-page support images.
+
 ## 0.15.0
 
 - Hardens Copy Studio so `copy-plan.json.sectionPlan[].copyBlocks` must contain finished buyer-facing long-form sales copy, not scaffold notes.

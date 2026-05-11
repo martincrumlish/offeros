@@ -47,6 +47,10 @@ PRIMARY_CONVERSION_VISUAL_KINDS = {
     "product-mockup",
     "offer-stack-bundle",
     "buyer-situation-photo",
+    "comparison-visual",
+    "mechanism-diagram",
+    "proof-demo-visual",
+    "structured-panel",
     "ad-creative",
 }
 
@@ -96,7 +100,7 @@ def visual_row(kind: str, anchor: str, job: str, path: str, ratio: str, text_rul
         "localCreativeOverlay": False,
         "reusePermission": "artifact-specific",
         "artifactSpecific": True,
-        "generationPrompt": f"{kind} for {anchor}. {job}. Aspect ratio {ratio}; compose for the actual page slot and a content-hugging constrained frame, not a generic repeated 4:3 mockup. Final buyer-facing image must be produced by imagegen; do not add logo, text, UI cards, badges, mockups, overlays, or product-stack composition locally after imagegen. Avoid busy fake UI/mockup filler.{logo_prompt}",
+        "generationPrompt": f"{kind} for {anchor}. {job}. Aspect ratio {ratio}; compose for the actual page slot and a content-hugging constrained frame, not a generic repeated 4:3 mockup. Final buyer-facing image must be produced by imagegen; do not satisfy this row with a local Pillow/canvas/HTML/CSS/screenshot/code-rendered card. Do not add logo, text, UI cards, badges, mockups, overlays, or product-stack composition locally after imagegen. Avoid busy fake UI/mockup filler.{logo_prompt}",
     }
     if provenance == "imagegen-composite":
         row["imagegenNativeComposite"] = True

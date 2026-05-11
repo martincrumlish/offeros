@@ -122,6 +122,20 @@ IMAGEGEN_REQUIRED_CREATIVE_TERMS = {
     "vsl thumbnail",
     "buyer-situation-photo",
     "buyer situation photo",
+    "mechanism-diagram",
+    "mechanism diagram",
+    "failed-alternatives",
+    "failed alternatives",
+    "comparison-visual",
+    "comparison visual",
+    "proof-demo",
+    "proof demo",
+    "proof-demo-visual",
+    "before-after",
+    "before after",
+    "guarantee-badge",
+    "guarantee badge",
+    "support visual",
 }
 
 MAJOR_ARTIFACTS = [
@@ -219,6 +233,10 @@ IMAGEGEN_REQUIRED_VISUAL_KINDS = {
     "product-mockup",
     "offer-stack-bundle",
     "buyer-situation-photo",
+    "comparison-visual",
+    "mechanism-diagram",
+    "proof-demo-visual",
+    "structured-panel",
     "ad-creative",
 }
 
@@ -679,6 +697,36 @@ def validate_registered_creative_src(html_text: str, marker: str, label: str, by
         artifact = by_path.get(normalized)
         if not artifact:
             issues.append(f"{label} source must be registered in offer-os.json with imagegen provenance: {src}")
+            continue
+        for issue in primary_conversion_metadata_issues(artifact, label):
+            issues.append(f"{issue} Source: {src}")
+
+
+def image_sources_with_marker(html_text: str, marker: str) -> list[str]:
+    sources: list[str] = []
+    direct_pattern = rf"<img\b(?=[^>]*\b{re.escape(marker)}(?:\s|=|>))[^>]*\bsrc\s*=\s*[\"']([^\"']+)[\"'][^>]*>"
+    sources.extend(match.group(1).strip() for match in re.finditer(direct_pattern, html_text, flags=re.I | re.S))
+    wrapper_pattern = rf"<(?P<tag>[a-z][a-z0-9]*)\b(?=[^>]*\b{re.escape(marker)}(?:\s|=|>))[^>]*>.*?</(?P=tag)>"
+    for wrapper in re.finditer(wrapper_pattern, html_text, flags=re.I | re.S):
+        for src in re.findall(r"<img\b[^>]*\bsrc\s*=\s*[\"']([^\"']+)[\"']", wrapper.group(0), flags=re.I | re.S):
+            sources.append(src.strip())
+    seen = set()
+    unique = []
+    for src in sources:
+        if src not in seen:
+            unique.append(src)
+            seen.add(src)
+    return unique
+
+
+def validate_registered_creative_sources(html_text: str, marker: str, label: str, by_path: dict[str, dict], issues: list[str]) -> None:
+    for src in image_sources_with_marker(html_text, marker):
+        if not src or re.match(r"^(?:https?:|data:|#)", src, flags=re.I):
+            continue
+        normalized = src.split("?", 1)[0].split("#", 1)[0].lstrip("./").replace("\\", "/").lower()
+        artifact = by_path.get(normalized)
+        if not artifact:
+            issues.append(f"{label} source must be registered in offer-os.json with imagegen-final/provided/licensed provenance: {src}")
             continue
         for issue in primary_conversion_metadata_issues(artifact, label):
             issues.append(f"{issue} Source: {src}")
@@ -1529,6 +1577,12 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
             issues.append("Direct-response sales page must include Lucide icon markers via data-lucide.")
         if sales_quality.get("imageDisplay") != "viewport-constrained-v1":
             issues.append('Direct-response sales page quality metadata must record imageDisplay: viewport-constrained-v1.')
+        if sales_quality.get("buyerFacingImagePolicy") != "imagegen-final-or-provided-v1":
+            issues.append('Direct-response sales page quality metadata must record buyerFacingImagePolicy: imagegen-final-or-provided-v1.')
+        if sales_quality.get("pageVisualImagegenFinalRequired") is not True:
+            issues.append("Direct-response sales page quality metadata must confirm pageVisualImagegenFinalRequired.")
+        if sales_quality.get("localCreativeImageFallbackAllowed") is not False:
+            issues.append("Direct-response sales page quality metadata must confirm localCreativeImageFallbackAllowed: false.")
         if sales_quality.get("eyebrowPolicy") != "sparse-key-signposts-v1":
             issues.append('Direct-response sales page quality metadata must record eyebrowPolicy: sparse-key-signposts-v1.')
         if sales_quality.get("eyebrowAlignment") != "centered-with-section-heading":
@@ -1585,8 +1639,9 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
                 thin_sections.append(f"{section}: {words} words")
         if thin_sections:
             issues.append("Direct-response page has thin required sections: " + "; ".join(thin_sections[:8]))
-        validate_registered_creative_src(html_text, "data-offeros-product-bundle", "Sales-page product bundle image", by_path, issues)
-        validate_registered_creative_src(html_text, "data-offeros-video-thumbnail", "Hero/VSL thumbnail image", by_path, issues)
+        validate_registered_creative_sources(html_text, "data-offeros-page-visual", "Sales-page support visual image", by_path, issues)
+        validate_registered_creative_sources(html_text, "data-offeros-product-bundle", "Sales-page product bundle image", by_path, issues)
+        validate_registered_creative_sources(html_text, "data-offeros-video-thumbnail", "Hero/VSL thumbnail image", by_path, issues)
         validate_direct_response_page_contract(html_text, manifest, sales_quality, issues)
 
     repeated = repeated_sentences(visible_text)
@@ -2322,7 +2377,8 @@ def validate_images(manifest: dict, artifacts: list[dict], issues: list[str], wa
         if manifest.get("mode") == "deep" and provenance == "pil-generated":
             issues.append(
                 f"Pillow/PIL-generated image artifacts are not allowed in OfferOS deep runs: {artifact.get('id', rel_path)}. "
-                "Use imagegen-final for primary creative images or render diagrams in HTML/CSS without registering a PIL-authored image."
+                "Use imagegen-final for buyer-facing creative images. If a diagram is implemented as live HTML/CSS, "
+                "do not save/register it as an image and do not count it as a visual asset."
             )
         if generated_claim(artifact) and provenance not in {"imagegen", "imagegen-final", "imagegen-composite"}:
             issues.append(f"Artifact claims generated imagery without imagegen/imagegen-final/imagegen-composite provenance: {artifact.get('id', rel_path)}")

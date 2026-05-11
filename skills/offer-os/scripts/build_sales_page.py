@@ -59,6 +59,23 @@ EYEBROW_SECTIONS = {
     "guarantee": "Risk reversal",
 }
 EYEBROW_MAX_COUNT = len(EYEBROW_SECTIONS)
+BUYER_FACING_IMAGE_PROVENANCE = {
+    "imagegen-final",
+    "provided",
+    "licensed",
+}
+ALLOWED_IMAGEGEN_COMPOSITE_PROVENANCE = "imagegen-composite"
+ALLOWED_LOCAL_POSTPROCESS = {
+    "crop",
+    "resize",
+    "compression",
+    "compress",
+    "format-conversion",
+    "format conversion",
+    "format_conversion",
+    "non-creative-qa-fix",
+    "qa-fix",
+}
 
 
 def read_json(path: Path, default=None):
@@ -259,7 +276,6 @@ def block_context(root: Path, manifest: dict, blueprint: dict, theme: dict) -> d
             "assets/hero-vsl-thumbnail.png",
             "assets/page/hero-vsl-thumbnail.webp",
             "assets/hero-vsl-thumbnail.webp",
-            "assets/logo.png",
         ],
     )
     bundle_image = find_asset(
@@ -270,7 +286,6 @@ def block_context(root: Path, manifest: dict, blueprint: dict, theme: dict) -> d
             "assets/product-bundle.png",
             "assets/page/offer-stack-bundle.png",
             "assets/offer-stack-bundle.png",
-            hero_image,
         ],
     )
     assets = theme.get("assets", {}) if isinstance(theme.get("assets"), dict) else {}
@@ -351,6 +366,116 @@ def support_visual(src: str, alt: str, kind: str, anchor: str) -> str:
         f'<img src="{src}" alt="{html_text(alt)}">'
         "</figure>"
     )
+
+
+def artifact_path_map(manifest: dict) -> dict[str, dict]:
+    by_path = {}
+    for item in manifest.get("artifacts", []):
+        if not isinstance(item, dict):
+            continue
+        for key in ("path", "preview"):
+            value = as_text(item.get(key)).replace("\\", "/").strip().lower()
+            if value:
+                by_path.setdefault(value, item)
+    return by_path
+
+
+def list_field(value) -> list[str]:
+    if isinstance(value, list):
+        return [str(item).strip().lower() for item in value if str(item).strip()]
+    if isinstance(value, str):
+        cleaned = value.strip().strip("[]")
+        if not cleaned:
+            return []
+        return [item.strip().strip("\"'` ").lower() for item in re.split(r"[,;]", cleaned) if item.strip()]
+    return []
+
+
+def bool_field(value) -> bool | None:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "yes", "1"}:
+            return True
+        if lowered in {"false", "no", "0"}:
+            return False
+    return None
+
+
+def buyer_facing_image_metadata_issues(artifact: dict, src: str, label: str) -> list[str]:
+    provenance = as_text(artifact.get("provenance") or artifact.get("source/provenance")).lower()
+    issues: list[str] = []
+    if provenance in {"provided", "licensed"}:
+        return issues
+    if provenance == ALLOWED_IMAGEGEN_COMPOSITE_PROVENANCE:
+        if bool_field(artifact.get("imagegenNativeComposite")) is not True:
+            issues.append(f"{label} uses imagegen-composite without imagegenNativeComposite: true: {src}.")
+    elif provenance not in BUYER_FACING_IMAGE_PROVENANCE:
+        issues.append(f"{label} must use imagegen-final/provided/licensed provenance, not {provenance or 'missing'}: {src}.")
+    if as_text(artifact.get("finalPixelsGeneratedBy")).lower() != "imagegen":
+        issues.append(f"{label} must record finalPixelsGeneratedBy: imagegen: {src}.")
+    if bool_field(artifact.get("localCreativeOverlay")) is not False:
+        issues.append(f"{label} must record localCreativeOverlay: false: {src}.")
+    postprocess = list_field(artifact.get("localPostprocess"))
+    if not postprocess:
+        issues.append(f"{label} must record localPostprocess limited to crop/resize/compression/format-conversion: {src}.")
+    disallowed = sorted({item for item in postprocess if item not in ALLOWED_LOCAL_POSTPROCESS})
+    if disallowed:
+        issues.append(f"{label} localPostprocess contains creative operations ({', '.join(disallowed)}): {src}.")
+    return issues
+
+
+def img_sources_with_marker(html_text_value: str, marker: str) -> list[str]:
+    sources: list[str] = []
+    direct_pattern = rf"<img\b(?=[^>]*\b{re.escape(marker)}(?:\s|=|>))[^>]*\bsrc\s*=\s*[\"']([^\"']+)[\"'][^>]*>"
+    sources.extend(match.group(1).strip() for match in re.finditer(direct_pattern, html_text_value, flags=re.I | re.S))
+    wrapper_pattern = rf"<(?P<tag>[a-z][a-z0-9]*)\b(?=[^>]*\b{re.escape(marker)}(?:\s|=|>))[^>]*>.*?</(?P=tag)>"
+    for wrapper in re.finditer(wrapper_pattern, html_text_value, flags=re.I | re.S):
+        for src in re.findall(r"<img\b[^>]*\bsrc\s*=\s*[\"']([^\"']+)[\"']", wrapper.group(0), flags=re.I | re.S):
+            sources.append(src.strip())
+    seen = set()
+    unique = []
+    for src in sources:
+        if src not in seen:
+            unique.append(src)
+            seen.add(src)
+    return unique
+
+
+def local_image_src(src: str) -> str:
+    if not src or re.match(r"^(?:https?:|data:|#)", src, flags=re.I):
+        return ""
+    return src.split("?", 1)[0].split("#", 1)[0].lstrip("./").replace("\\", "/")
+
+
+def preflight_buyer_facing_images(root: Path, manifest: dict, html_text_value: str) -> None:
+    by_path = artifact_path_map(manifest)
+    checks = [
+        ("data-offeros-video-thumbnail", "Hero/VSL thumbnail"),
+        ("data-offeros-page-visual", "Sales-page support visual"),
+        ("data-offeros-product-bundle", "Sales-page product/offer bundle"),
+    ]
+    issues: list[str] = []
+    for marker, label in checks:
+        for src in img_sources_with_marker(html_text_value, marker):
+            rel = local_image_src(src)
+            if not rel:
+                continue
+            path = root / rel
+            if not path.exists():
+                continue
+            artifact = by_path.get(rel.lower())
+            if not artifact:
+                issues.append(f"{label} exists locally but is not registered with imagegen-final/provided/licensed metadata: {src}.")
+                continue
+            issues.extend(buyer_facing_image_metadata_issues(artifact, src, label))
+    if issues:
+        raise ValueError(
+            "Sales page builder refused buyer-facing local/code-made image assets. "
+            "Regenerate or edit these assets with imagegen and register imagegen-final metadata:\n- "
+            + "\n- ".join(issues[:12])
+        )
 
 
 def section_eyebrow(section_id: str, data: dict | None = None, fallback: str = "") -> str:
@@ -853,6 +978,9 @@ def update_manifest(
             "iconSystem": "lucide-icons-v1",
             "iconLibrary": "lucide",
             "imageDisplay": "viewport-constrained-v1",
+            "buyerFacingImagePolicy": "imagegen-final-or-provided-v1",
+            "pageVisualImagegenFinalRequired": True,
+            "localCreativeImageFallbackAllowed": False,
             "vslSectionCommand": "overview-not-watch-first",
             "eyebrowPolicy": EYEBROW_POLICY,
             "eyebrowAlignment": EYEBROW_ALIGNMENT,
@@ -893,6 +1021,7 @@ def main() -> int:
 
     html_page, used_partials = render_page(root, manifest, blueprint, theme, partials)
     html_page = "\n".join(line.rstrip() for line in html_page.splitlines()) + "\n"
+    preflight_buyer_facing_images(root, manifest, html_page)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(html_page, encoding="utf-8")
 
