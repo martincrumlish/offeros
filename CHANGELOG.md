@@ -1,8 +1,14 @@
 # Changelog
 
+## 0.14.1
+
+- Splits Copy Studio rendering so `copy.md` is the clean written long-form sales copy shown in delivery dashboards.
+- Moves the internal section blueprint, framework metadata, and copy map into `copy-blueprint.md`.
+- Updates visual planning, validation, self-tests, and instructions so downstream assets depend on `copy-plan.json`, `copy-blueprint.md`, `sales-page-blueprint.json`, and clean `copy.md` without polluting the sales-copy deliverable.
+
 ## 0.14.0
 
-- Adds Copy Studio as the mandatory deep-mode source of truth: `copy-plan.json` uses the `modern-brunson-long-form-v1` framework and renders `copy.md` plus `sales-page-blueprint.json`.
+- Adds Copy Studio as the mandatory deep-mode source of truth: `copy-plan.json` uses the `modern-brunson-long-form-v1` framework and renders `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json`.
 - Makes the written page argument standalone: VSL is optional support, while the copy plan must include hook, story/insight, new insight, unique mechanism, proof/demo, product reveal, feature-benefit breakdown, offer stack, guarantee, objections, and close.
 - Requires structured product reveal fields with feature, benefit, reason-it-matters, buyer problem solved, proof/preview, and plain-bullet copy for every core component.
 - Updates visual planning and sales-page generation to read Copy Studio output first, record Copy Studio metadata, and keep visual planning after the copy/content blueprint.

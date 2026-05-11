@@ -9,7 +9,7 @@ Generate assets in dependency order. Earlier assets define constraints for later
 3. Single final logo lockup
 4. Product outline and offer stack
 5. `copy-plan.json` from Copy Studio
-6. Rendered sales copy and section-by-section copy blueprint
+6. Clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`
 7. `visual-asset-plan.md` v2 anchored to Copy Studio
 8. Sales page graphics
 9. Sales page structure/build
@@ -44,7 +44,7 @@ Deep mode should include at least:
 
 ## Visual Asset Plan
 
-Create `visual-asset-plan.md` v2 after `copy-plan.json`, rendered `copy.md`, and the sales-page section blueprint exist and before building sales-page graphics, the PDF product, ad images, the VSL deck, or the delivery dashboard.
+Create `visual-asset-plan.md` v2 after `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` exist and before building sales-page graphics, the PDF product, ad images, the VSL deck, or the delivery dashboard.
 
 The plan must split visuals into:
 
@@ -90,7 +90,7 @@ When agents are authorized, dispatch imagegen visual workers immediately after t
 - VSL visuals: `output/presentation/assets/`
 - ad visuals: `assets/ads/`
 
-Use the same `design.md`, `copy-plan.json`, `copy.md`, frozen final `assets/logo.png`, and visual plan as references for every worker. Do not give workers any other logo image, old logo attempt, rejected logo attempt, or `logo-mark` alternative as a style reference.
+Use the same `design.md`, `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, `sales-page-blueprint.json`, frozen final `assets/logo.png`, and visual plan as references for every worker. Do not give workers any other logo image, old logo attempt, rejected logo attempt, or `logo-mark` alternative as a style reference.
 
 ## Dependencies
 
@@ -139,7 +139,7 @@ After the final logo is accepted, freeze the brand lockup:
 
 ### Copy Studio Blueprint
 
-Required before page-specific graphics, VSL visuals, ad angles, and checkout graphics. `copy-plan.json` and rendered `copy.md` define the sales-page sections, objections, proof jobs, CTAs, visual blocks, `copyAnchor` values, and suggested `visualKind` values.
+Required before page-specific graphics, VSL visuals, ad angles, and checkout graphics. `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` define the sales-page sections, objections, proof jobs, CTAs, visual blocks, `copyAnchor` values, and suggested `visualKind` values.
 
 ### Product Bundle
 

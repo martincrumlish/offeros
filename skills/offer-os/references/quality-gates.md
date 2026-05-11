@@ -86,7 +86,7 @@ Fails if:
 
 ## Visual Asset Plan Gate
 
-Deep generated-design runs must create `visual-asset-plan.md` v2 after `copy-plan.json`, rendered `copy.md`, and the sales-page section blueprint exist and before artifact production. The plan must split visuals by artifact instead of treating sales-page imagery as the default pool.
+Deep generated-design runs must create `visual-asset-plan.md` v2 after `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` exist and before artifact production. The plan must split visuals by artifact instead of treating sales-page imagery as the default pool.
 
 Must include:
 

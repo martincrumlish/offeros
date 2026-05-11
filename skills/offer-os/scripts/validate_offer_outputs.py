@@ -37,6 +37,7 @@ DEEP_REQUIRED_IDS = [
     "design-guide",
     "logo",
     "copy-plan",
+    "copy-blueprint",
     "visual-asset-plan",
     "sales-copy",
     "sales-page-blueprint",
@@ -217,6 +218,23 @@ IMAGEGEN_REQUIRED_VISUAL_KINDS = {
 }
 
 REQUIRED_COPY_HEADINGS = [
+    "## Big Promise",
+    "## Problem Diagnosis",
+    "## Failed Alternatives",
+    "## Epiphany / New Insight",
+    "## Unique Mechanism",
+    "## Proof Or Demonstration",
+    "## Product Reveal",
+    "## Feature-Benefit Breakdown",
+    "## How It Works",
+    "## Offer Stack",
+    "## Pricing And Value",
+    "## Guarantee",
+    "## FAQ",
+    "## Final Close",
+]
+
+REQUIRED_COPY_BLUEPRINT_HEADINGS = [
     "# Sales Page Type",
     "# Section Blueprint",
     "# Hero",
@@ -1219,27 +1237,46 @@ def validate_sales_copy(root: Path, manifest: dict, by_id: dict[str, dict], issu
     copy_artifact = by_id.get("sales-copy")
     copy_path = artifact_path(root, copy_artifact) or (root / "copy.md")
     if not copy_path or not copy_path.exists():
-        issues.append("Sales copy missing; copy.md with # Section Blueprint is required before visual planning or page build.")
+        issues.append("Sales copy missing; clean written copy.md is required before visual planning or page build.")
         return
     if copy_artifact and copy_artifact.get("provenance") != COPY_STUDIO_VERSION:
         issues.append("copy.md exists but sales-copy artifact provenance is not copy-studio-v1; render it from Copy Studio.")
     if copy_quality.get("copyPath") and not (root / str(copy_quality.get("copyPath"))).exists():
         issues.append("Copy quality metadata copyPath does not exist.")
+    if copy_quality.get("copyBlueprintPath") and not (root / str(copy_quality.get("copyBlueprintPath"))).exists():
+        issues.append("Copy quality metadata copyBlueprintPath does not exist.")
+    if copy_quality.get("copyIsCustomerFacing") is not True:
+        issues.append("Copy quality metadata must record copyIsCustomerFacing: true.")
 
     text = text_for(copy_path)
     lower = text.lower()
     missing_headings = [heading for heading in REQUIRED_COPY_HEADINGS if heading.lower() not in lower]
     if missing_headings:
         issues.append("Sales copy missing required direct-response headings: " + ", ".join(missing_headings))
+    if "# section blueprint" in lower or "| sectionid |" in lower:
+        issues.append("copy.md must be clean written sales copy only; put Copy Studio section tables in copy-blueprint.md.")
 
-    blueprint = markdown_top_section(text, "# Section Blueprint")
+    copy_blueprint_artifact = by_id.get("copy-blueprint")
+    copy_blueprint_path = artifact_path(root, copy_blueprint_artifact) or (root / "copy-blueprint.md")
+    if not copy_blueprint_path or not copy_blueprint_path.exists():
+        issues.append("Copy blueprint missing; copy-blueprint.md with # Section Blueprint is required before visual planning or page build.")
+        return
+    if copy_blueprint_artifact and copy_blueprint_artifact.get("provenance") != COPY_STUDIO_VERSION:
+        issues.append("copy-blueprint.md exists but copy-blueprint artifact provenance is not copy-studio-v1; render it from Copy Studio.")
+
+    blueprint_text = text_for(copy_blueprint_path)
+    blueprint_lower_full = blueprint_text.lower()
+    missing_blueprint_headings = [heading for heading in REQUIRED_COPY_BLUEPRINT_HEADINGS if heading.lower() not in blueprint_lower_full]
+    if missing_blueprint_headings:
+        issues.append("Copy blueprint missing required headings: " + ", ".join(missing_blueprint_headings))
+    blueprint = markdown_top_section(blueprint_text, "# Section Blueprint")
     if not blueprint.strip():
-        issues.append("Sales copy must include # Section Blueprint before page build.")
+        issues.append("Copy blueprint must include # Section Blueprint before page build.")
         return
 
     missing_fields = [field for field in REQUIRED_BLUEPRINT_FIELDS if field.lower() not in blueprint.lower()]
     if missing_fields:
-        issues.append("Sales copy Section Blueprint missing required fields: " + ", ".join(missing_fields))
+        issues.append("Copy blueprint Section Blueprint missing required fields: " + ", ".join(missing_fields))
 
     blueprint_lower = blueprint.lower()
     missing_sections = [
@@ -1248,17 +1285,17 @@ def validate_sales_copy(root: Path, manifest: dict, by_id: dict[str, dict], issu
         if section != "footer" and not re.search(rf"\b{re.escape(section)}\b", blueprint_lower)
     ]
     if missing_sections:
-        issues.append("Sales copy Section Blueprint missing required section rows: " + ", ".join(missing_sections))
+        issues.append("Copy blueprint Section Blueprint missing required section rows: " + ", ".join(missing_sections))
 
-    if COPY_FRAMEWORK not in lower:
-        issues.append(f"Sales copy must record copyFramework: {COPY_FRAMEWORK}.")
-    if "direct-response-long-form-v1" not in lower:
-        issues.append("Sales copy must record pageFramework: direct-response-long-form-v1.")
+    if COPY_FRAMEWORK not in blueprint_lower_full:
+        issues.append(f"Copy blueprint must record copyFramework: {COPY_FRAMEWORK}.")
+    if "direct-response-long-form-v1" not in blueprint_lower_full:
+        issues.append("Copy blueprint must record pageFramework: direct-response-long-form-v1.")
     if "proof" in blueprint_lower and "offer-stack" in blueprint_lower:
         proof_pos = blueprint_lower.find("proof")
         stack_pos = blueprint_lower.find("offer-stack")
         if stack_pos >= 0 and proof_pos >= 0 and proof_pos > stack_pos:
-            issues.append("Sales copy Section Blueprint must place proof/demo before offer-stack.")
+            issues.append("Copy blueprint Section Blueprint must place proof/demo before offer-stack.")
     if copy_plan:
         row_ids = [copy_as_text(row.get("sectionId")) for row in copy_plan_section_rows(copy_plan)]
         for required in ["new-insight", "mechanism", "proof", "product", "feature-benefit", "how-it-works", "offer-stack"]:
@@ -2088,10 +2125,10 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
             + "; ".join(logo_prompt_leaks[:5])
         )
 
-    sales_copy = by_id.get("sales-copy")
-    sales_copy_path = artifact_path(root, sales_copy)
-    if not sales_copy_path or not sales_copy_path.exists():
-        issues.append("Visual asset plan v2 requires copy.md/sales-copy with a section blueprint before visual planning.")
+    copy_blueprint = by_id.get("copy-blueprint")
+    copy_blueprint_path = artifact_path(root, copy_blueprint) or (root / "copy-blueprint.md")
+    if not copy_blueprint_path or not copy_blueprint_path.exists():
+        issues.append("Visual asset plan v2 requires copy-blueprint.md with a section blueprint before visual planning.")
 
     for token, label in {
         "visualplanstage:post-content-blueprint": "visualPlanStage: post-content-blueprint",

@@ -1,6 +1,10 @@
 # Copy Plan Contract
 
-`copy-plan.json` is the canonical Copy Studio source. Codex authors it; `scripts/build_copy.py` validates and renders it into `copy.md` plus `sales-page-blueprint.json`.
+`copy-plan.json` is the canonical Copy Studio source. Codex authors it; `scripts/build_copy.py` validates and renders it into clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`.
+
+`copy.md` is the actual long-form sales copy shown in the delivery dashboard. It must read like written sales copy, not a framework document, schema dump, or planning table.
+
+`copy-blueprint.md` keeps the internal section blueprint, framework metadata, and copy-rendering map. Do not put those tables in `copy.md`.
 
 Required metadata:
 

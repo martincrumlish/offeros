@@ -33,6 +33,7 @@ SOURCE_CHECKS = [
             "VSL preview mobile",
             "qa-notes.md",
             "Create `copy-plan.json` before `copy.md`, then run `scripts/build_copy.py`.",
+            "clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json`",
         ],
     },
     {
@@ -170,8 +171,9 @@ SOURCE_CHECKS = [
             "optional-supporting-asset",
             "scripts/build_copy.py",
             "references/direct-response-framework.md",
-            "`copy.md` must include these exact headings",
+            "`copy-blueprint.md` must include these exact headings",
             "# Section Blueprint",
+            "`copy.md` must be clean written long-form sales copy only",
             "direct-response-long-form-v1",
             "framework: \"modern-brunson-long-form-v1\"",
             "pageFramework: \"direct-response-long-form-v1\"",
@@ -367,7 +369,7 @@ SOURCE_CHECKS = [
             "compositionContract",
             "stacked-vsl-hero-v2",
             "direct-response-long-form-v1",
-            "Sales copy Section Blueprint",
+            "Copy blueprint Section Blueprint",
             "Direct-response page sections must follow the required persuasion order",
             "Direct-response proof/demo section must appear before the main offer stack",
             "heroLayout: stacked-vsl",
@@ -417,7 +419,7 @@ SOURCE_CHECKS = [
         "path": "references/agent-dispatch.md",
         "needles": [
             "### Imagegen Visual Workers",
-            "after the initial offer architecture, `design.md`, final logo lockup, `assets/logo.png`, `copy-plan.json`, rendered `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist",
+            "after the initial offer architecture, `design.md`, final logo lockup, `assets/logo.png`, `copy-plan.json`, clean `copy.md`, internal `copy-blueprint.md`, `sales-page-blueprint.json`, and `visual-asset-plan.md` v2 exist",
             "copyAnchor",
             "visualKind",
             "mixed-direct-response-v1",
@@ -496,7 +498,7 @@ def bad_workspace_check(workspace: Path) -> dict:
 
 def synthetic_visual_plan_regression() -> dict:
     expected = [
-        "Visual asset plan v2 requires copy.md/sales-copy",
+        "Visual asset plan v2 requires copy-blueprint.md",
         "Visual asset plan metadata must include visualPlanStage: post-content-blueprint.",
         "Visual asset plan metadata must include copyStudioUsed: true.",
         "Visual asset plan metadata must include copyPlanPath: copy-plan.json.",
@@ -534,9 +536,10 @@ def synthetic_copy_studio_regression() -> dict:
         "urgencyBasis.fakeUrgency must be false.",
         "sectionPlan must place proof before offer-stack.",
         "copy.md exists but sales-copy artifact provenance is not copy-studio-v1",
+        "Copy blueprint missing",
         "Copy quality metadata must record studio: copy-studio-v1.",
-        "Product reveal component 1 lacks benefit or reasonItMatters.",
-        "Offer stack item 1 lacks buyer-facing value logic.",
+        "productReveal.coreComponents[1] missing benefit.",
+        "offerStack.items[1] must include title and buyer-facing value copy.",
     ]
     workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-copy-studio"
     payload = run_validator(workspace)
@@ -582,7 +585,7 @@ def synthetic_two_column_hero_regression() -> dict:
 
 def synthetic_product_page_regression() -> dict:
     expected = [
-        "Sales copy must include # Section Blueprint before page build.",
+        "Copy blueprint missing",
         "Direct-response page sections must follow the required persuasion order",
         "Direct-response proof/demo section must appear before the main offer stack.",
         "Direct-response page has thin required sections",

@@ -133,10 +133,11 @@ def markdown_rows(rows: list[dict]) -> str:
 
 
 def copy_blueprint_exists(root: Path) -> bool:
-    copy_path = root / "copy.md"
-    if not copy_path.exists():
+    copy_blueprint_path = root / "copy-blueprint.md"
+    sales_page_blueprint_path = root / "sales-page-blueprint.json"
+    if not copy_blueprint_path.exists() or not sales_page_blueprint_path.exists():
         return False
-    text = copy_path.read_text(encoding="utf-8", errors="ignore").lower()
+    text = copy_blueprint_path.read_text(encoding="utf-8", errors="ignore").lower()
     return "# section blueprint" in text and bool(re.search(r"\bsectionid\b", text))
 
 
@@ -196,7 +197,7 @@ def build_plan(root: Path, manifest: dict) -> dict:
         "logoUsagePolicy": "use-locked-logo-reference",
         "alternateLogosCreated": False,
         "mockupHeavyUserRequested": False,
-        "sourceBlueprints": ["copy-plan.json", "copy.md", "workbook/workbook-blueprint.json", "presentation/vsl-deck-plan.json", "facebook-ads.md"],
+        "sourceBlueprints": ["copy-plan.json", "copy-blueprint.md", "sales-page-blueprint.json", "copy.md", "workbook/workbook-blueprint.json", "presentation/vsl-deck-plan.json", "facebook-ads.md"],
         "globalBrandAssets": [
             visual_row(
                 "brand-frame",
@@ -235,7 +236,7 @@ def write_markdown(path: Path, plan: dict) -> None:
         f"- logoUsagePolicy: {plan['logoUsagePolicy']}",
         f"- alternateLogosCreated: {str(plan['alternateLogosCreated']).lower()}",
         f"- mockupHeavyUserRequested: {str(plan['mockupHeavyUserRequested']).lower()}",
-        "- sourceBlueprints: copy.md, product blueprint/page archetypes, VSL slide plan, ad angle map",
+        "- sourceBlueprints: copy-plan.json, copy-blueprint.md, sales-page-blueprint.json, copy.md, product blueprint/page archetypes, VSL slide plan, ad angle map",
         "",
         "## Global Brand Assets",
         "",
@@ -332,7 +333,7 @@ def main() -> int:
     write_markdown(root / "visual-asset-plan.md", plan)
     update_manifest(root, manifest, plan)
     if not plan["copyBlueprintUsed"]:
-        print("Created visual plan, but copyBlueprintUsed=false. Build copy.md with # Section Blueprint before image generation.")
+        print("Created visual plan, but copyBlueprintUsed=false. Build copy-blueprint.md and sales-page-blueprint.json before image generation.")
         return 2
     print("Created visual-asset-plan.json and visual-asset-plan.md")
     return 0

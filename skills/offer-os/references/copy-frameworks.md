@@ -90,7 +90,7 @@ Structure:
 - FAQ / objections
 - final close
 
-This framework produces `copy-plan.json` first, then `scripts/build_copy.py` renders `copy.md` and `sales-page-blueprint.json`. The written page must stand alone without the VSL.
+This framework produces `copy-plan.json` first, then `scripts/build_copy.py` renders clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`. The written page must stand alone without the VSL.
 
 ## Problem-Mechanism-Proof-Offer
 

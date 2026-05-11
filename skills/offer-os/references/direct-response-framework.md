@@ -48,7 +48,7 @@ Copy Studio adds the Modern Brunson layer before page rendering:
 
 ## Copy Blueprint Schema
 
-Before `index.html` or `visual-asset-plan.md`, `copy.md` must include `# Section Blueprint` with one row per required page section.
+Before `index.html` or `visual-asset-plan.md`, `copy-blueprint.md` must include `# Section Blueprint` with one row per required page section. `copy.md` must remain the clean written sales copy.
 
 Each row must contain:
 

@@ -300,7 +300,7 @@ def markdown_section(title: str, lines: list[str]) -> list[str]:
     return [f"# {title}", "", *[line for line in lines if line is not None], ""]
 
 
-def render_copy_markdown(plan: dict) -> str:
+def render_copy_blueprint_markdown(plan: dict) -> str:
     by_section = section_by_id(plan)
     product = plan["productReveal"]
     mechanism = plan["uniqueMechanism"]
@@ -518,6 +518,138 @@ def render_copy_markdown(plan: dict) -> str:
     return "\n".join(lines)
 
 
+def section_title(section_id: str) -> str:
+    return {
+        "hero": "Big Promise",
+        "vsl": "Short Breakdown Setup",
+        "problem": "Problem Diagnosis",
+        "agitation": "Cost Of Staying Stuck",
+        "failed-alternatives": "Failed Alternatives",
+        "new-insight": "Epiphany / New Insight",
+        "mechanism": "Unique Mechanism",
+        "proof": "Proof Or Demonstration",
+        "before-after": "Before And After",
+        "product": "Product Reveal",
+        "feature-benefit": "Feature-Benefit Breakdown",
+        "how-it-works": "How It Works",
+        "offer-stack": "Offer Stack",
+        "bonuses": "Bonuses / Accelerators",
+        "pricing": "Pricing And Value",
+        "guarantee": "Guarantee",
+        "fit": "Who It Is For",
+        "faq": "FAQ",
+        "final-cta": "Final Close",
+    }.get(section_id, section_id.replace("-", " ").title())
+
+
+def render_copy_blocks(row: dict) -> list[str]:
+    lines: list[str] = []
+    for block in list_of_dicts(row.get("copyBlocks")):
+        block_type = as_text(block.get("type"))
+        text = as_text(block.get("text"))
+        if not text:
+            continue
+        if block_type == "headline":
+            lines.extend([text, ""])
+        elif block_type == "prehead":
+            lines.extend([text.upper(), ""])
+        elif block_type == "bullet":
+            lines.append(f"- {text}")
+        elif block_type == "cta":
+            lines.extend(["", f"CTA: {text}", ""])
+        elif block_type in {"question", "answer"}:
+            lines.extend([text, ""])
+        else:
+            lines.extend([text, ""])
+    return lines
+
+
+def render_sales_copy_markdown(plan: dict) -> str:
+    by_section = section_by_id(plan)
+    product = plan["productReveal"]
+    mechanism = plan["uniqueMechanism"]
+    proof = plan["proofPlan"]
+    offer_stack = plan["offerStack"]
+    guarantee = plan["guarantee"]
+    value_logic = plan["valueLogic"]
+    urgency = plan["urgencyBasis"]
+    lines: list[str] = [
+        f"# {plan['offerName']} Sales Copy",
+        "",
+        f"For {plan['audience']}.",
+        "",
+    ]
+
+    for section_id in COPY_SPINE_SECTIONS:
+        row = by_section.get(section_id, {})
+        lines.extend([f"## {section_title(section_id)}", ""])
+        rendered = render_copy_blocks(row)
+        if rendered:
+            lines.extend(rendered)
+
+        if section_id == "failed-alternatives":
+            for item in plan["failedAlternatives"]:
+                lines.append(f"- {item['name']}: {item['whyItFails']} What is needed instead: {item['whatIsNeededInstead']}")
+            lines.append("")
+        elif section_id == "new-insight":
+            lines.extend([plan["newInsight"], ""])
+        elif section_id == "mechanism":
+            lines.extend([f"{mechanism['name']}: {mechanism['explanation']}", "", mechanism["whyItWorks"], ""])
+            for step in mechanism["steps"]:
+                lines.append(f"- {value_item_title(step)}: {value_item_copy(step)}")
+            lines.append("")
+        elif section_id == "proof":
+            for item in proof["proofItems"]:
+                lines.append(f"- {value_item_title(item)}: {value_item_copy(item)}")
+            lines.append("")
+        elif section_id == "product":
+            lines.extend(
+                [
+                    product["plainEnglishDescription"],
+                    "",
+                    f"Who it is for: {product['whoItIsFor']}",
+                    "",
+                    f"What it helps them do: {product['whatItHelpsThemDo']}",
+                    "",
+                    f"Why now: {product['whyNow']}",
+                    "",
+                ]
+            )
+        elif section_id == "feature-benefit":
+            for component in product["coreComponents"]:
+                lines.append(f"- {component['feature']}: {component['plainBullet']} Benefit: {component['benefit']} Reason it matters: {component['reasonItMatters']}")
+            lines.append("")
+        elif section_id == "how-it-works":
+            for step in product["howItWorksSteps"]:
+                lines.append(f"- {value_item_title(step)}: {value_item_copy(step)}")
+            lines.extend(["", "Look inside proof:", ""])
+            for item in product["lookInsideProof"]:
+                lines.append(f"- {value_item_title(item)}: {value_item_copy(item)}")
+            lines.extend(["", product["differenceFromAlternatives"], "", product["bridgeToOfferStack"], ""])
+        elif section_id == "offer-stack":
+            for item in offer_stack["items"]:
+                value = as_text(item.get("value"))
+                suffix = f" ({value})" if value else ""
+                lines.append(f"- {value_item_title(item)}{suffix}: {value_item_copy(item)}")
+            lines.extend(["", f"CTA: {offer_stack['cta']}", offer_stack["accessCopy"], ""])
+        elif section_id == "bonuses":
+            for item in list_of_dicts(plan.get("bonuses")):
+                lines.append(f"- {value_item_title(item)}: {value_item_copy(item)}")
+            lines.append("")
+        elif section_id == "pricing":
+            lines.extend([value_logic["comparison"], "", value_logic["priceJustification"], "", f"Today price: {value_logic['todayPrice']}", ""])
+        elif section_id == "guarantee":
+            lines.extend([f"{guarantee['name']}: {guarantee['terms']} {guarantee['reassurance']}", ""])
+        elif section_id == "faq":
+            for item in plan["objectionMatrix"]:
+                lines.extend([f"### {item['objection']}", "", item["answer"], ""])
+        elif section_id == "final-cta":
+            if urgency.get("type") != "none":
+                lines.extend(["Urgency:", urgency.get("description", ""), ""])
+
+    return "\n".join(line.rstrip() for line in lines).strip() + "\n"
+
+
 def page_section_copy(plan: dict, section_id: str) -> dict:
     row = section_by_id(plan).get(section_id, {})
     data: dict = {}
@@ -677,7 +809,7 @@ def upsert_artifact(manifest: dict, artifact: dict) -> None:
     artifacts.append(artifact)
 
 
-def update_manifest(manifest: dict, copy_path: str, copy_plan_path: str, blueprint_path: str, plan: dict) -> dict:
+def update_manifest(manifest: dict, copy_path: str, copy_blueprint_path: str, copy_plan_path: str, blueprint_path: str, plan: dict) -> dict:
     now = datetime.now(timezone.utc).isoformat()
     upsert_artifact(
         manifest,
@@ -703,7 +835,22 @@ def update_manifest(manifest: dict, copy_path: str, copy_plan_path: str, bluepri
             "category": "Sales",
             "path": copy_path,
             "preview": copy_path,
-            "description": "Rendered copy.md from Copy Studio source.",
+            "description": "Clean written long-form sales copy rendered from Copy Studio source.",
+            "status": "complete",
+            "provenance": STUDIO_VERSION,
+            "updatedAt": now,
+        },
+    )
+    upsert_artifact(
+        manifest,
+        {
+            "id": "copy-blueprint",
+            "title": "Copy Blueprint",
+            "type": "source",
+            "category": "Sales",
+            "path": copy_blueprint_path,
+            "preview": copy_blueprint_path,
+            "description": "Copy Studio blueprint, section map, and rendering contract.",
             "status": "complete",
             "provenance": STUDIO_VERSION,
             "updatedAt": now,
@@ -738,6 +885,8 @@ def update_manifest(manifest: dict, copy_path: str, copy_plan_path: str, bluepri
             "vslDependency": "optional-supporting-asset",
             "copyPlanPath": copy_plan_path,
             "copyPath": copy_path,
+            "copyBlueprintPath": copy_blueprint_path,
+            "copyIsCustomerFacing": True,
             "salesPageBlueprintPath": blueprint_path,
             "hasNewInsight": bool(as_text(plan.get("newInsight"))),
             "hasUniqueMechanism": bool(as_text(plan.get("uniqueMechanism", {}).get("name"))),
@@ -762,7 +911,8 @@ def main() -> int:
     parser.add_argument("--workspace", default=".", help="Offer project root.")
     parser.add_argument("--manifest", default="offer-os.json", help="Manifest path relative to workspace.")
     parser.add_argument("--copy-plan", default="copy-plan.json", help="Copy plan JSON path relative to workspace.")
-    parser.add_argument("--copy-output", default="copy.md", help="Rendered copy Markdown path relative to workspace.")
+    parser.add_argument("--copy-output", default="copy.md", help="Clean written sales-copy Markdown path relative to workspace.")
+    parser.add_argument("--copy-blueprint-output", default="copy-blueprint.md", help="Rendered Copy Studio blueprint Markdown path relative to workspace.")
     parser.add_argument("--blueprint-output", default="sales-page-blueprint.json", help="Generated sales-page blueprint path relative to workspace.")
     parser.add_argument("--no-write", action="store_true", help="Validate only; do not write rendered artifacts.")
     args = parser.parse_args()
@@ -771,6 +921,7 @@ def main() -> int:
     manifest_path = root / args.manifest
     copy_plan_path = root / args.copy_plan
     copy_output_path = root / args.copy_output
+    copy_blueprint_output_path = root / args.copy_blueprint_output
     blueprint_output_path = root / args.blueprint_output
 
     manifest = read_json(manifest_path)
@@ -780,22 +931,26 @@ def main() -> int:
         for issue in issues:
             print(issue)
         return 1
-    copy_markdown = render_copy_markdown(plan)
+    copy_markdown = render_sales_copy_markdown(plan)
+    copy_blueprint_markdown = render_copy_blueprint_markdown(plan)
     blueprint = build_sales_page_blueprint(plan)
     if args.no_write:
-        print(json.dumps({"ok": True, "issues": [], "copyPath": args.copy_output, "blueprintPath": args.blueprint_output}, indent=2))
+        print(json.dumps({"ok": True, "issues": [], "copyPath": args.copy_output, "copyBlueprintPath": args.copy_blueprint_output, "blueprintPath": args.blueprint_output}, indent=2))
         return 0
     copy_output_path.write_text(copy_markdown, encoding="utf-8")
+    copy_blueprint_output_path.write_text(copy_blueprint_markdown, encoding="utf-8")
     write_json(blueprint_output_path, blueprint)
     manifest = update_manifest(
         manifest,
         args.copy_output.replace("\\", "/"),
+        args.copy_blueprint_output.replace("\\", "/"),
         args.copy_plan.replace("\\", "/"),
         args.blueprint_output.replace("\\", "/"),
         plan,
     )
     write_json(manifest_path, manifest)
     print(f"Built {copy_output_path}")
+    print(f"Built {copy_blueprint_output_path}")
     print(f"Built {blueprint_output_path}")
     print(f"Updated {manifest_path}")
     return 0

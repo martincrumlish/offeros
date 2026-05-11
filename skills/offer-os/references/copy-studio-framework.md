@@ -1,10 +1,12 @@
 # Copy Studio Framework
 
-Copy Studio is the source of truth for the sales argument. In deep mode, create `copy-plan.json` before `copy.md`, `sales-page-blueprint.json`, visual planning, or page generation.
+Copy Studio is the source of truth for the sales argument. In deep mode, create `copy-plan.json` before clean `copy.md`, internal `copy-blueprint.md`, `sales-page-blueprint.json`, visual planning, or page generation.
 
 Use `framework: "modern-brunson-long-form-v1"`.
 
 The default page copy must stand alone even if the VSL is removed or replaced with a static image. Record `standaloneCopyRequired: true` and `vslDependency: "optional-supporting-asset"`.
+
+`copy.md` is the actual written sales copy used for the delivery dashboard. `copy-blueprint.md` is the internal framework and section map. Do not put the `# Section Blueprint` table in `copy.md`.
 
 ## Modern Brunson Long-Form Spine
 

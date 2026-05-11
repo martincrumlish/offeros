@@ -110,13 +110,13 @@ The logo is a placeholder, icon-only mark, illustrative/page-curl/app-icon mark,
 For weak sales-page structure:
 
 ```text
-The sales page is too short/product-page-like or reads as a wall of text. Load direct-response-framework.md, select direct-response-long-form-vsl, then rewrite copy.md with # Section Blueprint and rebuild index.html to include the full message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo before the buy box, before/after, product reveal, offer stack, price, guarantee, objection, and close arc. Keep VSL setup short, paragraphs under 55 words, and use tables/callouts/checklists instead of generic essay sections.
+The sales page is too short/product-page-like or reads as a wall of text. Load direct-response-framework.md, select direct-response-long-form-vsl, then rewrite copy-plan.json and run build_copy.py so copy.md is clean written sales copy while copy-blueprint.md contains # Section Blueprint. Rebuild index.html to include the full message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo before the buy box, before/after, product reveal, offer stack, price, guarantee, objection, and close arc. Keep VSL setup short, paragraphs under 55 words, and use tables/callouts/checklists instead of generic essay sections.
 ```
 
 For weak or random sales-page visuals:
 
 ```text
-The sales-page visuals are too random, busy, or mockup-heavy. Rebuild the visual plan after copy.md: use visualPlanStage post-content-blueprint, anchor each sales-page visual to a real copyAnchor/data-offeros-section, use salesPageImageSystem mixed-direct-response-v1, keep mockups mainly for product reveal/offer stack/dashboard, and use diagrams, comparisons, proof/demo visuals, structured panels, screenshots, or restrained buyer-situation imagery for mechanism, failed alternatives, proof, objections, and feature specifics.
+The sales-page visuals are too random, busy, or mockup-heavy. Rebuild the visual plan after copy-plan.json, clean copy.md, copy-blueprint.md, and sales-page-blueprint.json exist: use visualPlanStage post-content-blueprint, anchor each sales-page visual to a real copyAnchor/data-offeros-section, use salesPageImageSystem mixed-direct-response-v1, keep mockups mainly for product reveal/offer stack/dashboard, and use diagrams, comparisons, proof/demo visuals, structured panels, screenshots, or restrained buyer-situation imagery for mechanism, failed alternatives, proof, objections, and feature specifics.
 ```
 
 For weak PDF product:

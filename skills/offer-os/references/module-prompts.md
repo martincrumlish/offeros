@@ -41,7 +41,7 @@ Avoid mood-board words unless they become implementation rules.
 
 Purpose: define artifact-specific visuals before production so PDF, VSL, and ads are not built from leftover sales-page images.
 
-Production rule: follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md`. Create `visual-asset-plan.md` v2 after the logo/product outline, `copy-plan.json`, rendered `copy.md`, and `sales-page-blueprint.json` exist. Do not create page/PDF/VSL/ad visuals from a pre-copy mood board.
+Production rule: follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md`. Create `visual-asset-plan.md` v2 after the logo/product outline, `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` exist. Do not create page/PDF/VSL/ad visuals from a pre-copy mood board.
 
 Output:
 
@@ -86,7 +86,7 @@ Avoid abstract swooshes, generic marks, fragile details, page-curl/folded-paper 
 
 Purpose: produce full conversion copy based on the offer architecture through Copy Studio.
 
-Production rule: follow the Sales Page Recipe in `references/exact-build-recipes.md`. Write `copy-plan.json` first using `framework: "modern-brunson-long-form-v1"`, `standaloneCopyRequired: true`, and `vslDependency: "optional-supporting-asset"`, then run `scripts/build_copy.py` to render `copy.md` and `sales-page-blueprint.json`. Use the exact required `copy.md` headings and default `quality.salesPage.pageType` to `direct-response-long-form-vsl` for complete front-end offers.
+Production rule: follow the Sales Page Recipe in `references/exact-build-recipes.md`. Write `copy-plan.json` first using `framework: "modern-brunson-long-form-v1"`, `standaloneCopyRequired: true`, and `vslDependency: "optional-supporting-asset"`, then run `scripts/build_copy.py` to render clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`. Use `copy.md` as the delivery-dashboard sales-copy artifact, and keep section tables/framework metadata in `copy-blueprint.md`. Default `quality.salesPage.pageType` to `direct-response-long-form-vsl` for complete front-end offers.
 
 Output:
 
@@ -96,7 +96,7 @@ Output:
 4. Product reveal: product type, plain-English description, who it is for, what it helps them do, why now, core components, how-it-works steps, look-inside proof, difference from alternatives, and bridge to offer stack.
 5. Feature-benefit-reason rows for every core component and value-explained deliverables for the offer stack.
 6. Objection matrix: 7+ real objections with answers and belief shifts; no generic FAQ labels.
-7. Rendered `copy.md` from `scripts/build_copy.py` and generated `sales-page-blueprint.json`.
+7. Rendered clean `copy.md`, internal `copy-blueprint.md`, and generated `sales-page-blueprint.json` from `scripts/build_copy.py`.
 
 Composition rules: write the page as section-specific sales copy, not a single essay. The written page must stand alone without a VSL. Keep normal paragraphs under 55 words, keep the VSL setup under 220 words, and use comparison rows, checklists, callouts, proof/demo blocks, and CTA blocks to make the page scannable. Avoid vague hype, unsupported superlatives, fake urgency, wall-of-text sections, blank-looking cards, and copy that could sell any offer.
 

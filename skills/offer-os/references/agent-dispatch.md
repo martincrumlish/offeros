@@ -27,7 +27,7 @@ Owns design resolver, image prompts, asset sequencing, and visual QA notes.
 
 ### Imagegen Visual Workers
 
-Use these workers only after the initial offer architecture, `design.md`, final logo lockup, `assets/logo.png`, `copy-plan.json`, rendered `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist. At that point the workers have enough content anchors to create coherent visuals instead of inventing separate styles.
+Use these workers only after the initial offer architecture, `design.md`, final logo lockup, `assets/logo.png`, `copy-plan.json`, clean `copy.md`, internal `copy-blueprint.md`, `sales-page-blueprint.json`, and `visual-asset-plan.md` v2 exist. At that point the workers have enough content anchors to create coherent visuals instead of inventing separate styles.
 
 Dispatch them in parallel when the user has allowed agents and the run needs a full visual asset set:
 
@@ -42,6 +42,8 @@ Give every visual worker the same source references:
 - `design.md`
 - `copy-plan.json`
 - `copy.md`
+- `copy-blueprint.md`
+- `sales-page-blueprint.json`
 - `visual-asset-plan.md`
 - frozen final `assets/logo.png` only
 - product outline/module list and PDF page archetypes
