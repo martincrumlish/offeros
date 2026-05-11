@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.0
+
+- Hardens Copy Studio so `copy-plan.json.sectionPlan[].copyBlocks` must contain finished buyer-facing long-form sales copy, not scaffold notes.
+- Adds `copywriter-quality-bar.md` and `copy-critic-rubric.md` so Copy Studio must write and critique a standalone Modern Brunson-style sales letter before visuals or page generation.
+- Tightens `build_copy.py` to fail thin/missing/meta/repetitive copy blocks, enforce 2,500+ rendered copy words, render clean `copy.md`, and record copy critic metadata.
+- Extends validation for long-form copy depth, repeated boilerplate, forbidden internal/meta phrases, VSL dependence, FAQ depth, product reveal depth, and Copy Studio provenance.
+- Adds self-test coverage with a focused HYROX Copy Studio build fixture that renders a 4,000+ word sales letter before page/image generation.
+
 ## 0.14.1
 
 - Splits Copy Studio rendering so `copy.md` is the clean written long-form sales copy shown in delivery dashboards.

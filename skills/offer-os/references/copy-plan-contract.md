@@ -6,6 +6,8 @@
 
 `copy-blueprint.md` keeps the internal section blueprint, framework metadata, and copy-rendering map. Do not put those tables in `copy.md`.
 
+`sectionPlan[].copyBlocks` are the finished copy source. They are not outline bullets, strategy notes, or section instructions. The builder renders `copy.md` from them and fails if they are thin or meta.
+
 Required metadata:
 
 - `schema: "offeros/copy-plan/v1"`
@@ -40,3 +42,12 @@ Each `sectionPlan` row must include:
 - `maxWords`
 
 The section plan must include: `hero`, `vsl`, `problem`, `agitation`, `failed-alternatives`, `new-insight`, `mechanism`, `proof`, `before-after`, `product`, `feature-benefit`, `how-it-works`, `offer-stack`, `bonuses`, `pricing`, `guarantee`, `fit`, `faq`, and `final-cta`.
+
+Depth contract:
+
+- `copyBlocks` must contain 1,800+ buyer-facing words across the plan before rendering.
+- Rendered `copy.md` must contain 2,500+ customer-facing words, target 3,500-5,500.
+- Major sections must have real body copy, not only a headline or one sentence.
+- Product reveal must include feature-benefit-reason bullets for all core components.
+- FAQ must include 7+ specific objections with belief-shifting answers.
+- Copy must not include internal phrases such as "this section explains", "conversion job", "belief shift", "visual need", or "copy anchor".

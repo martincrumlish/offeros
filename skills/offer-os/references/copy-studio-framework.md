@@ -8,6 +8,8 @@ The default page copy must stand alone even if the VSL is removed or replaced wi
 
 `copy.md` is the actual written sales copy used for the delivery dashboard. `copy-blueprint.md` is the internal framework and section map. Do not put the `# Section Blueprint` table in `copy.md`.
 
+Before authoring `copy-plan.json`, load `references/copywriter-quality-bar.md`. After rendering `copy.md`, apply `references/copy-critic-rubric.md`. If `copy.md` is thin, repetitive, generic, meta, or VSL-dependent, revise `copy-plan.json` and rerun `scripts/build_copy.py` before visual planning or page generation.
+
 ## Modern Brunson Long-Form Spine
 
 Use Hook, Story/Insight, Offer as the macro flow. Use PAS only inside sections; do not reduce the whole page to PAS.
@@ -38,9 +40,12 @@ Required spine:
 
 ## Non-Negotiables
 
+- `sectionPlan[].copyBlocks` must contain finished buyer-facing sales copy, not notes for a later writer.
+- Deep-mode `copy.md` must contain 2,500+ customer-facing words; the target range is 3,500-5,500.
 - The page must include a specific epiphany/new insight before the mechanism.
 - The unique mechanism must be named before proof and product reveal.
 - Proof/demo must appear before price and offer stack.
 - Product reveal must include feature-benefit-reason bullets.
 - Offer stack items must explain why each deliverable matters.
 - Fake urgency is forbidden. Urgency must come from a real launch window, cohort, expiring bonus, price change, or explicit user-provided reason.
+- Do not continue to image planning, sales-page generation, PDF, VSL, email, ad, or dashboard work until the Copy Critic pass is clean.

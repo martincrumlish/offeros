@@ -90,7 +90,7 @@ Structure:
 - FAQ / objections
 - final close
 
-This framework produces `copy-plan.json` first, then `scripts/build_copy.py` renders clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`. The written page must stand alone without the VSL.
+This framework produces `copy-plan.json` first, with finished buyer-facing copy in `sectionPlan[].copyBlocks`. Then `scripts/build_copy.py` renders clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`. The written page must stand alone without the VSL, contain 2,500+ customer-facing words, and pass the Copy Critic rubric before visual planning or page generation.
 
 ## Problem-Mechanism-Proof-Offer
 

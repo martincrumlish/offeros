@@ -110,7 +110,7 @@ The logo is a placeholder, icon-only mark, illustrative/page-curl/app-icon mark,
 For weak sales-page structure:
 
 ```text
-The sales page is too short/product-page-like or reads as a wall of text. Load direct-response-framework.md, select direct-response-long-form-vsl, then rewrite copy-plan.json and run build_copy.py so copy.md is clean written sales copy while copy-blueprint.md contains # Section Blueprint. Rebuild index.html to include the full message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo before the buy box, before/after, product reveal, offer stack, price, guarantee, objection, and close arc. Keep VSL setup short, paragraphs under 55 words, and use tables/callouts/checklists instead of generic essay sections.
+The sales page is too short/product-page-like or reads as a wall of text. Load copywriter-quality-bar.md, copy-critic-rubric.md, and direct-response-framework.md, select direct-response-long-form-vsl, then rewrite copy-plan.json with finished buyer-facing sales copy in sectionPlan[].copyBlocks and run build_copy.py so copy.md is clean written sales copy while copy-blueprint.md contains # Section Blueprint. Rebuild index.html to include the full message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo before the buy box, before/after, product reveal, offer stack, price, guarantee, objection, and close arc. Keep VSL setup short, paragraphs under 55 words, and use tables/callouts/checklists instead of generic essay sections.
 ```
 
 For weak or random sales-page visuals:

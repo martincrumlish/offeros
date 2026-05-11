@@ -8,3 +8,4 @@ node_modules/
 output/
 *.log
 skills/offer-os/tests/tmp*/
+skills/offer-os/tests/.tmp/

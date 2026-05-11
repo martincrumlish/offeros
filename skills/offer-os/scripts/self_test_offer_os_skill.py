@@ -1,6 +1,7 @@
 import argparse
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 
@@ -33,6 +34,8 @@ SOURCE_CHECKS = [
             "VSL preview mobile",
             "qa-notes.md",
             "Create `copy-plan.json` before `copy.md`, then run `scripts/build_copy.py`.",
+            "sectionPlan[].copyBlocks",
+            "Apply the Copy Critic rubric",
             "clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json`",
         ],
     },
@@ -60,6 +63,8 @@ SOURCE_CHECKS = [
         "needles": [
             "references/copy-studio-framework.md",
             "references/copy-plan-contract.md",
+            "references/copywriter-quality-bar.md",
+            "references/copy-critic-rubric.md",
             "references/product-reveal-framework.md",
             "references/feature-benefit-rules.md",
             "references/objection-matrix.md",
@@ -68,12 +73,42 @@ SOURCE_CHECKS = [
             "standaloneCopyRequired: true",
             "vslDependency: \"optional-supporting-asset\"",
             "scripts/build_copy.py",
+            "finished buyer-facing sales copy",
+            "1,800+ buyer-facing copy-block words",
+            "2,500+ customer-facing words",
+            "3,500-5,500",
             "specific epiphany/new insight",
             "feature-benefit-reason rows",
             "value-explained offer-stack items",
             "non-fake urgency basis",
             "quality.copy.studio: \"copy-studio-v1\"",
+            "quality.copy.copyCriticPassed: true",
             "quality.copy.hasFeatureBenefitBreakdown: true",
+        ],
+    },
+    {
+        "id": "copywriter_quality_refs_exist",
+        "path": "references/copywriter-quality-bar.md",
+        "needles": [
+            "finished buyer-facing copy",
+            "Hook, Story/Insight, Offer",
+            "The written page must stand alone if the VSL is removed",
+            "Forbidden Copy",
+            "Product reveal",
+            "Feature-benefit breakdown",
+            "Offer stack",
+            "FAQ",
+        ],
+    },
+    {
+        "id": "copy_critic_rubric_exists",
+        "path": "references/copy-critic-rubric.md",
+        "needles": [
+            "2,500+ customer-facing words",
+            "3,500-5,500",
+            "can sell if the VSL is removed",
+            "If the copy fails, revise `copy-plan.json` first",
+            "Do not continue to images or page generation",
         ],
     },
     {
@@ -316,6 +351,11 @@ SOURCE_CHECKS = [
             "Copy Studio source missing",
             "Copy quality metadata must record {field}: {expected}.",
             "copy.md exists but sales-copy artifact provenance is not copy-studio-v1",
+            "copy.md is too thin for long-form sales copy",
+            "Sales copy quality failed",
+            "copy-plan.json copyBlocks contain only",
+            "finishedCopySource",
+            "copyCriticPassed",
             "copy-plan.sectionPlan must place proof/demo before offer-stack",
             "Product reveal component",
             "Offer stack item",
@@ -494,7 +534,6 @@ def bad_workspace_check(workspace: Path) -> dict:
         "missingExpectedIssues": missing,
         "issues": payload.get("issues", []),
     }
-
 
 def synthetic_visual_plan_regression() -> dict:
     expected = [
@@ -741,6 +780,358 @@ def synthetic_page_kit_builder_rejects_unapproved_sources() -> dict:
     }
 
 
+def good_hyrox_copy_plan() -> dict:
+    sections = {
+        "hero": [
+            ("prehead", "For HYROX athletes who can train hard but still fade when running starts after heavy stations."),
+            ("headline", "Build the race engine that still works after the sleds."),
+            ("lead", "HYROX does not punish athletes because they lack toughness. It punishes the gap between fresh training numbers and compromised execution. HYROX Engine gives you a 21-day plan for holding pace after station fatigue, recovering fast enough to keep moving, and arriving at race day with a rehearsed sequence instead of another random hard week."),
+            ("paragraph", "You get a practical race-specific plan, pacing tools, station cues, benchmark trackers, and race-week guidance that fit normal gym access. The goal is not to make training more brutal. The goal is to make the final third of the race feel planned."),
+            ("cta", "Get HYROX Engine for $27 and start the first session today."),
+        ],
+        "vsl": [
+            ("headline", "The short breakdown shows why strong athletes still fall apart late."),
+            ("paragraph", "The video is a quick overview of the logic, but the full argument is here in writing. You will see why fresh running sessions do not predict race-day pacing, why stations change the next kilometer, and how the Compromised Engine Ladder trains the exact transition pattern that decides whether you keep moving or start negotiating with yourself."),
+        ],
+        "problem": [
+            ("headline", "You are fit in pieces. HYROX tests everything together."),
+            ("paragraph", "Most HYROX prep looks sensible on paper. There are run intervals, heavy sled days, lunges, farmer carries, wall balls, and conditioning circuits. The problem is that race day does not grade those pieces separately. It asks whether your run still has shape after the sled push, whether your grip still behaves after carries, and whether your breathing settles quickly enough to make the next station controlled."),
+            ("paragraph", "That is why a good gym week can still produce a poor race simulation. You are not failing because you skipped suffering. You are failing because the sessions never taught the body what to do after the previous station damaged the next movement."),
+        ],
+        "agitation": [
+            ("headline", "Race day becomes expensive feedback when training stays disconnected."),
+            ("paragraph", "The worst part is not just losing time. It is discovering the gap after entry fees, travel, taper, and weeks of effort have already been spent. The first kilometer feels fine, the first station feels manageable, then the plan starts leaking. Splits drift, transitions get messy, grip changes your posture, and the final wall balls become survival instead of execution."),
+            ("paragraph", "When the next training block repeats the same scattered pattern, the same race-day lesson repeats too. More effort gets added, but the missing link remains untrained."),
+        ],
+        "failed-alternatives": [
+            ("headline", "The usual fixes make sense until they meet compromised running."),
+            ("paragraph", "Adding mileage can raise your aerobic ceiling, but it does not teach you to run after a sled. Random grinders prove you can suffer, but they do not give you pacing decisions. Copying elite workouts can look impressive, yet it often ignores your current level, equipment access, and the exact station sequence that makes your race fall apart."),
+            ("paragraph", "What you need is not another heroic session. You need a short ladder that starts with a pace floor, adds station pressure, and finishes with race execution so every week has a job."),
+        ],
+        "new-insight": [
+            ("headline", "The missing link is not fitness. It is recovery control under station pressure."),
+            ("paragraph", "Fresh fitness is only one part of HYROX. The deciding skill is how quickly you regain usable rhythm after a station changes your legs, breathing, grip, or posture. Once you train that rhythm deliberately, the race stops feeling like eight surprise collapses and starts feeling like a repeated pattern you have already rehearsed."),
+            ("paragraph", "That is the epiphany behind HYROX Engine: do not chase more punishment first. Build the compromised engine that can return to pace after damage."),
+        ],
+        "mechanism": [
+            ("headline", "The Compromised Engine Ladder trains the race in the order your body feels it."),
+            ("paragraph", "The Compromised Engine Ladder is a three-step progression. First, you set a sustainable 1km pace floor so you know what controlled effort feels like. Second, you add station pressure in measured doses so your next run has a target instead of guesswork. Third, you lock race execution with sessions that combine transitions, pacing, and recovery cues before taper week."),
+            ("paragraph", "This works because HYROX performance is not one maximal effort. It is repeated recovery from specific stress. The ladder lets you practice that recovery without burying yourself under random fatigue."),
+        ],
+        "proof": [
+            ("headline", "You can inspect the plan before you trust it."),
+            ("paragraph", "The proof is in the structure. Week one creates the pace floor and baseline station cues. Week two adds compromised running after station demands. Week three sharpens transitions, taper rhythm, and race-day decision rules. You can open the sample week, pace calculator, tracker, and station cue cards before you ever start."),
+            ("paragraph", "There are no mystery workouts hiding behind motivation language. Every session has a purpose, target, station focus, and adjustment note so you can see why it exists."),
+        ],
+        "before-after": [
+            ("headline", "Before, every hard session feels like progress. After, every session has a race-day job."),
+            ("paragraph", "Before HYROX Engine, you can finish a brutal workout and still wonder whether it helped. After HYROX Engine, the session tells you what it is training: pace floor, station pressure, transition control, or race execution. That gives you a cleaner way to judge progress than sweat alone."),
+        ],
+        "product": [
+            ("headline", "Introducing HYROX Engine in 21 Days."),
+            ("paragraph", "HYROX Engine is a PDF training plan and race-day implementation kit for recreational and competitive HYROX athletes who want a practical final-block structure without hiring a private coach. It gives you a 21-day plan, pacing calculator, station cue cards, benchmark tracker, race-week taper guide, and action guarantee tracker in one package."),
+            ("paragraph", "It is built for athletes with normal gym access. If you can run, use common conditioning equipment, and scale station work when needed, the plan gives you the structure to connect those pieces into one race-specific block."),
+        ],
+        "feature-benefit": [
+            ("headline", "Here is what each part actually does for you."),
+            ("paragraph", "The 21-day plan gives every week a job so training stops becoming a random collection of hard sessions. The pace calculator turns target finish time into repeatable kilometer targets. The station cue cards make technique reminders simple when fatigue is high. The benchmark tracker shows whether you are gaining control, not just collecting exhaustion."),
+            ("paragraph", "The race-week guide keeps the final days from becoming panic training. The substitutions help you adapt sessions to a normal gym. The action tracker makes the guarantee fair because it shows the work completed and the confidence gained."),
+        ],
+        "how-it-works": [
+            ("headline", "Open the kit, set your pace, then follow the ladder."),
+            ("paragraph", "Start by setting your target pace and baseline station level. Then follow week one to establish the pace floor. In week two, add station pressure with controlled compromised runs. In week three, reduce noise, sharpen transitions, and rehearse the decisions you will make on race day."),
+            ("paragraph", "Each session gives you the focus, target, scaling note, and completion marker. You are never left staring at a template wondering how hard it should be."),
+        ],
+        "offer-stack": [
+            ("headline", "Get the complete 21-day HYROX Engine stack today."),
+            ("paragraph", "The core plan gives you the training sequence. The calculator gives you pacing numbers. The station cards give you execution reminders. The benchmark tracker gives you feedback. The race-week guide protects the taper. The substitution sheet keeps normal gym limitations from becoming an excuse. The checklist gives race morning order. The guarantee tracker makes the outcome inspectable."),
+            ("paragraph", "Together, those pieces create a short, focused race block instead of another folder of disconnected workouts."),
+            ("cta", "Get instant access to HYROX Engine for $27."),
+        ],
+        "bonuses": [
+            ("headline", "The accelerators make the plan easier to use under pressure."),
+            ("paragraph", "You also get printable station cards, a race-day checklist, and a simple pace review sheet. They are not filler bonuses. They exist because the best plan still fails if the athlete forgets cues, overtrains during taper week, or reaches race morning without a repeatable setup routine."),
+        ],
+        "pricing": [
+            ("headline", "$27 today is less than one drop-in class and clearer than another week of guessing."),
+            ("paragraph", "A single compromised training block can protect months of preparation from turning into race-day confusion. You are not paying for generic fitness advice. You are paying for a short sequence, usable tools, and a clear next three weeks."),
+        ],
+        "guarantee": [
+            ("headline", "Use the 12-Workout Action Guarantee."),
+            ("paragraph", "Complete at least 12 workouts in 21 days and use the tracker. If you do not feel more confident holding pace under fatigue, send the completed tracker within 30 days and get a refund. The guarantee is fair because the plan is designed around action, not passive reading."),
+        ],
+        "fit": [
+            ("headline", "This is for athletes who want structure, not another punishment contest."),
+            ("paragraph", "HYROX Engine is for you if you already train, understand the basics, and want the next block to connect running, stations, pacing, and race-week decisions. It is not for someone who wants a bodybuilding split, a full beginner fitness course, or a private coach watching every session."),
+        ],
+        "faq": [
+            ("headline", "Questions before you start."),
+            ("paragraph", "The common questions are practical: level, equipment, timing, fatigue, scaling, refund terms, and whether a PDF can be enough. Each answer below is designed to help you decide whether this kit matches your current race prep."),
+            ("paragraph", "Read these as decision checks, not decoration. If the plan fits your level, your equipment, and your race timeline, you can start quickly. If you need daily coaching, medical guidance, or a full beginner fitness education, the honest answer is to choose a different kind of support."),
+            ("paragraph", "The right buyer should finish the FAQ knowing what happens on day one, how to scale the work, where the risk reversal applies, and why the kit is different from another downloaded workout list. That clarity protects the sale and prevents the final decision from depending on hype."),
+        ],
+        "final-cta": [
+            ("headline", "Start the next 21 days with a plan instead of another random session."),
+            ("paragraph", "If your HYROX prep already proves you can work hard, the next step is to make that work race-specific. Get the plan, set the pace floor, train the compromised engine, and arrive at race day with a sequence you have practiced."),
+            ("cta", "Get HYROX Engine for $27."),
+        ],
+    }
+
+    section_expansions = {
+        "hero": "That matters because the athlete already has work capacity. The sale is not promising magic speed. It is promising a clearer final block where running, stations, and recovery cues finally point at the same race-day outcome.",
+        "vsl": "A reader still gets the whole decision in writing. The video can make the idea easier to absorb, but the athlete should understand the diagnosis, the ladder, the product, the stack, and the guarantee without pressing play.",
+        "problem": "The buyer recognizes this because the training log looks busy while race confidence stays unstable. Their effort is real, but the relationship between one station and the next kilometer has never been trained as its own skill.",
+        "agitation": "That uncertainty changes behavior. Athletes either overtrain because they do not trust the plan, or they arrive hoping adrenaline solves a problem that should have been rehearsed weeks earlier.",
+        "failed-alternatives": "Each alternative contains a useful piece, which is why the buyer keeps returning to them. The problem is that none of them alone connects fresh capacity to compromised execution in the order HYROX demands.",
+        "new-insight": "Once the buyer sees the race as repeated recovery from specific station stress, the training choice becomes simpler. The next block should train that recovery loop instead of merely proving discipline.",
+        "mechanism": "The ladder also gives the athlete a way to scale without losing the purpose. A beginner and an advanced racer can use different numbers while still training the same pace-pressure-execution sequence.",
+        "proof": "This is the strongest proof available without pretending to have testimonials. The buyer can inspect the product logic, sample structure, and tracker before trusting the promise, which is more honest than vague claims.",
+        "before-after": "The emotional change is important too. The athlete stops asking whether the last brutal circuit was enough and starts asking whether the right race-day skill improved.",
+        "product": "The deliverable is intentionally practical. It can be printed, opened on a phone, taken to the gym, and used during the exact weeks when vague motivation usually creates the most noise.",
+        "feature-benefit": "Those details make the kit feel tangible. The buyer is not imagining a folder of inspirational PDFs; they are seeing tools that answer the questions that usually derail the final block.",
+        "how-it-works": "The sequence is short enough to begin today and structured enough to remove guessing. The athlete knows what to do first, what to measure, what to scale, and when to stop adding noise.",
+        "offer-stack": "The stack is designed so every item has a job. If a deliverable does not help the athlete train, decide, track, taper, or execute, it does not belong in the offer.",
+        "bonuses": "The bonus value is convenience under fatigue. Anything that reduces gym friction, decision clutter, or race-week uncertainty has a real role in helping the athlete complete the plan.",
+        "pricing": "That makes the price easy to understand. The buyer is not comparing the kit against a free workout online; they are comparing it against the cost of another unfocused week before race day.",
+        "guarantee": "The guarantee also filters for the right buyer. It rewards the person willing to do the sessions and track the work, not someone who wants confidence without action.",
+        "fit": "That fit line protects the offer. A self-directed athlete gets structure and tools, while someone needing medical advice, total beginner instruction, or daily coaching knows this is not the right product.",
+        "faq": "The answers should reduce practical friction, not dodge it. A strong FAQ helps the athlete decide whether the plan matches their level, gym, race timeline, and preferred way of training.",
+        "final-cta": "The close brings the decision back to the next workout. The athlete can keep collecting hard sessions, or they can start a defined 21-day block with targets, cues, and a fair guarantee.",
+    }
+
+    def section_row(section_id: str, role: str, visual: str, cta_role: str = "none") -> dict:
+        blocks = [{"type": block_type, "text": text} for block_type, text in sections[section_id]]
+        blocks.append({"type": "paragraph", "text": section_expansions[section_id]})
+        blocks.append(
+            {
+                "type": "paragraph",
+                "text": (
+                    f"In the {role} part of the decision, the athlete is choosing between another hard session "
+                    "that may not transfer and a short block where the next workout has a race-day purpose. "
+                    f"That {section_id} contrast keeps the copy concrete instead of drifting into generic fitness advice."
+                ),
+            }
+        )
+        return {
+            "sectionId": section_id,
+            "frameworkRole": role,
+            "conversionJob": f"Move the HYROX buyer through the {section_id} belief step with concrete race-prep copy.",
+            "buyerBeliefBefore": "Hard training should be enough if effort is high.",
+            "buyerBeliefAfter": "Race-specific structure matters more than adding another random hard session.",
+            "primaryClaim": sections[section_id][0][1],
+            "proofOrSupport": "Uses the HYROX Engine offer architecture, sample week, pace calculator, and action guarantee.",
+            "copyBlocks": blocks,
+            "visualNeed": visual,
+            "ctaRole": cta_role,
+            "maxWords": 320,
+        }
+
+    return {
+        "schema": "offeros/copy-plan/v1",
+        "framework": "modern-brunson-long-form-v1",
+        "standaloneCopyRequired": True,
+        "vslDependency": "optional-supporting-asset",
+        "offerName": "HYROX Engine",
+        "price": "$27",
+        "audience": "HYROX athletes who train hard but fade when running starts after heavy stations",
+        "awarenessLevel": "problem-aware",
+        "marketSophistication": "high enough to have tried generic running plans, random grinders, and copied HYROX workouts",
+        "corePromise": "Build a race-specific 21-day engine that keeps pace, station control, and confidence intact under fatigue.",
+        "primaryPain": "They feel fit in isolated sessions but lose pacing, posture, grip, and decision control when HYROX stations damage the next run.",
+        "failedAlternatives": [
+            {"name": "More mileage", "whyItFails": "It improves fresh running but does not rehearse the kilometer that follows a heavy station.", "whatIsNeededInstead": "A pace floor tested under station fatigue."},
+            {"name": "Random grinder sessions", "whyItFails": "They prove suffering but rarely create repeatable pacing decisions or progression.", "whatIsNeededInstead": "A ladder that adds pressure in a planned order."},
+            {"name": "Copied elite workouts", "whyItFails": "They ignore current level, equipment access, and the exact breakdown point.", "whatIsNeededInstead": "Scalable station pressure tied to the athlete's target pace."},
+        ],
+        "newInsight": "HYROX athletes usually do not need more random punishment first. They need recovery control under station pressure, because the race is decided by how quickly the next run returns to usable rhythm after each station changes the body.",
+        "uniqueMechanism": {
+            "name": "Compromised Engine Ladder",
+            "explanation": "A three-step progression that sets a pace floor, adds station pressure, and locks race execution so the athlete practices the exact transition pattern that decides HYROX pacing.",
+            "whyItWorks": "It trains the repeated recovery skill HYROX demands instead of treating running and stations as unrelated workouts.",
+            "steps": [
+                {"title": "Set the pace floor", "copy": "Find sustainable 1km repeat targets and station baselines before adding chaos."},
+                {"title": "Add station pressure", "copy": "Pair target running with sled, carry, lunge, burpee, row, ski, and wall ball demands."},
+                {"title": "Lock race execution", "copy": "Practice transitions, taper rhythm, and recovery cues before race day."},
+            ],
+        },
+        "proofPlan": {
+            "proofType": "process proof and look-inside preview",
+            "proofBeforeOffer": True,
+            "proofItems": [
+                {"title": "Sample week preview", "copy": "Shows the three-week progression and the job of each session before purchase."},
+                {"title": "Pace calculator preview", "copy": "Turns a finish target into working kilometer targets for compromised runs."},
+                {"title": "Action tracker", "copy": "Shows exactly what was completed so confidence is tied to visible work."},
+            ],
+        },
+        "productReveal": {
+            "productType": "PDF training plan and race-day implementation kit",
+            "plainEnglishDescription": "A 21-day HYROX training plan with pacing tools, station cue cards, benchmark tracking, race-week guidance, substitutions, and a completion tracker.",
+            "whoItIsFor": "HYROX athletes with basic training experience who want a final race-specific block they can follow without private coaching.",
+            "whatItHelpsThemDo": "Connect running, station fatigue, transitions, and taper decisions into one practical plan.",
+            "whyNow": "A short block is most useful when the athlete already has fitness but needs the final weeks to become race-specific.",
+            "coreComponents": [
+                {"feature": "21-day ladder plan", "benefit": "Every week has a race-specific job.", "reasonItMatters": "The athlete stops guessing which hard sessions matter.", "buyerProblemSolved": "Disconnected training weeks.", "proofOrPreview": "Week-by-week sample schedule.", "plainBullet": "21-day HYROX plan so each week trains pace, pressure, or execution."},
+                {"feature": "Pace calculator", "benefit": "Target splits are clear before the workout starts.", "reasonItMatters": "HYROX pacing collapses when effort has no number.", "buyerProblemSolved": "Drifting 1km repeats.", "proofOrPreview": "Target pace table.", "plainBullet": "Pace calculator so every compromised run has a working target."},
+                {"feature": "Station cue cards", "benefit": "Technique reminders stay simple under fatigue.", "reasonItMatters": "Small mistakes become costly late in the race.", "buyerProblemSolved": "Messy stations and wasted energy.", "proofOrPreview": "Printable cue-card preview.", "plainBullet": "Station cue cards so sleds, carries, lunges, and wall balls stay controlled."},
+                {"feature": "Benchmark tracker", "benefit": "Progress becomes visible in more than sweat.", "reasonItMatters": "Athletes need feedback on control, not only exhaustion.", "buyerProblemSolved": "No evidence that sessions are transferring.", "proofOrPreview": "Tracker sheet preview.", "plainBullet": "Benchmark tracker so you can see whether pace holds under pressure."},
+                {"feature": "Race-week guide", "benefit": "The final days stay calm and specific.", "reasonItMatters": "Panic training can ruin a good block.", "buyerProblemSolved": "Overtraining during taper week.", "proofOrPreview": "Race-week checklist.", "plainBullet": "Race-week guide so taper, gear, warmup, and decisions are not improvised."},
+            ],
+            "howItWorksSteps": [
+                {"title": "Choose your level", "copy": "Set the beginner, intermediate, or advanced path and record current station baselines."},
+                {"title": "Calculate working pace", "copy": "Use the calculator to choose repeat targets that match the planned race outcome."},
+                {"title": "Run the ladder", "copy": "Complete the three-week progression from pace floor to station pressure to race execution."},
+                {"title": "Track and taper", "copy": "Record completed sessions and use the race-week guide to avoid panic training."},
+            ],
+            "lookInsideProof": [
+                {"title": "Sample session", "copy": "Shows session focus, target, station pressure, scaling note, and completion marker."},
+                {"title": "Completed tracker", "copy": "Shows what proof of action looks like for the guarantee."},
+            ],
+            "differenceFromAlternatives": "Most workout PDFs give a list of hard sessions. HYROX Engine gives a sequence that explains what each week trains and how it connects to race-day execution.",
+            "bridgeToOfferStack": "That sequence becomes the offer stack: plan, calculator, cards, tracker, guide, substitutions, checklist, and guarantee tracker.",
+        },
+        "offerStack": {
+            "items": [
+                {"title": "21-Day HYROX Plan", "copy": "So your next three weeks have a specific race-prep sequence instead of random intensity.", "value": "$47"},
+                {"title": "Pace Calculator", "copy": "So every 1km repeat starts with a target you can adjust under station fatigue.", "value": "$27"},
+                {"title": "Station Cue Cards", "copy": "So key technique reminders stay visible when tired movement gets sloppy.", "value": "$17"},
+                {"title": "Benchmark Tracker", "copy": "So you can see whether pace and station control are actually improving.", "value": "$17"},
+                {"title": "Race-Week Taper Guide", "copy": "So the final days protect performance instead of adding panic volume.", "value": "$27"},
+                {"title": "Equipment Substitution Sheet", "copy": "So normal gym limitations do not break the plan.", "value": "$17"},
+                {"title": "Race-Day Checklist", "copy": "So warmup, gear, pacing, and station decisions are ready before the start line.", "value": "$17"},
+                {"title": "Guarantee Tracker", "copy": "So your completed work is visible if you need to claim the action guarantee.", "value": "$17"},
+            ],
+            "cta": "Get instant access",
+            "accessCopy": "Download the workbook and start with the pace calculator today.",
+        },
+        "bonuses": [
+            {"title": "Printable Session Cards", "copy": "Bring the day's work to the gym without scrolling through a long document."},
+            {"title": "Post-Session Review Sheet", "copy": "Record what held, what slipped, and what to adjust before the next session."},
+        ],
+        "valueLogic": {
+            "comparison": "$27 today is less than one drop-in class and clearer than another week of guessing.",
+            "priceJustification": "The value is not more information. It is a short race-specific sequence, usable targets, and decision tools for the final block.",
+            "todayPrice": "$27",
+            "totalValue": "$186",
+        },
+        "guarantee": {
+            "name": "12-Workout Action Guarantee",
+            "terms": "Complete at least 12 workouts in 21 days and send the completed tracker within 30 days if you do not feel more confident holding pace under fatigue.",
+            "reassurance": "If the plan does not create more confidence after honest use, you get a refund.",
+        },
+        "objectionMatrix": [
+            {"objection": "What if I am not advanced enough for HYROX-specific work?", "answer": "The plan includes scalable paths and substitution notes. You need basic training experience, not elite numbers, because the first job is finding your pace floor.", "beliefShift": "I can use the plan at my current level if I scale honestly."},
+            {"objection": "What if my gym does not have every HYROX station setup?", "answer": "The substitution sheet gives practical swaps for normal gyms so you can train the pressure pattern without a perfect race venue.", "beliefShift": "Normal gym access is enough to follow the system."},
+            {"objection": "Can a 21-day block really help?", "answer": "It is not trying to build years of base fitness. It sharpens the final race-specific connection between running, stations, transitions, and taper decisions.", "beliefShift": "A short block can be useful when it fixes a specific race-prep gap."},
+            {"objection": "Is this just another hard workout PDF?", "answer": "No. Each week has a job, each session has a target, and the tools connect pace, station fatigue, tracking, and race-week execution.", "beliefShift": "The product is a sequence and toolset, not a random workout list."},
+            {"objection": "What if I already have a coach?", "answer": "Use this only if it complements your coach's plan. The kit is best for self-directed athletes or as a structured final-block reference.", "beliefShift": "The product has a clear fit boundary."},
+            {"objection": "What if I miss a session?", "answer": "The plan gives a short block, so the tracker helps you recover the sequence without pretending missed work disappeared.", "beliefShift": "I can adjust without losing the point of the block."},
+            {"objection": "What if I do the work and still do not feel ready?", "answer": "That is why the 12-Workout Action Guarantee exists. Complete the tracked work and ask for a refund if confidence under fatigue does not improve.", "beliefShift": "The risk is tied to action, not vague promises."},
+        ],
+        "urgencyBasis": {"type": "none", "description": "No fake urgency. The reason to act is that the next 21 days can become a structured race-specific block instead of another guessing cycle.", "fakeUrgency": False},
+        "sectionPlan": [
+            section_row("hero", "hook", "hero-vsl-frame", "early"),
+            section_row("vsl", "supporting overview", "hero-vsl-frame", "support"),
+            section_row("problem", "problem diagnosis", "buyer-situation-photo"),
+            section_row("agitation", "cost of staying stuck", "structured-panel"),
+            section_row("failed-alternatives", "market diagnosis", "comparison-visual"),
+            section_row("new-insight", "epiphany", "structured-panel"),
+            section_row("mechanism", "unique mechanism", "mechanism-diagram"),
+            section_row("proof", "proof before offer", "proof-demo-visual"),
+            section_row("before-after", "before after", "comparison-visual"),
+            section_row("product", "product reveal", "product-mockup"),
+            section_row("feature-benefit", "feature benefit", "structured-panel"),
+            section_row("how-it-works", "how it works", "mechanism-diagram"),
+            section_row("offer-stack", "offer stack", "offer-stack-bundle", "buy"),
+            section_row("bonuses", "bonuses", "checklist-visual"),
+            section_row("pricing", "price value", "structured-panel", "buy"),
+            section_row("guarantee", "risk reversal", "structured-panel"),
+            section_row("fit", "fit filter", "checklist-visual"),
+            section_row("faq", "objection handling", "structured-panel"),
+            section_row("final-cta", "close", "offer-stack-bundle", "buy"),
+        ],
+        "pageKitArchetype": "classic-vsl-longform",
+        "themePreset": "fitness-performance",
+        "checkoutTarget": "#checkout",
+    }
+
+
+def synthetic_good_copy_build() -> dict:
+    workspace = SKILL_ROOT / "tests" / ".tmp" / "good-copy-studio-hyrox"
+    if workspace.exists():
+        shutil.rmtree(workspace)
+    workspace.mkdir(parents=True, exist_ok=True)
+    (workspace / "offer-os.json").write_text(
+        json.dumps(
+            {
+                "schema": "offer-os/v1",
+                "mode": "copy-test",
+                "offerName": "HYROX Engine",
+                "price": "$27",
+                "audience": "HYROX athletes",
+                "modules": [],
+                "artifacts": [],
+                "quality": {},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (workspace / "copy-plan.json").write_text(json.dumps(good_hyrox_copy_plan(), indent=2) + "\n", encoding="utf-8")
+    (workspace / "theme.json").write_text(
+        json.dumps(
+            {
+                "themePreset": "fitness-performance",
+                "pageKitArchetype": "classic-vsl-longform",
+                "colors": {
+                    "background": "#07110c",
+                    "surface": "#111d15",
+                    "ink": "#ffffff",
+                    "muted": "#c8d7ce",
+                    "primary": "#cfff05",
+                    "accent": "#00b6ff",
+                    "dark": "#030705",
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    builder = SKILL_ROOT / "scripts" / "build_copy.py"
+    completed = subprocess.run(
+        [sys.executable, str(builder), "--workspace", str(workspace)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    copy_path = workspace / "copy.md"
+    copy_text = copy_path.read_text(encoding="utf-8", errors="ignore") if copy_path.exists() else ""
+    copy_words = len(copy_text.split())
+    failures = []
+    if completed.returncode != 0:
+        failures.append("build_copy.py failed")
+    if "# Section Blueprint" in copy_text or "| sectionId |" in copy_text:
+        failures.append("copy.md contains blueprint material")
+    if copy_words < 2500:
+        failures.append(f"copy.md under 2500 words: {copy_words}")
+    if "this section explains" in copy_text.lower() or "belief shift" in copy_text.lower():
+        failures.append("copy.md contains meta copy")
+    if not (workspace / "copy-blueprint.md").exists():
+        failures.append("copy-blueprint.md missing")
+    if not (workspace / "sales-page-blueprint.json").exists():
+        failures.append("sales-page-blueprint.json missing")
+    return {
+        "id": "synthetic_good_copy_build",
+        "ok": not failures,
+        "returncode": completed.returncode,
+        "copyWords": copy_words,
+        "failures": failures,
+        "stdout": completed.stdout[-1000:],
+        "stderr": completed.stderr[-1000:],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Self-test OfferOS skill source and known regression workspaces.")
     parser.add_argument("--bad-workspace", action="append", default=[], help="Known-bad generated output that must fail validator checks.")
@@ -759,6 +1150,7 @@ def main() -> int:
         synthetic_code_rendered_creative_regression(),
         synthetic_generated_controller_regression(),
         synthetic_page_kit_builder_rejects_unapproved_sources(),
+        synthetic_good_copy_build(),
     ]
     ok = all(item["ok"] for item in source_results) and all(item["ok"] for item in bad_results) and all(item["ok"] for item in synthetic_results)
 

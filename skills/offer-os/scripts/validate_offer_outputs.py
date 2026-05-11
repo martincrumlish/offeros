@@ -11,8 +11,12 @@ import zipfile
 
 from build_copy import (
     COPY_FRAMEWORK,
+    SALES_COPY_TARGET_MAXIMUM,
+    SALES_COPY_TARGET_MINIMUM,
+    SALES_COPY_WORD_MINIMUM,
     STUDIO_VERSION as COPY_STUDIO_VERSION,
     validate_copy_plan as validate_copy_plan_source,
+    sales_copy_markdown_quality_issues,
     section_rows as copy_plan_section_rows,
     list_of_dicts as copy_list_of_dicts,
     as_text as copy_as_text,
@@ -22,6 +26,7 @@ from build_copy import (
 TEXT_EXTS = {".html", ".md", ".txt", ".json", ".css", ".js"}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
 BITMAP_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
+COPY_BLOCK_WORD_GATE_MESSAGE = "copy-plan.json copyBlocks contain only"
 BAD_TOKENS = [
     "lorem ipsum",
     "[placeholder]",
@@ -1229,6 +1234,10 @@ def validate_sales_copy(root: Path, manifest: dict, by_id: dict[str, dict], issu
         "hasFeatureBenefitBreakdown": True,
         "hasObjectionMatrix": True,
         "renderedFromCopyPlan": True,
+        "finishedCopySource": "copy-plan.sectionPlan.copyBlocks",
+        "copyBlocksBuyerFacing": True,
+        "copyCriticRubric": "copy-critic-rubric-v1",
+        "copyCriticPassed": True,
     }
     for field, expected in required_quality.items():
         if copy_quality.get(field) != expected:
@@ -1250,11 +1259,28 @@ def validate_sales_copy(root: Path, manifest: dict, by_id: dict[str, dict], issu
 
     text = text_for(copy_path)
     lower = text.lower()
+    copy_word_count = len(re.findall(r"\b[\w'-]+\b", text))
+    if copy_word_count < SALES_COPY_WORD_MINIMUM:
+        issues.append(
+            f"copy.md is too thin for long-form sales copy: {copy_word_count} words found, "
+            f"{SALES_COPY_WORD_MINIMUM}+ required."
+        )
+    recorded_copy_word_count = quality_number(copy_quality.get("copyWordCount"))
+    if recorded_copy_word_count and abs(recorded_copy_word_count - copy_word_count) > max(200, copy_word_count * 0.15):
+        warnings.append("Copy quality metadata copyWordCount differs substantially from inspected copy.md text.")
+    if copy_quality.get("minimumCopyWords") != SALES_COPY_WORD_MINIMUM:
+        issues.append(f"Copy quality metadata must record minimumCopyWords: {SALES_COPY_WORD_MINIMUM}.")
+    expected_target = f"{SALES_COPY_TARGET_MINIMUM}-{SALES_COPY_TARGET_MAXIMUM}"
+    if copy_quality.get("targetCopyWords") != expected_target:
+        issues.append(f"Copy quality metadata must record targetCopyWords: {expected_target}.")
     missing_headings = [heading for heading in REQUIRED_COPY_HEADINGS if heading.lower() not in lower]
     if missing_headings:
         issues.append("Sales copy missing required direct-response headings: " + ", ".join(missing_headings))
     if "# section blueprint" in lower or "| sectionid |" in lower:
         issues.append("copy.md must be clean written sales copy only; put Copy Studio section tables in copy-blueprint.md.")
+    if copy_plan:
+        for issue in sales_copy_markdown_quality_issues(copy_plan, text):
+            issues.append("Sales copy quality failed: " + issue)
 
     copy_blueprint_artifact = by_id.get("copy-blueprint")
     copy_blueprint_path = artifact_path(root, copy_blueprint_artifact) or (root / "copy-blueprint.md")

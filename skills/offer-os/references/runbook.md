@@ -131,19 +131,21 @@ Follow the Sales Page Recipe in `references/exact-build-recipes.md` before writi
 Required result:
 
 - `copy-plan.json` using `modern-brunson-long-form-v1`
+- finished buyer-facing copy inside `copy-plan.json.sectionPlan[].copyBlocks`
 - clean written `copy.md` rendered from `scripts/build_copy.py`
 - internal `copy-blueprint.md` rendered from `scripts/build_copy.py` with the required section blueprint from the recipe
 - `sales-page-blueprint.json` generated from the Copy Studio source
 - section-by-section sales-page blueprint with conversion job, visual block, suggested `visualKind`, `copyAnchor`, proof/objection handled, and CTA role
 - Modern Brunson spine: hook, story/insight, belief shift, named mechanism, proof/demo, product reveal, feature-benefit breakdown, how it works, offer stack, guarantee, objections, close
 - `quality.salesPage.pageType = "direct-response-long-form-vsl"` unless the user explicitly requested another page type
-- full copy, not an outline
+- full copy, not an outline: 2,500+ customer-facing words, target 3,500-5,500, no meta copy, no repeated boilerplate, and no VSL dependency
+- Copy Critic pass before visual planning
 
 Register `copy-plan`, `copy-blueprint`, and `sales-copy`.
 
 ## 8. Visual Asset Plan
 
-Follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md` after `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` exist and before creating sales-page graphics, PDF pages, ads, VSL slides, or dashboard previews.
+Follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md` after `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` exist and the Copy Critic pass is clean. Do this before creating sales-page graphics, PDF pages, ads, VSL slides, or dashboard previews.
 
 Required result:
 

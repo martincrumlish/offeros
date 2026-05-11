@@ -141,7 +141,7 @@ Fails if downstream product, ad, page, PDF, VSL, or dashboard image prompts ask 
 
 ## Copy Gate
 
-Long-form sales copy must be rendered from `copy-plan.json` by Copy Studio. It must include:
+Long-form sales copy must be rendered from `copy-plan.json` by Copy Studio. `copy-plan.json.sectionPlan[].copyBlocks` must contain finished buyer-facing copy, not notes or scaffolds. It must include:
 
 - headline and lead
 - problem agitation
@@ -160,9 +160,9 @@ Long-form sales copy must be rendered from `copy-plan.json` by Copy Studio. It m
 - FAQ
 - repeated CTA sections
 
-Must record `quality.copy.studio = "copy-studio-v1"`, `quality.copy.framework = "modern-brunson-long-form-v1"`, `quality.copy.standaloneCopyRequired = true`, and `quality.copy.vslDependency = "optional-supporting-asset"`.
+Must record `quality.copy.studio = "copy-studio-v1"`, `quality.copy.framework = "modern-brunson-long-form-v1"`, `quality.copy.standaloneCopyRequired = true`, `quality.copy.vslDependency = "optional-supporting-asset"`, `quality.copy.finishedCopySource = "copy-plan.sectionPlan.copyBlocks"`, `quality.copy.copyBlocksBuyerFacing = true`, `quality.copy.copyCriticRubric = "copy-critic-rubric-v1"`, `quality.copy.copyCriticPassed = true`, `quality.copy.minimumCopyWords = 2500`, and `quality.copy.targetCopyWords = "3500-5500"`.
 
-Fails if `copy-plan.json` is missing, invalid, not rendered into `copy.md`, VSL-dependent, short-form copy disguised as a sales page, generic, lacking new insight/mechanism/failed alternatives/proof/product reveal/feature-benefit rows/objections, or cannot plausibly sell the offer.
+Fails if `copy-plan.json` is missing, invalid, not rendered into `copy.md`, if `copyBlocks` contain notes/internal labels instead of sales copy, if `copyBlocks` have under 1,800 buyer-facing words, if rendered `copy.md` has under 2,500 customer-facing words, if the copy is VSL-dependent, short-form copy disguised as a sales page, repetitive, generic, lacking new insight/mechanism/failed alternatives/proof/product reveal/feature-benefit rows/objections, or cannot plausibly sell the offer.
 
 ## Page Gate
 

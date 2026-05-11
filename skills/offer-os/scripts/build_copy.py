@@ -112,6 +112,74 @@ GENERIC_OBJECTIONS = {
     "can i get a refund",
 }
 VALID_URGENCY_TYPES = {"none", "launch-window", "cohort-start", "expiring-bonus", "price-change", "user-provided"}
+COPY_BLOCK_WORD_MINIMUM = 1800
+SALES_COPY_WORD_MINIMUM = 2500
+SALES_COPY_TARGET_MINIMUM = 3500
+SALES_COPY_TARGET_MAXIMUM = 5500
+COPY_SECTION_REQUIREMENTS = {
+    "hero": {"minWords": 110, "requiredTypes": {"headline", "lead", "cta"}},
+    "vsl": {"minWords": 70, "requiredTypes": {"headline", "paragraph"}},
+    "problem": {"minWords": 170, "requiredTypes": {"headline", "paragraph"}},
+    "agitation": {"minWords": 130, "requiredTypes": {"headline", "paragraph"}},
+    "failed-alternatives": {"minWords": 130, "requiredTypes": {"headline", "paragraph"}},
+    "new-insight": {"minWords": 120, "requiredTypes": {"headline", "paragraph"}},
+    "mechanism": {"minWords": 170, "requiredTypes": {"headline", "paragraph"}},
+    "proof": {"minWords": 120, "requiredTypes": {"headline", "paragraph"}},
+    "before-after": {"minWords": 90, "requiredTypes": {"headline", "paragraph"}},
+    "product": {"minWords": 170, "requiredTypes": {"headline", "paragraph"}},
+    "feature-benefit": {"minWords": 120, "requiredTypes": {"headline", "paragraph"}},
+    "how-it-works": {"minWords": 110, "requiredTypes": {"headline", "paragraph"}},
+    "offer-stack": {"minWords": 160, "requiredTypes": {"headline", "paragraph", "cta"}},
+    "bonuses": {"minWords": 60, "requiredTypes": {"headline", "paragraph"}},
+    "pricing": {"minWords": 80, "requiredTypes": {"headline", "paragraph"}},
+    "guarantee": {"minWords": 80, "requiredTypes": {"headline", "paragraph"}},
+    "fit": {"minWords": 80, "requiredTypes": {"headline", "paragraph"}},
+    "faq": {"minWords": 80, "requiredTypes": {"headline", "paragraph"}},
+    "final-cta": {"minWords": 90, "requiredTypes": {"headline", "paragraph", "cta"}},
+}
+SALES_COPY_SECTION_MIN_WORDS = {
+    "problem": 170,
+    "agitation": 130,
+    "failed-alternatives": 180,
+    "new-insight": 140,
+    "mechanism": 220,
+    "proof": 160,
+    "product": 230,
+    "feature-benefit": 260,
+    "how-it-works": 180,
+    "offer-stack": 260,
+    "pricing": 120,
+    "guarantee": 100,
+    "faq": 420,
+    "final-cta": 110,
+}
+FORBIDDEN_META_COPY_PHRASES = [
+    "this section explains",
+    "this section should",
+    "the buyer can see",
+    "makes this point",
+    "this page explains",
+    "the page should",
+    "framework role",
+    "conversion job",
+    "belief shift",
+    "buyer belief",
+    "proof/support",
+    "visual need",
+    "copy anchor",
+    "cta role",
+    "write a headline",
+    "include a paragraph",
+    "use this section",
+]
+VSL_DEPENDENCY_PHRASES = [
+    "watch the video to understand",
+    "the video explains the mechanism",
+    "the video explains the offer",
+    "the vsl explains the mechanism",
+    "the vsl explains the offer",
+    "before you can understand the offer",
+]
 
 
 def read_json(path: Path, default=None):
@@ -185,6 +253,145 @@ def value_item_copy(item: dict, fallback: str = "") -> str:
         or item.get("whyItFails")
         or fallback
     )
+
+
+def word_count(text: str) -> int:
+    return len(re.findall(r"\b[\w'-]+\b", text or ""))
+
+
+def copy_block_texts(row: dict) -> list[str]:
+    return [as_text(block.get("text")) for block in list_of_dicts(row.get("copyBlocks")) if as_text(block.get("text"))]
+
+
+def copy_block_types(row: dict) -> set[str]:
+    return {as_text(block.get("type")) for block in list_of_dicts(row.get("copyBlocks")) if as_text(block.get("type"))}
+
+
+def row_copy_word_count(row: dict) -> int:
+    return word_count(" ".join(copy_block_texts(row)))
+
+
+def normalize_for_repetition(text: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9' -]+", "", text.lower())).strip()
+
+
+def repeated_sentence_findings(text: str, minimum_words: int = 8, max_repeats: int = 2) -> list[str]:
+    counts: dict[str, int] = {}
+    originals: dict[str, str] = {}
+    for sentence in re.split(r"(?<=[.!?])\s+", text or ""):
+        normalized = normalize_for_repetition(sentence)
+        if word_count(normalized) < minimum_words:
+            continue
+        if normalized.startswith("cta "):
+            continue
+        counts[normalized] = counts.get(normalized, 0) + 1
+        originals.setdefault(normalized, sentence.strip())
+    return [f"'{originals[key][:90]}' repeated {count} times" for key, count in counts.items() if count > max_repeats]
+
+
+def repeated_paragraph_findings(text: str, minimum_words: int = 20) -> list[str]:
+    counts: dict[str, int] = {}
+    originals: dict[str, str] = {}
+    for paragraph in re.split(r"\n\s*\n", text or ""):
+        normalized = normalize_for_repetition(paragraph)
+        if word_count(normalized) < minimum_words:
+            continue
+        counts[normalized] = counts.get(normalized, 0) + 1
+        originals.setdefault(normalized, paragraph.strip())
+    return [f"'{originals[key][:90]}' repeated {count} times" for key, count in counts.items() if count > 1]
+
+
+def forbidden_meta_copy_hits(text: str) -> list[str]:
+    lower = (text or "").lower()
+    return [phrase for phrase in FORBIDDEN_META_COPY_PHRASES if phrase in lower]
+
+
+def vsl_dependency_hits(text: str) -> list[str]:
+    lower = (text or "").lower()
+    return [phrase for phrase in VSL_DEPENDENCY_PHRASES if phrase in lower]
+
+
+def h2_markdown_section(text: str, heading: str) -> str:
+    pattern = rf"(?ims)^\s*##\s+{re.escape(heading)}\s*$([\s\S]*?)(?=^\s*##\s+|\Z)"
+    match = re.search(pattern, text or "")
+    return match.group(1) if match else ""
+
+
+def copy_block_quality_issues(plan: dict) -> list[str]:
+    issues: list[str] = []
+    total_words = 0
+    for row in section_rows(plan):
+        section_id = as_text(row.get("sectionId"))
+        texts = copy_block_texts(row)
+        section_text = "\n".join(texts)
+        total_words += word_count(section_text)
+        requirement = COPY_SECTION_REQUIREMENTS.get(section_id)
+        if not requirement:
+            continue
+        section_words = word_count(section_text)
+        if section_words < requirement["minWords"]:
+            issues.append(
+                f"sectionPlan[{section_id}].copyBlocks are too thin: {section_words} words found, "
+                f"{requirement['minWords']}+ required."
+            )
+        missing_types = sorted(requirement["requiredTypes"] - copy_block_types(row))
+        if missing_types:
+            issues.append(f"sectionPlan[{section_id}].copyBlocks missing required block types: {', '.join(missing_types)}.")
+        if forbidden_meta_copy_hits(section_text):
+            issues.append(
+                f"sectionPlan[{section_id}].copyBlocks contain internal/meta copy: "
+                + ", ".join(forbidden_meta_copy_hits(section_text)[:4])
+            )
+        repeated = repeated_sentence_findings(section_text, max_repeats=1)
+        if repeated:
+            issues.append(f"sectionPlan[{section_id}].copyBlocks repeat boilerplate sentences: " + "; ".join(repeated[:2]))
+    if total_words < COPY_BLOCK_WORD_MINIMUM:
+        issues.append(
+            f"copy-plan.json copyBlocks contain only {total_words} buyer-facing words; "
+            f"{COPY_BLOCK_WORD_MINIMUM}+ required before rendering copy.md."
+        )
+    return issues
+
+
+def sales_copy_markdown_quality_issues(plan: dict, copy_markdown: str) -> list[str]:
+    issues: list[str] = []
+    total_words = word_count(copy_markdown)
+    if total_words < SALES_COPY_WORD_MINIMUM:
+        issues.append(f"copy.md is too thin for long-form sales copy: {total_words} words found, {SALES_COPY_WORD_MINIMUM}+ required.")
+    forbidden_hits = forbidden_meta_copy_hits(copy_markdown)
+    if forbidden_hits:
+        issues.append("copy.md contains internal/meta copy: " + ", ".join(forbidden_hits[:6]))
+    vsl_hits = vsl_dependency_hits(copy_markdown)
+    if vsl_hits:
+        issues.append("copy.md depends on the VSL instead of standing alone: " + ", ".join(vsl_hits[:4]))
+    repeated_sentences = repeated_sentence_findings(copy_markdown)
+    if repeated_sentences:
+        issues.append("copy.md repeats boilerplate sentences: " + "; ".join(repeated_sentences[:4]))
+    repeated_paragraphs = repeated_paragraph_findings(copy_markdown)
+    if repeated_paragraphs:
+        issues.append("copy.md repeats full paragraphs: " + "; ".join(repeated_paragraphs[:3]))
+    for section_id, minimum in SALES_COPY_SECTION_MIN_WORDS.items():
+        heading = section_title(section_id)
+        section = h2_markdown_section(copy_markdown, heading)
+        section_words = word_count(section)
+        if section_words < minimum:
+            issues.append(f"copy.md section '{heading}' is too thin: {section_words} words found, {minimum}+ required.")
+    faq_section = h2_markdown_section(copy_markdown, section_title("faq"))
+    faq_items = len(re.findall(r"(?im)^\s*###\s+", faq_section))
+    if faq_items < 7:
+        issues.append(f"copy.md FAQ must include 7+ specific objection questions: {faq_items} found.")
+    if plan.get("standaloneCopyRequired") is True:
+        required_terms = [
+            as_text(plan.get("uniqueMechanism", {}).get("name")),
+            as_text(plan.get("productReveal", {}).get("productType")),
+            as_text(plan.get("guarantee", {}).get("name")),
+            as_text(plan.get("valueLogic", {}).get("todayPrice") or plan.get("price")),
+        ]
+        lower = copy_markdown.lower()
+        missing = [term for term in required_terms if term and term.lower() not in lower]
+        if missing:
+            issues.append("copy.md is not self-contained; it misses core offer terms: " + ", ".join(missing[:4]))
+    return issues
 
 
 def validate_copy_plan(plan: dict) -> list[str]:
@@ -289,6 +496,7 @@ def validate_copy_plan(plan: dict) -> list[str]:
             issues.append(f"sectionPlan[{index}] missing fields: " + ", ".join(missing_row))
         if not list_of_dicts(row.get("copyBlocks")):
             issues.append(f"sectionPlan[{index}] has no copyBlocks.")
+    issues.extend(copy_block_quality_issues(plan))
     if "proof" in row_ids and "offer-stack" in row_ids and row_ids.index("proof") > row_ids.index("offer-stack"):
         issues.append("sectionPlan must place proof before offer-stack.")
     if "new-insight" in row_ids and "mechanism" in row_ids and row_ids.index("new-insight") > row_ids.index("mechanism"):
@@ -809,7 +1017,15 @@ def upsert_artifact(manifest: dict, artifact: dict) -> None:
     artifacts.append(artifact)
 
 
-def update_manifest(manifest: dict, copy_path: str, copy_blueprint_path: str, copy_plan_path: str, blueprint_path: str, plan: dict) -> dict:
+def update_manifest(
+    manifest: dict,
+    copy_path: str,
+    copy_blueprint_path: str,
+    copy_plan_path: str,
+    blueprint_path: str,
+    plan: dict,
+    copy_markdown: str,
+) -> dict:
     now = datetime.now(timezone.utc).isoformat()
     upsert_artifact(
         manifest,
@@ -900,6 +1116,14 @@ def update_manifest(manifest: dict, copy_path: str, copy_blueprint_path: str, co
             "urgencyBasisType": as_text(plan.get("urgencyBasis", {}).get("type")),
             "fakeUrgency": plan.get("urgencyBasis", {}).get("fakeUrgency"),
             "renderedFromCopyPlan": True,
+            "finishedCopySource": "copy-plan.sectionPlan.copyBlocks",
+            "copyBlocksBuyerFacing": True,
+            "copyCriticRubric": "copy-critic-rubric-v1",
+            "copyCriticPassed": True,
+            "copyWordCount": word_count(copy_markdown),
+            "copyBlockWordCount": sum(row_copy_word_count(row) for row in section_rows(plan)),
+            "minimumCopyWords": SALES_COPY_WORD_MINIMUM,
+            "targetCopyWords": f"{SALES_COPY_TARGET_MINIMUM}-{SALES_COPY_TARGET_MAXIMUM}",
         }
     )
     manifest["updatedAt"] = now
@@ -932,6 +1156,11 @@ def main() -> int:
             print(issue)
         return 1
     copy_markdown = render_sales_copy_markdown(plan)
+    copy_quality_issues = sales_copy_markdown_quality_issues(plan, copy_markdown)
+    if copy_quality_issues:
+        for issue in copy_quality_issues:
+            print(issue)
+        return 1
     copy_blueprint_markdown = render_copy_blueprint_markdown(plan)
     blueprint = build_sales_page_blueprint(plan)
     if args.no_write:
@@ -947,6 +1176,7 @@ def main() -> int:
         args.copy_plan.replace("\\", "/"),
         args.blueprint_output.replace("\\", "/"),
         plan,
+        copy_markdown,
     )
     write_json(manifest_path, manifest)
     print(f"Built {copy_output_path}")

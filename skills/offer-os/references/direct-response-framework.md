@@ -26,6 +26,8 @@ Copy Studio adds the Modern Brunson layer before page rendering:
 
 - Hook, Story/Insight, Offer is the macro flow.
 - The written page must stand alone without the VSL.
+- `copy-plan.json.sectionPlan[].copyBlocks` must contain finished buyer-facing copy, not notes or framework labels.
+- Rendered `copy.md` must contain 2,500+ customer-facing words and pass the Copy Critic rubric before page/image work.
 - The page needs a specific epiphany/new insight before the named unique mechanism.
 - Product reveal includes feature-benefit-reason bullets and how-it-works steps.
 - Offer stack items explain why each deliverable matters.

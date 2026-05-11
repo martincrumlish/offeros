@@ -8,8 +8,8 @@ Generate assets in dependency order. Earlier assets define constraints for later
 2. Design guide
 3. Single final logo lockup
 4. Product outline and offer stack
-5. `copy-plan.json` from Copy Studio
-6. Clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`
+5. `copy-plan.json` from Copy Studio, with finished buyer-facing copy in `sectionPlan[].copyBlocks`
+6. Clean written `copy.md`, internal `copy-blueprint.md`, `sales-page-blueprint.json`, and a clean Copy Critic pass
 7. `visual-asset-plan.md` v2 anchored to Copy Studio
 8. Sales page graphics
 9. Sales page structure/build
@@ -44,7 +44,7 @@ Deep mode should include at least:
 
 ## Visual Asset Plan
 
-Create `visual-asset-plan.md` v2 after `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` exist and before building sales-page graphics, the PDF product, ad images, the VSL deck, or the delivery dashboard.
+Create `visual-asset-plan.md` v2 after `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` exist and after the rendered copy passes the Copy Critic rubric. Do this before building sales-page graphics, the PDF product, ad images, the VSL deck, or the delivery dashboard.
 
 The plan must split visuals into:
 
@@ -139,7 +139,7 @@ After the final logo is accepted, freeze the brand lockup:
 
 ### Copy Studio Blueprint
 
-Required before page-specific graphics, VSL visuals, ad angles, and checkout graphics. `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` define the sales-page sections, objections, proof jobs, CTAs, visual blocks, `copyAnchor` values, and suggested `visualKind` values.
+Required before page-specific graphics, VSL visuals, ad angles, and checkout graphics. `copy-plan.json`, clean `copy.md`, `copy-blueprint.md`, and `sales-page-blueprint.json` define the sales-page sections, objections, proof jobs, CTAs, visual blocks, `copyAnchor` values, and suggested `visualKind` values. If `copy.md` is thin, generic, repetitive, or VSL-dependent, stop and revise `copy-plan.json` before planning visuals.
 
 ### Product Bundle
 

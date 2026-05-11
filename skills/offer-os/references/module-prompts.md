@@ -86,7 +86,7 @@ Avoid abstract swooshes, generic marks, fragile details, page-curl/folded-paper 
 
 Purpose: produce full conversion copy based on the offer architecture through Copy Studio.
 
-Production rule: follow the Sales Page Recipe in `references/exact-build-recipes.md`. Write `copy-plan.json` first using `framework: "modern-brunson-long-form-v1"`, `standaloneCopyRequired: true`, and `vslDependency: "optional-supporting-asset"`, then run `scripts/build_copy.py` to render clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`. Use `copy.md` as the delivery-dashboard sales-copy artifact, and keep section tables/framework metadata in `copy-blueprint.md`. Default `quality.salesPage.pageType` to `direct-response-long-form-vsl` for complete front-end offers.
+Production rule: follow the Sales Page Recipe in `references/exact-build-recipes.md`. Load `references/copywriter-quality-bar.md` before authoring. Write `copy-plan.json` first using `framework: "modern-brunson-long-form-v1"`, `standaloneCopyRequired: true`, and `vslDependency: "optional-supporting-asset"`. Write finished buyer-facing sales copy inside `sectionPlan[].copyBlocks`; do not write notes, scaffolds, internal labels, or reminders for a later copywriter. Then run `scripts/build_copy.py` to render clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`. Apply `references/copy-critic-rubric.md` to the rendered copy. Use `copy.md` as the delivery-dashboard sales-copy artifact, and keep section tables/framework metadata in `copy-blueprint.md`. Default `quality.salesPage.pageType` to `direct-response-long-form-vsl` for complete front-end offers.
 
 Output:
 
@@ -97,8 +97,9 @@ Output:
 5. Feature-benefit-reason rows for every core component and value-explained deliverables for the offer stack.
 6. Objection matrix: 7+ real objections with answers and belief shifts; no generic FAQ labels.
 7. Rendered clean `copy.md`, internal `copy-blueprint.md`, and generated `sales-page-blueprint.json` from `scripts/build_copy.py`.
+8. Copy Critic pass: `copy.md` has 2,500+ customer-facing words, target 3,500-5,500, no meta copy, no repeated boilerplate, no VSL dependency, and section-level depth.
 
-Composition rules: write the page as section-specific sales copy, not a single essay. The written page must stand alone without a VSL. Keep normal paragraphs under 55 words, keep the VSL setup under 220 words, and use comparison rows, checklists, callouts, proof/demo blocks, and CTA blocks to make the page scannable. Avoid vague hype, unsupported superlatives, fake urgency, wall-of-text sections, blank-looking cards, and copy that could sell any offer.
+Composition rules: write the page as section-specific sales copy, not a single essay. The written page must stand alone without a VSL. Keep normal paragraphs under 55 words, keep the VSL setup under 220 words, and use comparison rows, checklists, callouts, proof/demo blocks, and CTA blocks to make the page scannable. Avoid vague hype, unsupported superlatives, fake urgency, wall-of-text sections, blank-looking cards, meta phrases such as "this section explains" or "belief shift", and copy that could sell any offer.
 
 ## Sales Page Build
 
