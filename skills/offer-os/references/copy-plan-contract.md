@@ -2,11 +2,25 @@
 
 `copy-plan.json` is the canonical Copy Studio source. Codex authors it; `scripts/build_copy.py` validates and renders it into clean written `copy.md`, internal `copy-blueprint.md`, and `sales-page-blueprint.json`.
 
-`copy.md` is the actual long-form sales copy shown in the delivery dashboard. It must read like written sales copy, not a framework document, schema dump, or planning table.
+`copy.md` is the actual long-form sales copy shown in the delivery dashboard and rendered by the sales page. It must read like written sales copy, not a framework document, schema dump, or planning table.
+
+`copy.md` must use exact page-copy section markers:
+
+```text
+[hero]
+...
+[/hero]
+
+[mechanism]
+...
+[/mechanism]
+```
+
+The bracket markers are structural only. `scripts/build_sales_page.py` converts them to HTML comments such as `<!-- [hero] -->` and renders the contained buyer-facing text exactly. The page builder must not summarize, rewrite, delete, slice, or replace this copy with generic section cards.
 
 `copy-blueprint.md` keeps the internal section blueprint, framework metadata, and copy-rendering map. Do not put those tables in `copy.md`.
 
-`sectionPlan[].copyBlocks` are the finished copy source. They are not outline bullets, strategy notes, or section instructions. The builder renders `copy.md` from them and fails if they are thin or meta.
+`sectionPlan[].copyBlocks` are the finished copy source. They are not outline bullets, strategy notes, or section instructions. The builder renders bracketed `copy.md` from them and fails if they are thin or meta.
 
 Required metadata:
 

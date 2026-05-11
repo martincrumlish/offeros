@@ -37,11 +37,15 @@ REQUIRED_ORDER = [
     "problem",
     "agitation",
     "failed-alternatives",
+    "new-insight",
     "mechanism",
     "proof",
     "before-after",
     "product",
+    "feature-benefit",
+    "how-it-works",
     "offer-stack",
+    "bonuses",
     "fit",
     "pricing",
     "guarantee",
@@ -486,7 +490,144 @@ def section_eyebrow(section_id: str, data: dict | None = None, fallback: str = "
     return f'<p class="oo-eyebrow">{html_text(text)}</p>'
 
 
+def parse_copy_markdown_sections(root: Path, blueprint: dict) -> dict[str, str]:
+    copy_source = as_text(blueprint.get("copySourcePath"), "copy.md")
+    copy_path = root / copy_source
+    if not copy_path.exists():
+        return {}
+    sections: dict[str, list[str]] = {}
+    current = ""
+    buffer: list[str] = []
+    for line in copy_path.read_text(encoding="utf-8-sig").splitlines():
+        start = re.fullmatch(r"\[([a-z0-9-]+)\]", line.strip())
+        end = re.fullmatch(r"\[/([a-z0-9-]+)\]", line.strip())
+        if start:
+            if current:
+                sections[current] = buffer
+            current = start.group(1)
+            buffer = []
+            continue
+        if end:
+            if current != end.group(1):
+                raise ValueError(f"copy.md section marker mismatch: opened [{current}], closed [/{end.group(1)}].")
+            sections[current] = buffer
+            current = ""
+            buffer = []
+            continue
+        if current:
+            buffer.append(line)
+    if current:
+        raise ValueError(f"copy.md section marker is not closed: [{current}].")
+    return {section_id: "\n".join(lines).strip() for section_id, lines in sections.items() if "\n".join(lines).strip()}
+
+
+def inline_markdown(text: str) -> str:
+    escaped = html_text(text)
+    escaped = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", escaped)
+    escaped = re.sub(r"\*(.+?)\*", r"<em>\1</em>", escaped)
+    return escaped
+
+
+def render_exact_markdown(markdown: str, checkout: str) -> str:
+    html: list[str] = []
+    bullets: list[str] = []
+
+    def flush_bullets() -> None:
+        nonlocal bullets
+        if bullets:
+            html.append(f'<ul class="oo-copy-list">{icon_list_items(bullets)}</ul>')
+            bullets = []
+
+    for raw_line in markdown.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("<!--"):
+            flush_bullets()
+            continue
+        cta = re.fullmatch(r"\[cta\](.+?)\[/cta\]", line, re.I)
+        if cta:
+            flush_bullets()
+            html.append(f'<a class="oo-cta" data-offeros-cta href="{checkout}">{html_text(cta.group(1))}</a>')
+            continue
+        legacy_cta = re.fullmatch(r"CTA:\s*(.+)", line, re.I)
+        if legacy_cta:
+            flush_bullets()
+            html.append(f'<a class="oo-cta" data-offeros-cta href="{checkout}">{html_text(legacy_cta.group(1))}</a>')
+            continue
+        if line.startswith("- "):
+            bullets.append(line[2:].strip())
+            continue
+        flush_bullets()
+        if line.startswith("# "):
+            html.append(f"<h1>{inline_markdown(line[2:].strip())}</h1>")
+        elif line.startswith("## "):
+            html.append(f"<h2>{inline_markdown(line[3:].strip())}</h2>")
+        elif line.startswith("### "):
+            html.append(f"<h3>{inline_markdown(line[4:].strip())}</h3>")
+        else:
+            html.append(f"<p>{inline_markdown(line)}</p>")
+    flush_bullets()
+    return "\n".join(html)
+
+
+def exact_section_visual(section_id: str, offer: str, context: dict) -> str:
+    if section_id == "failed-alternatives":
+        return support_visual(context["failedAlternativesVisual"], f"{offer} failed alternatives comparison", "comparison-visual", "failed-alternatives")
+    if section_id == "mechanism":
+        return support_visual(context["mechanismVisual"], f"{offer} mechanism diagram", "mechanism-diagram", "mechanism")
+    if section_id == "proof":
+        return support_visual(context["proofVisual"], f"{offer} proof or demo visual", "proof-demo-visual", "proof")
+    if section_id == "before-after":
+        return support_visual(context["beforeAfterVisual"], f"{offer} before and after visual", "structured-panel", "before-after")
+    if section_id == "guarantee":
+        return support_visual(context["guaranteeBadge"], f"{offer} guarantee badge", "structured-panel", "guarantee")
+    return ""
+
+
+def render_exact_copy_section(section_id: str, markdown: str, manifest: dict, blueprint: dict, context: dict) -> str:
+    offer = manifest_offer(manifest, blueprint)
+    checkout = context["checkoutTarget"]
+    copy_html = render_exact_markdown(markdown, checkout)
+    comment_open = f"<!-- [{section_id}] -->"
+    comment_close = f"<!-- [/{section_id}] -->"
+    if section_id == "hero":
+        return f"""
+    {comment_open}
+    <section class="oo-hero oo-hero-stacked-vsl" data-offeros-section="hero" data-offeros-hero-layout="stacked-vsl" data-offeros-hero-contract="stacked-vsl-hero-v2" data-offeros-template="offeros-stacked-vsl-v2" data-offeros-copy-contract="exact-copy-sections-v1">
+      <div class="oo-hero-inner" data-offeros-hero-inner>
+        <div class="oo-hero-copy-stack oo-copy-flow" data-offeros-hero-copy-stack>{copy_html}</div>
+        <figure class="oo-vsl-frame oo-hero-video-primary" data-offeros-hero-video data-offeros-hero-video-prominence="primary" data-offeros-hero-video-size="large">
+          <img src="{context["heroVslThumbnail"]}" alt="{html_text(offer)} VSL preview" data-offeros-video-thumbnail>
+          <button class="oo-play-button" type="button" data-offeros-video-play aria-label="Play VSL">Play</button>
+        </figure>
+      </div>
+    </section>
+    {comment_close}"""
+    section_class = "oo-stack" if section_id == "offer-stack" else "oo-section"
+    dark = section_id in {"vsl", "agitation", "mechanism", "before-after", "pricing", "final-cta"}
+    if dark and section_class != "oo-stack":
+        section_class += " oo-section-dark"
+    anchor = ' id="checkout" data-offeros-buy-section data-offeros-checkout-anchor' if section_id == "offer-stack" else ""
+    bundle = ""
+    if section_id == "offer-stack":
+        bundle = f'<img class="oo-bundle" src="{context["productBundleImage"]}" alt="{html_text(offer)} product bundle" data-offeros-product-bundle data-offeros-image-display="constrained">'
+    visual = exact_section_visual(section_id, offer, context)
+    return f"""
+    {comment_open}
+    <section class="{section_class}" data-offeros-section="{html_text(section_id)}" data-offeros-copy-contract="exact-copy-sections-v1"{anchor}>
+      <div class="oo-container oo-copy-flow">
+        {visual}
+        {bundle}
+        {copy_html}
+      </div>
+    </section>
+    {comment_close}"""
+
+
 def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict, context: dict[str, str]) -> str:
+    copy_sections = context.get("_copySections")
+    if isinstance(copy_sections, dict) and section_id in copy_sections:
+        return render_exact_copy_section(section_id, copy_sections[section_id], manifest, blueprint, context)
+
     offer = manifest_offer(manifest, blueprint)
     audience = first_value(blueprint.get("audience"), manifest.get("audience"), fallback="operators")
     problem = first_value(blueprint.get("problem"), manifest.get("problem"), fallback="a slow, confusing path from idea to finished offer")
@@ -675,12 +816,24 @@ def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict,
 
 def render_sections(root: Path, manifest: dict, blueprint: dict, theme: dict, partials: dict[str, str]) -> tuple[str, list[str]]:
     context = block_context(root, manifest, blueprint, theme)
+    copy_sections = parse_copy_markdown_sections(root, blueprint)
+    if blueprint.get("pageRendersExactCopy") is True or blueprint.get("copySectionContract") == "exact-copy-sections-v1":
+        missing_copy_sections = [section_id for section_id in REQUIRED_ORDER if section_id not in copy_sections]
+        if missing_copy_sections:
+            raise ValueError(
+                "Sales page builder refused to invent or summarize missing copy sections. "
+                "Add bracketed sections to copy.md: " + ", ".join(missing_copy_sections)
+            )
+    context["_copySections"] = copy_sections
     blocks = blueprint.get("blocks")
     if not isinstance(blocks, list):
         blocks = [{"id": section_id, "partial": section_id} for section_id in REQUIRED_ORDER]
     html_blocks: list[str] = []
     used: list[str] = []
     present_ids = set()
+    exact_copy_contract = bool(copy_sections) and (
+        blueprint.get("pageRendersExactCopy") is True or blueprint.get("copySectionContract") == "exact-copy-sections-v1"
+    )
     for block in blocks:
         if isinstance(block, str):
             block = {"id": block, "partial": block}
@@ -693,6 +846,10 @@ def render_sections(root: Path, manifest: dict, blueprint: dict, theme: dict, pa
         data = section_data(blueprint, section_id)
         if isinstance(block.get("data"), dict):
             data = {**data, **block["data"]}
+        if exact_copy_contract and section_id in copy_sections:
+            html_blocks.append(render_exact_copy_section(section_id, copy_sections[section_id], manifest, blueprint, context))
+            present_ids.add(section_id)
+            continue
         template = partials.get(partial_name) if partial_name else None
         if template:
             html_blocks.append(substitute(template, {**context, **{k: html_text(v) for k, v in data.items() if not isinstance(v, (dict, list))}}))
@@ -786,6 +943,14 @@ def css(theme: dict) -> str:
     .oo-check-icon {{ width: 20px; height: 20px; flex-basis: 20px; border-radius: 999px; box-shadow: none; }}
     .oo-value-row {{ display: flex; justify-content: space-between; gap: 16px; align-items: center; max-width: 760px; margin: 24px auto; padding: 18px; background: rgba(0,0,0,.22); border-radius: 8px; }}
     .oo-faq .oo-card {{ margin-bottom: 14px; }}
+    .oo-copy-flow {{ display: grid; gap: 16px; }}
+    .oo-copy-flow h1, .oo-copy-flow h2 {{ margin-bottom: 4px; }}
+    .oo-copy-flow h3 {{ max-width: 840px; margin: 18px auto 2px; }}
+    .oo-copy-flow p {{ max-width: 860px; margin-left: auto; margin-right: auto; }}
+    .oo-copy-flow .oo-copy-list {{ display: grid; gap: 12px; width: min(900px, 100%); margin: 8px auto 0; padding: 0; list-style: none; text-align: left; }}
+    .oo-copy-flow .oo-copy-list li {{ display: flex; align-items: flex-start; gap: 11px; padding: 14px 16px; border-radius: 8px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); }}
+    .oo-section:not(.oo-section-dark) .oo-copy-flow .oo-copy-list li {{ background: var(--oo-surface); border-color: rgba(0,0,0,.08); box-shadow: 0 14px 36px rgba(17,24,39,.05); }}
+    .oo-copy-flow .oo-cta {{ justify-self: center; margin-top: 8px; }}
     @media (max-width: 760px) {{
       .oo-price-strip, .oo-trust-row, .oo-grid-3, .oo-grid-2, .oo-checklist {{ grid-template-columns: 1fr; }}
       .oo-price-strip, .oo-value-row {{ text-align: center; display: grid; }}
@@ -952,6 +1117,9 @@ def update_manifest(
             "copyFramework": COPY_FRAMEWORK if copy_plan_used else as_text(blueprint.get("copyFramework"), "legacy-copy-markdown"),
             "copyStudioUsed": copy_plan_used,
             "copyPlanPath": copy_plan_path if copy_plan_used else "",
+            "copySourcePath": as_text(blueprint.get("copySourcePath"), "copy.md"),
+            "copySectionContract": as_text(blueprint.get("copySectionContract"), "legacy"),
+            "pageRendersExactCopy": bool(blueprint.get("pageRendersExactCopy")),
             "standaloneCopyRequired": True if copy_plan_used else bool(blueprint.get("standaloneCopyRequired")),
             "compositionContract": "direct-response-composition-v2",
             "copyBlueprintPresent": True,

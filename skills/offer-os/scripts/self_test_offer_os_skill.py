@@ -74,6 +74,8 @@ SOURCE_CHECKS = [
             "vslDependency: \"optional-supporting-asset\"",
             "scripts/build_copy.py",
             "finished buyer-facing sales copy",
+            "exact-copy-sections-v1",
+            "[hero]...[/hero]",
             "1,800+ buyer-facing copy-block words",
             "2,500+ customer-facing words",
             "3,500-5,500",
@@ -214,6 +216,9 @@ SOURCE_CHECKS = [
             "`copy-blueprint.md` must include these exact headings",
             "# Section Blueprint",
             "`copy.md` must be clean written long-form sales copy only",
+            "copySectionContract: \"exact-copy-sections-v1\"",
+            "pageRendersExactCopy: true",
+            "must not summarize, rewrite, delete, compress, slice to three cards",
             "direct-response-long-form-v1",
             "framework: \"modern-brunson-long-form-v1\"",
             "pageFramework: \"direct-response-long-form-v1\"",
@@ -918,9 +923,42 @@ def good_hyrox_copy_plan() -> dict:
         "final-cta": "The close brings the decision back to the next workout. The athlete can keep collecting hard sessions, or they can start a defined 21-day block with targets, cues, and a fair guarantee.",
     }
 
+    section_depth_fillers = {
+        "mechanism": "The important detail is that the ladder changes one variable at a time. That keeps the athlete from confusing exhaustion with progress. Pace comes first, station pressure comes second, and race execution comes third, so the buyer can understand why the system is different from another brutal conditioning circuit.",
+        "product": "The buyer should be able to picture the product before the offer stack appears: a plan they open before training, tools they use during sessions, trackers they complete after sessions, and race-week guidance they follow when nerves usually create bad decisions. It is sold as a usable training kit, not as theory, so the copy must make the product feel openable, printable, and immediately actionable.",
+        "feature-benefit": "Each component earns its place by removing a specific source of race-prep uncertainty. The plan removes programming uncertainty, the calculator removes pacing uncertainty, the cue cards remove station uncertainty, the tracker removes progress uncertainty, and the race-week guide removes taper uncertainty. That feature-benefit chain is what stops the product reveal from becoming a bland list of PDFs and makes every deliverable feel tied to a race-day decision. The athlete should know exactly how each piece changes the next workout and the next race-day decision.",
+        "how-it-works": "The first action is simple enough to begin without a coaching call: pick the level, set the pace, and complete the first session. The later actions build on that evidence, so the athlete is not asked to trust an abstract plan while training decisions remain vague.",
+        "offer-stack": "The value is cumulative because the pieces work together. A plan without pacing numbers is vague. Pacing numbers without station cues are fragile. Station cues without a tracker are hard to judge. A tracker without race-week guidance still leaves the final days exposed. The stack copy must therefore explain the job of each item instead of naming files and hoping the buyer imagines the value. It should make the bundle feel like one practical race-prep system that removes friction before, during, and after training, right through race morning and final execution confidence.",
+        "pricing": "That comparison keeps the $27 decision grounded. One more drop-in class can make the athlete tired; this gives the next three weeks a clearer structure and gives every session a reason to exist.",
+        "guarantee": "The refund terms also make the promise more believable. The buyer is not asked to accept a vague confidence claim. They complete visible work, track the sessions, and judge whether the plan improved confidence under fatigue.",
+        "faq": "The FAQ is part of the selling argument, not a support afterthought. It handles practical reasons a good-fit athlete might delay: current level, equipment, short timeline, coaching overlap, missed sessions, product depth, and refund terms.",
+        "final-cta": "The decision is deliberately small and concrete. Start the block, complete the sessions, track the work, and use the guarantee if honest action does not create more confidence under fatigue.",
+    }
+
+    faq_blocks = [
+        ("question", "What if I am not advanced enough for HYROX-specific work?"),
+        ("answer", "The plan includes scalable paths and substitution notes. You need basic training experience, not elite numbers, because the first job is finding your pace floor and applying station pressure responsibly."),
+        ("question", "What if my gym does not have every HYROX station setup?"),
+        ("answer", "The substitution sheet gives practical swaps for normal gyms so you can train the pressure pattern without needing a perfect race venue or dedicated HYROX facility."),
+        ("question", "Can a 21-day block really help if I am already close to race day?"),
+        ("answer", "The block is not trying to build years of base fitness. It sharpens the specific connection between running, stations, transitions, and taper decisions that often breaks late."),
+        ("question", "Is this just another hard workout PDF?"),
+        ("answer", "No. Each week has a job, each session has a target, and the tools connect pace, station fatigue, tracking, and race-week execution instead of dumping random workouts on you."),
+        ("question", "What if I already have a coach?"),
+        ("answer", "Use this only if it complements your coach's plan. The kit is best for self-directed athletes or as a structured final-block reference, not as a replacement for medical or individualized coaching."),
+        ("question", "What if I miss a session during the 21 days?"),
+        ("answer", "The tracker helps you recover the sequence without pretending missed work disappeared. You adjust the next session around the purpose of the week instead of chasing guilt volume."),
+        ("question", "What if I do the work and still do not feel ready?"),
+        ("answer", "That is why the 12-Workout Action Guarantee exists. Complete the tracked work and ask for a refund if confidence under fatigue does not improve after honest use."),
+    ]
+
     def section_row(section_id: str, role: str, visual: str, cta_role: str = "none") -> dict:
         blocks = [{"type": block_type, "text": text} for block_type, text in sections[section_id]]
         blocks.append({"type": "paragraph", "text": section_expansions[section_id]})
+        if section_id in section_depth_fillers:
+            blocks.append({"type": "paragraph", "text": section_depth_fillers[section_id]})
+        if section_id == "faq":
+            blocks.extend({"type": block_type, "text": text} for block_type, text in faq_blocks)
         blocks.append(
             {
                 "type": "paragraph",
@@ -1140,14 +1178,36 @@ def synthetic_good_copy_build() -> dict:
         failures.append("copy-blueprint.md missing")
     if not (workspace / "sales-page-blueprint.json").exists():
         failures.append("sales-page-blueprint.json missing")
+    page_completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+    index_text = ""
+    if completed.returncode == 0:
+        page_builder = SKILL_ROOT / "scripts" / "build_sales_page.py"
+        page_completed = subprocess.run(
+            [sys.executable, str(page_builder), "--workspace", str(workspace), "--output", "index.html"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        index_path = workspace / "index.html"
+        index_text = index_path.read_text(encoding="utf-8", errors="ignore") if index_path.exists() else ""
+        if page_completed.returncode != 0:
+            failures.append("build_sales_page.py failed")
+        if '<!-- [hero] -->' not in index_text or '<!-- [/hero] -->' not in index_text:
+            failures.append("index.html missing exact-copy section comments")
+        if 'data-offeros-copy-contract="exact-copy-sections-v1"' not in index_text:
+            failures.append("index.html missing exact-copy contract markers")
+        if 'data-offeros-section="new-insight"' not in index_text or 'data-offeros-section="feature-benefit"' not in index_text:
+            failures.append("index.html missing Copy Studio spine sections")
+        if "Approved partials used" in page_completed.stdout:
+            failures.append("exact-copy page build used partials instead of copy.md sections")
     return {
         "id": "synthetic_good_copy_build",
         "ok": not failures,
-        "returncode": completed.returncode,
+        "returncode": completed.returncode if completed.returncode != 0 else page_completed.returncode,
         "copyWords": copy_words,
         "failures": failures,
-        "stdout": completed.stdout[-1000:],
-        "stderr": completed.stderr[-1000:],
+        "stdout": (completed.stdout + page_completed.stdout)[-1000:],
+        "stderr": (completed.stderr + page_completed.stderr)[-1000:],
     }
 
 

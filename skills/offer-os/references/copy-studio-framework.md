@@ -6,7 +6,9 @@ Use `framework: "modern-brunson-long-form-v1"`.
 
 The default page copy must stand alone even if the VSL is removed or replaced with a static image. Record `standaloneCopyRequired: true` and `vslDependency: "optional-supporting-asset"`.
 
-`copy.md` is the actual written sales copy used for the delivery dashboard. `copy-blueprint.md` is the internal framework and section map. Do not put the `# Section Blueprint` table in `copy.md`.
+`copy.md` is the actual written sales copy used for the delivery dashboard and the sales page. It must be rendered as bracketed page-copy sections (`[hero]...[/hero]`, `[problem]...[/problem]`, `[new-insight]...[/new-insight]`, etc.). `copy-blueprint.md` is the internal framework and section map. Do not put the `# Section Blueprint` table in `copy.md`.
+
+The sales page builder renders the text inside `copy.md` sections exactly and converts the bracket markers to HTML comments. Do not let a page builder summarize the copy, rewrite it, remove sections, or collapse sections into repeated three-card layouts.
 
 Before authoring `copy-plan.json`, load `references/copywriter-quality-bar.md`. After rendering `copy.md`, apply `references/copy-critic-rubric.md`. If `copy.md` is thin, repetitive, generic, meta, or VSL-dependent, revise `copy-plan.json` and rerun `scripts/build_copy.py` before visual planning or page generation.
 

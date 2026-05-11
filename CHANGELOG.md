@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.16.0
+
+- Makes `copy.md` the exact sales-page copy source with bracketed section blocks such as `[hero]...[/hero]`.
+- Makes `build_sales_page.py` render bracketed `copy.md` sections directly and convert markers to HTML comments.
+- Prevents Page Kit partials from overriding exact Copy Studio sections in deep Copy Studio runs.
+- Removes hidden copy injection from `build_copy.py`; required product, FAQ, feature-benefit, and offer-stack copy must be written in `sectionPlan[].copyBlocks` before page generation.
+- Extends self-tests with a focused exact-copy page build so the HTML must contain exact-copy contract markers and the full Copy Studio spine.
+
 ## 0.15.2
 
 - Removes ambiguous sales-page visual planning language: generated-design buyer-facing page images are explicit `imagegen` tasks.

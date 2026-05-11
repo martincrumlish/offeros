@@ -70,11 +70,15 @@ PAGE_SECTION_ORDER = [
     "problem",
     "agitation",
     "failed-alternatives",
+    "new-insight",
     "mechanism",
     "proof",
     "before-after",
     "product",
+    "feature-benefit",
+    "how-it-works",
     "offer-stack",
+    "bonuses",
     "fit",
     "pricing",
     "guarantee",
@@ -317,6 +321,12 @@ def h2_markdown_section(text: str, heading: str) -> str:
     return match.group(1) if match else ""
 
 
+def bracket_markdown_section(text: str, section_id: str) -> str:
+    pattern = rf"(?ims)^\s*\[{re.escape(section_id)}\]\s*$([\s\S]*?)^\s*\[/{re.escape(section_id)}\]\s*$"
+    match = re.search(pattern, text or "")
+    return match.group(1) if match else ""
+
+
 def copy_block_quality_issues(plan: dict) -> list[str]:
     issues: list[str] = []
     total_words = 0
@@ -372,11 +382,11 @@ def sales_copy_markdown_quality_issues(plan: dict, copy_markdown: str) -> list[s
         issues.append("copy.md repeats full paragraphs: " + "; ".join(repeated_paragraphs[:3]))
     for section_id, minimum in SALES_COPY_SECTION_MIN_WORDS.items():
         heading = section_title(section_id)
-        section = h2_markdown_section(copy_markdown, heading)
+        section = bracket_markdown_section(copy_markdown, section_id) or h2_markdown_section(copy_markdown, heading)
         section_words = word_count(section)
         if section_words < minimum:
             issues.append(f"copy.md section '{heading}' is too thin: {section_words} words found, {minimum}+ required.")
-    faq_section = h2_markdown_section(copy_markdown, section_title("faq"))
+    faq_section = bracket_markdown_section(copy_markdown, "faq") or h2_markdown_section(copy_markdown, section_title("faq"))
     faq_items = len(re.findall(r"(?im)^\s*###\s+", faq_section))
     if faq_items < 7:
         issues.append(f"copy.md FAQ must include 7+ specific objection questions: {faq_items} found.")
@@ -750,123 +760,82 @@ def section_title(section_id: str) -> str:
     }.get(section_id, section_id.replace("-", " ").title())
 
 
-def render_copy_blocks(row: dict) -> list[str]:
+def render_copy_blocks(row: dict, section_id: str = "") -> list[str]:
     lines: list[str] = []
+    bullet_open = False
+
+    def close_bullets() -> None:
+        nonlocal bullet_open
+        if bullet_open:
+            lines.append("")
+            bullet_open = False
+
     for block in list_of_dicts(row.get("copyBlocks")):
         block_type = as_text(block.get("type"))
         text = as_text(block.get("text"))
         if not text:
             continue
         if block_type == "headline":
-            lines.extend([text, ""])
+            close_bullets()
+            heading = "#" if section_id == "hero" else "##"
+            lines.extend([f"{heading} {text}", ""])
         elif block_type == "prehead":
-            lines.extend([text.upper(), ""])
+            close_bullets()
+            lines.extend([text, ""])
         elif block_type == "bullet":
+            bullet_open = True
             lines.append(f"- {text}")
         elif block_type == "cta":
-            lines.extend(["", f"CTA: {text}", ""])
+            close_bullets()
+            lines.extend([f"[cta]{text}[/cta]", ""])
         elif block_type in {"question", "answer"}:
-            lines.extend([text, ""])
+            close_bullets()
+            if block_type == "question":
+                lines.extend([f"### {text}", ""])
+            else:
+                lines.extend([text, ""])
         else:
+            close_bullets()
             lines.extend([text, ""])
+    close_bullets()
     return lines
 
 
 def render_sales_copy_markdown(plan: dict) -> str:
     by_section = section_by_id(plan)
-    product = plan["productReveal"]
-    mechanism = plan["uniqueMechanism"]
-    proof = plan["proofPlan"]
-    offer_stack = plan["offerStack"]
-    guarantee = plan["guarantee"]
-    value_logic = plan["valueLogic"]
-    urgency = plan["urgencyBasis"]
     lines: list[str] = [
-        f"# {plan['offerName']} Sales Copy",
-        "",
-        f"For {plan['audience']}.",
+        "<!-- OfferOS page-copy source: exact-copy-sections-v1 -->",
+        f"<!-- Offer: {plan['offerName']} -->",
+        f"<!-- Framework: {COPY_FRAMEWORK} -->",
         "",
     ]
 
     for section_id in COPY_SPINE_SECTIONS:
         row = by_section.get(section_id, {})
-        lines.extend([f"## {section_title(section_id)}", ""])
-        rendered = render_copy_blocks(row)
+        lines.extend([f"[{section_id}]", ""])
+        rendered = render_copy_blocks(row, section_id)
         if rendered:
             lines.extend(rendered)
-
-        if section_id == "failed-alternatives":
-            for item in plan["failedAlternatives"]:
-                lines.append(f"- {item['name']}: {item['whyItFails']} What is needed instead: {item['whatIsNeededInstead']}")
-            lines.append("")
-        elif section_id == "new-insight":
-            lines.extend([plan["newInsight"], ""])
-        elif section_id == "mechanism":
-            lines.extend([f"{mechanism['name']}: {mechanism['explanation']}", "", mechanism["whyItWorks"], ""])
-            for step in mechanism["steps"]:
-                lines.append(f"- {value_item_title(step)}: {value_item_copy(step)}")
-            lines.append("")
-        elif section_id == "proof":
-            for item in proof["proofItems"]:
-                lines.append(f"- {value_item_title(item)}: {value_item_copy(item)}")
-            lines.append("")
-        elif section_id == "product":
-            lines.extend(
-                [
-                    product["plainEnglishDescription"],
-                    "",
-                    f"Who it is for: {product['whoItIsFor']}",
-                    "",
-                    f"What it helps them do: {product['whatItHelpsThemDo']}",
-                    "",
-                    f"Why now: {product['whyNow']}",
-                    "",
-                ]
-            )
-        elif section_id == "feature-benefit":
-            for component in product["coreComponents"]:
-                lines.append(f"- {component['feature']}: {component['plainBullet']} Benefit: {component['benefit']} Reason it matters: {component['reasonItMatters']}")
-            lines.append("")
-        elif section_id == "how-it-works":
-            for step in product["howItWorksSteps"]:
-                lines.append(f"- {value_item_title(step)}: {value_item_copy(step)}")
-            lines.extend(["", "Look inside proof:", ""])
-            for item in product["lookInsideProof"]:
-                lines.append(f"- {value_item_title(item)}: {value_item_copy(item)}")
-            lines.extend(["", product["differenceFromAlternatives"], "", product["bridgeToOfferStack"], ""])
-        elif section_id == "offer-stack":
-            for item in offer_stack["items"]:
-                value = as_text(item.get("value"))
-                suffix = f" ({value})" if value else ""
-                lines.append(f"- {value_item_title(item)}{suffix}: {value_item_copy(item)}")
-            lines.extend(["", f"CTA: {offer_stack['cta']}", offer_stack["accessCopy"], ""])
-        elif section_id == "bonuses":
-            for item in list_of_dicts(plan.get("bonuses")):
-                lines.append(f"- {value_item_title(item)}: {value_item_copy(item)}")
-            lines.append("")
-        elif section_id == "pricing":
-            lines.extend([value_logic["comparison"], "", value_logic["priceJustification"], "", f"Today price: {value_logic['todayPrice']}", ""])
-        elif section_id == "guarantee":
-            lines.extend([f"{guarantee['name']}: {guarantee['terms']} {guarantee['reassurance']}", ""])
-        elif section_id == "faq":
-            for item in plan["objectionMatrix"]:
-                lines.extend([f"### {item['objection']}", "", item["answer"], ""])
-        elif section_id == "final-cta":
-            if urgency.get("type") != "none":
-                lines.extend(["Urgency:", urgency.get("description", ""), ""])
+        lines.extend([f"[/{section_id}]", ""])
 
     return "\n".join(line.rstrip() for line in lines).strip() + "\n"
 
 
 def page_section_copy(plan: dict, section_id: str) -> dict:
     row = section_by_id(plan).get(section_id, {})
-    data: dict = {}
+    data: dict = {
+        "sectionId": section_id,
+        "copyContract": "exact-copy-sections-v1",
+        "copySourcePath": "copy.md",
+        "copyBlocks": list_of_dicts(row.get("copyBlocks")),
+    }
     headline = block_text(row, "headline")
     if headline:
         data["headline"] = headline
-    lead = block_text(row, "lead", "paragraph")
-    if lead:
-        data["copy"] = lead
+    paragraphs = block_list(row, "lead", "paragraph", "caption")
+    if paragraphs:
+        data["copy"] = "\n\n".join(paragraphs)
+        data["paragraphs"] = paragraphs
     bullets = block_list(row, "bullet")
     if bullets:
         data["bullets"] = bullets
@@ -902,18 +871,24 @@ def build_sales_page_blueprint(plan: dict) -> dict:
     mechanism_steps = [{"title": value_item_title(item), "copy": value_item_copy(item)} for item in mechanism["steps"]]
     sections["mechanism"]["headline"] = sections["mechanism"].get("headline") or mechanism["name"]
     sections["mechanism"]["copy"] = sections["mechanism"].get("copy") or mechanism["explanation"]
-    sections["mechanism"]["cards"] = mechanism_steps[:3]
-    sections["proof"]["cards"] = [{"title": value_item_title(item), "copy": value_item_copy(item)} for item in proof["proofItems"][:3]]
+    sections["mechanism"]["cards"] = mechanism_steps
+    sections["proof"]["cards"] = [{"title": value_item_title(item), "copy": value_item_copy(item)} for item in proof["proofItems"]]
     sections["product"]["headline"] = sections["product"].get("headline") or f"Introducing {plan['offerName']}"
-    sections["product"]["copy"] = product["plainEnglishDescription"]
+    sections["product"].setdefault("copy", product["plainEnglishDescription"])
     product_cards = [
         {
             "title": component["feature"],
             "copy": component["plainBullet"],
+            "benefit": component["benefit"],
+            "reasonItMatters": component["reasonItMatters"],
         }
-        for component in product["coreComponents"][:3]
+        for component in product["coreComponents"]
     ]
     sections["product"]["cards"] = product_cards
+    sections["feature-benefit"]["cards"] = product_cards
+    sections["how-it-works"]["steps"] = [
+        {"title": value_item_title(item), "copy": value_item_copy(item)} for item in product["howItWorksSteps"]
+    ]
     sections["offer-stack"]["deliverables"] = [
         f"{value_item_title(item)} so {value_item_copy(item)}" for item in plan["offerStack"]["items"]
     ]
@@ -954,6 +929,9 @@ def build_sales_page_blueprint(plan: dict) -> dict:
         "copyFramework": COPY_FRAMEWORK,
         "compositionContract": COMPOSITION_CONTRACT,
         "copyPlanPath": "copy-plan.json",
+        "copySourcePath": "copy.md",
+        "copySectionContract": "exact-copy-sections-v1",
+        "pageRendersExactCopy": True,
         "copyStudioUsed": True,
         "standaloneCopyRequired": True,
         "vslDependency": "optional-supporting-asset",
@@ -1104,6 +1082,8 @@ def update_manifest(
             "copyBlueprintPath": copy_blueprint_path,
             "copyIsCustomerFacing": True,
             "salesPageBlueprintPath": blueprint_path,
+            "copySectionContract": "exact-copy-sections-v1",
+            "pageRendersExactCopy": True,
             "hasNewInsight": bool(as_text(plan.get("newInsight"))),
             "hasUniqueMechanism": bool(as_text(plan.get("uniqueMechanism", {}).get("name"))),
             "hasFailedAlternatives": len(list_of_dicts(plan.get("failedAlternatives"))) >= 3,
