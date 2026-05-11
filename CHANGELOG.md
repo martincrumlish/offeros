@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.1
+
+- Makes exact-copy sales pages skip support images unless the asset is registered with compliant buyer-facing image provenance.
+- Prevents old local/code-made page panels from slipping into regenerated pages merely because a fallback filename exists.
+- Keeps the stricter preflight refusal for hero thumbnails, product bundles, and rendered support visuals.
+
 ## 0.16.0
 
 - Makes `copy.md` the exact sales-page copy source with bracketed section blocks such as `[hero]...[/hero]`.

@@ -482,6 +482,18 @@ def preflight_buyer_facing_images(root: Path, manifest: dict, html_text_value: s
         )
 
 
+def usable_buyer_facing_image(root: Path, manifest: dict, src: str, label: str) -> bool:
+    rel = local_image_src(src)
+    if not rel:
+        return False
+    if not (root / rel).exists():
+        return False
+    artifact = artifact_path_map(manifest).get(rel.lower())
+    if not artifact:
+        return False
+    return not buyer_facing_image_metadata_issues(artifact, src, label)
+
+
 def section_eyebrow(section_id: str, data: dict | None = None, fallback: str = "") -> str:
     if section_id not in EYEBROW_SECTIONS:
         return ""
@@ -569,21 +581,34 @@ def render_exact_markdown(markdown: str, checkout: str) -> str:
     return "\n".join(html)
 
 
-def exact_section_visual(section_id: str, offer: str, context: dict) -> str:
+def exact_section_visual(root: Path, manifest: dict, section_id: str, offer: str, context: dict) -> str:
+    def approved(src: str) -> bool:
+        return usable_buyer_facing_image(root, manifest, src, "Sales-page support visual")
+
     if section_id == "failed-alternatives":
+        if not approved(context["failedAlternativesVisual"]):
+            return ""
         return support_visual(context["failedAlternativesVisual"], f"{offer} failed alternatives comparison", "comparison-visual", "failed-alternatives")
     if section_id == "mechanism":
+        if not approved(context["mechanismVisual"]):
+            return ""
         return support_visual(context["mechanismVisual"], f"{offer} mechanism diagram", "mechanism-diagram", "mechanism")
     if section_id == "proof":
+        if not approved(context["proofVisual"]):
+            return ""
         return support_visual(context["proofVisual"], f"{offer} proof or demo visual", "proof-demo-visual", "proof")
     if section_id == "before-after":
+        if not approved(context["beforeAfterVisual"]):
+            return ""
         return support_visual(context["beforeAfterVisual"], f"{offer} before and after visual", "structured-panel", "before-after")
     if section_id == "guarantee":
+        if not approved(context["guaranteeBadge"]):
+            return ""
         return support_visual(context["guaranteeBadge"], f"{offer} guarantee badge", "structured-panel", "guarantee")
     return ""
 
 
-def render_exact_copy_section(section_id: str, markdown: str, manifest: dict, blueprint: dict, context: dict) -> str:
+def render_exact_copy_section(root: Path, section_id: str, markdown: str, manifest: dict, blueprint: dict, context: dict) -> str:
     offer = manifest_offer(manifest, blueprint)
     checkout = context["checkoutTarget"]
     copy_html = render_exact_markdown(markdown, checkout)
@@ -610,7 +635,7 @@ def render_exact_copy_section(section_id: str, markdown: str, manifest: dict, bl
     bundle = ""
     if section_id == "offer-stack":
         bundle = f'<img class="oo-bundle" src="{context["productBundleImage"]}" alt="{html_text(offer)} product bundle" data-offeros-product-bundle data-offeros-image-display="constrained">'
-    visual = exact_section_visual(section_id, offer, context)
+    visual = exact_section_visual(root, manifest, section_id, offer, context)
     return f"""
     {comment_open}
     <section class="{section_class}" data-offeros-section="{html_text(section_id)}" data-offeros-copy-contract="exact-copy-sections-v1"{anchor}>
@@ -623,10 +648,10 @@ def render_exact_copy_section(section_id: str, markdown: str, manifest: dict, bl
     {comment_close}"""
 
 
-def render_builtin(section_id: str, data: dict, manifest: dict, blueprint: dict, context: dict[str, str]) -> str:
+def render_builtin(root: Path, section_id: str, data: dict, manifest: dict, blueprint: dict, context: dict[str, str]) -> str:
     copy_sections = context.get("_copySections")
     if isinstance(copy_sections, dict) and section_id in copy_sections:
-        return render_exact_copy_section(section_id, copy_sections[section_id], manifest, blueprint, context)
+        return render_exact_copy_section(root, section_id, copy_sections[section_id], manifest, blueprint, context)
 
     offer = manifest_offer(manifest, blueprint)
     audience = first_value(blueprint.get("audience"), manifest.get("audience"), fallback="operators")
@@ -847,7 +872,7 @@ def render_sections(root: Path, manifest: dict, blueprint: dict, theme: dict, pa
         if isinstance(block.get("data"), dict):
             data = {**data, **block["data"]}
         if exact_copy_contract and section_id in copy_sections:
-            html_blocks.append(render_exact_copy_section(section_id, copy_sections[section_id], manifest, blueprint, context))
+            html_blocks.append(render_exact_copy_section(root, section_id, copy_sections[section_id], manifest, blueprint, context))
             present_ids.add(section_id)
             continue
         template = partials.get(partial_name) if partial_name else None
@@ -855,11 +880,11 @@ def render_sections(root: Path, manifest: dict, blueprint: dict, theme: dict, pa
             html_blocks.append(substitute(template, {**context, **{k: html_text(v) for k, v in data.items() if not isinstance(v, (dict, list))}}))
             used.append(partial_name)
         else:
-            html_blocks.append(render_builtin(section_id, data, manifest, blueprint, context))
+            html_blocks.append(render_builtin(root, section_id, data, manifest, blueprint, context))
         present_ids.add(section_id)
     for section_id in REQUIRED_ORDER:
         if section_id not in present_ids:
-            html_blocks.append(render_builtin(section_id, section_data(blueprint, section_id), manifest, blueprint, context))
+            html_blocks.append(render_builtin(root, section_id, section_data(blueprint, section_id), manifest, blueprint, context))
     return "\n".join(block for block in html_blocks if block.strip()), used
 
 
