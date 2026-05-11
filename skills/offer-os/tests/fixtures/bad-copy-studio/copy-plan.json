@@ -1,0 +1,141 @@
+{
+  "schema": "offeros/copy-plan/v1",
+  "framework": "direct-response-long-form-v1",
+  "standaloneCopyRequired": false,
+  "vslDependency": "required-main-pitch",
+  "offerName": "Bad Copy Studio Fixture",
+  "price": "$27",
+  "audience": "buyers",
+  "awarenessLevel": "aware",
+  "marketSophistication": "low",
+  "corePromise": "Build something useful",
+  "primaryPain": "They need help",
+  "failedAlternatives": [
+    {
+      "name": "Templates",
+      "whyItFails": "generic",
+      "whatIsNeededInstead": "better"
+    }
+  ],
+  "uniqueMechanism": {
+    "name": "",
+    "explanation": "thin",
+    "whyItWorks": "thin",
+    "steps": []
+  },
+  "proofPlan": {
+    "proofType": "none",
+    "proofBeforeOffer": false,
+    "proofItems": []
+  },
+  "productReveal": {
+    "productType": "PDF",
+    "plainEnglishDescription": "A PDF and templates.",
+    "whoItIsFor": "buyers",
+    "whatItHelpsThemDo": "do things",
+    "whyNow": "now",
+    "coreComponents": [
+      {
+        "feature": "Workbook",
+        "benefit": "",
+        "reasonItMatters": "",
+        "buyerProblemSolved": "",
+        "proofOrPreview": "",
+        "plainBullet": "Workbook."
+      }
+    ],
+    "howItWorksSteps": [],
+    "lookInsideProof": [],
+    "differenceFromAlternatives": "different",
+    "bridgeToOfferStack": "buy"
+  },
+  "offerStack": {
+    "items": [
+      {
+        "title": "PDF",
+        "copy": ""
+      }
+    ],
+    "cta": "Buy",
+    "accessCopy": "Access"
+  },
+  "bonuses": [],
+  "valueLogic": {
+    "comparison": "cheap",
+    "priceJustification": "cheap",
+    "todayPrice": "$27"
+  },
+  "guarantee": {
+    "name": "Guarantee",
+    "terms": "refund",
+    "reassurance": "safe"
+  },
+  "objectionMatrix": [
+    {
+      "objection": "What is this",
+      "answer": "It helps.",
+      "beliefShift": "trust"
+    }
+  ],
+  "urgencyBasis": {
+    "type": "launch-window",
+    "description": "",
+    "fakeUrgency": true
+  },
+  "sectionPlan": [
+    {
+      "sectionId": "hero",
+      "frameworkRole": "hook",
+      "conversionJob": "hook the buyer",
+      "buyerBeliefBefore": "unsure",
+      "buyerBeliefAfter": "interested",
+      "primaryClaim": "claim",
+      "proofOrSupport": "none",
+      "copyBlocks": [
+        {
+          "type": "headline",
+          "text": "Generic headline"
+        }
+      ],
+      "visualNeed": "hero-vsl-frame",
+      "ctaRole": "early",
+      "maxWords": 80
+    },
+    {
+      "sectionId": "offer-stack",
+      "frameworkRole": "offer",
+      "conversionJob": "sell",
+      "buyerBeliefBefore": "unsure",
+      "buyerBeliefAfter": "buy",
+      "primaryClaim": "stack",
+      "proofOrSupport": "none",
+      "copyBlocks": [
+        {
+          "type": "paragraph",
+          "text": "Buy it."
+        }
+      ],
+      "visualNeed": "offer-stack-bundle",
+      "ctaRole": "buy",
+      "maxWords": 120
+    },
+    {
+      "sectionId": "proof",
+      "frameworkRole": "proof",
+      "conversionJob": "prove",
+      "buyerBeliefBefore": "unsure",
+      "buyerBeliefAfter": "believes",
+      "primaryClaim": "proof",
+      "proofOrSupport": "none",
+      "copyBlocks": [
+        {
+          "type": "paragraph",
+          "text": "Trust us."
+        }
+      ],
+      "visualNeed": "proof-demo-visual",
+      "ctaRole": "none",
+      "maxWords": 120
+    }
+  ]
+}

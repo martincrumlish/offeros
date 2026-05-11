@@ -27,7 +27,7 @@ Owns design resolver, image prompts, asset sequencing, and visual QA notes.
 
 ### Imagegen Visual Workers
 
-Use these workers only after the initial offer architecture, `design.md`, final logo lockup, `assets/logo.png`, `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist. At that point the workers have enough content anchors to create coherent visuals instead of inventing separate styles.
+Use these workers only after the initial offer architecture, `design.md`, final logo lockup, `assets/logo.png`, `copy-plan.json`, rendered `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist. At that point the workers have enough content anchors to create coherent visuals instead of inventing separate styles.
 
 Dispatch them in parallel when the user has allowed agents and the run needs a full visual asset set:
 
@@ -40,6 +40,7 @@ Give every visual worker the same source references:
 
 - `offer-architecture.md`
 - `design.md`
+- `copy-plan.json`
 - `copy.md`
 - `visual-asset-plan.md`
 - frozen final `assets/logo.png` only
@@ -76,7 +77,7 @@ Artifact target: [page/PDF/VSL/ad and section or slide/page]
 visualKind: [approved visualKind from visual-asset-plan.md]
 copyAnchor: [data-offeros-section or PDF/VSL/ad anchor]
 Visual job: [belief/action the visual must support]
-conversionJob: [conversion job from copy.md/slide plan/ad angle]
+conversionJob: [conversion job from copy-plan.json/copy.md/slide plan/ad angle]
 Style references: design.md rules, frozen assets/logo.png only, color palette, product mockup direction
 Composition: [specific layout, focal point, aspect ratio]
 Text rule: [no text | large exact text only | labels from plan only]

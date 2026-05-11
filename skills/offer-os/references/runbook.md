@@ -130,23 +130,27 @@ Follow the Sales Page Recipe in `references/exact-build-recipes.md` before writi
 
 Required result:
 
-- `copy.md` with the required headings from the recipe
+- `copy-plan.json` using `modern-brunson-long-form-v1`
+- `copy.md` rendered from `scripts/build_copy.py` with the required headings from the recipe
+- `sales-page-blueprint.json` generated from the Copy Studio source
 - section-by-section sales-page blueprint with conversion job, visual block, suggested `visualKind`, `copyAnchor`, proof/objection handled, and CTA role
-- direct-response-long-form-v1 spine: message match, hook/VSL, problem, agitation, failed alternatives, mechanism, proof/demo, before/after, product, offer stack, guarantee, objections, close
+- Modern Brunson spine: hook, story/insight, belief shift, named mechanism, proof/demo, product reveal, feature-benefit breakdown, how it works, offer stack, guarantee, objections, close
 - `quality.salesPage.pageType = "direct-response-long-form-vsl"` unless the user explicitly requested another page type
 - full copy, not an outline
 
-Register `sales-copy`.
+Register `copy-plan` and `sales-copy`.
 
 ## 8. Visual Asset Plan
 
-Follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md` after `copy.md` has the section blueprint and before creating sales-page graphics, PDF pages, ads, VSL slides, or dashboard previews.
+Follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md` after `copy-plan.json` and rendered `copy.md` have the section blueprint and before creating sales-page graphics, PDF pages, ads, VSL slides, or dashboard previews.
 
 Required result:
 
 - `visual-asset-plan.md` v2
 - `visualPlanStage: post-content-blueprint`
 - `copyBlueprintUsed: true`
+- `copyStudioUsed: true`
+- `copyPlanPath: copy-plan.json`
 - `salesPageImageSystem: mixed-direct-response-v1`
 - sales-page visuals with `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, and `textRule`
 - separate visual inventories for sales page, PDF product, VSL deck, ads, and dashboard
@@ -157,6 +161,8 @@ Required result:
 - `quality.images.hasArtifactSpecificPlan = true`
 - `quality.images.visualPlanStage = "post-content-blueprint"`
 - `quality.images.copyBlueprintUsed = true`
+- `quality.images.copyStudioUsed = true`
+- `quality.images.copyPlanPath = "copy-plan.json"`
 - `quality.images.visualReusePolicy = "artifact-specific-v1"`
 - `quality.images.salesPageImageSystem = "mixed-direct-response-v1"`
 

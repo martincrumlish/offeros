@@ -9,6 +9,15 @@ from pathlib import Path
 import re
 import zipfile
 
+from build_copy import (
+    COPY_FRAMEWORK,
+    STUDIO_VERSION as COPY_STUDIO_VERSION,
+    validate_copy_plan as validate_copy_plan_source,
+    section_rows as copy_plan_section_rows,
+    list_of_dicts as copy_list_of_dicts,
+    as_text as copy_as_text,
+)
+
 
 TEXT_EXTS = {".html", ".md", ".txt", ".json", ".css", ".js"}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
@@ -27,6 +36,7 @@ DEEP_REQUIRED_IDS = [
     "offer-architecture",
     "design-guide",
     "logo",
+    "copy-plan",
     "visual-asset-plan",
     "sales-copy",
     "sales-page-blueprint",
@@ -214,16 +224,20 @@ REQUIRED_COPY_HEADINGS = [
     "# Problem Diagnosis",
     "# Agitation",
     "# Failed Alternatives",
+    "# Epiphany / New Insight",
     "# Unique Mechanism",
     "# Proof Or Demonstration",
     "# Before And After",
     "# Product Reveal",
+    "## Feature-Benefit Breakdown",
+    "## How It Works",
     "# Offer Stack",
     "# Who It Is For",
     "# Who It Is Not For",
     "# Pricing And Value",
     "# Guarantee",
     "# FAQ",
+    "# Urgency / Scarcity Logic",
     "# Final CTA",
 ]
 
@@ -255,7 +269,7 @@ MIN_SECTION_WORDS = {
 def load_json(path: Path) -> dict:
     if not path.exists():
         raise SystemExit(f"Manifest not found: {path}")
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def scan_text(path: Path) -> list[str]:
@@ -1166,12 +1180,51 @@ def validate_email_sequence(root: Path, manifest: dict, by_id: dict[str, dict], 
         issues.append("Email quality metadata must record distinct conversion jobs for the sequence.")
 
 
-def validate_sales_copy(root: Path, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+def validate_sales_copy(root: Path, manifest: dict, by_id: dict[str, dict], issues: list[str], warnings: list[str]) -> None:
+    copy_plan_artifact = by_id.get("copy-plan")
+    copy_plan_path = artifact_path(root, copy_plan_artifact) or (root / "copy-plan.json")
+    copy_plan = {}
+    if not copy_plan_path.exists():
+        issues.append("Copy Studio source missing; copy-plan.json is required before copy.md, visual planning, or page build.")
+    else:
+        try:
+            copy_plan = json.loads(copy_plan_path.read_text(encoding="utf-8-sig"))
+        except json.JSONDecodeError as exc:
+            issues.append(f"copy-plan.json is not valid JSON: {exc}")
+            copy_plan = {}
+    if copy_plan:
+        for issue in validate_copy_plan_source(copy_plan):
+            issues.append("Copy Studio plan invalid: " + issue)
+
+    copy_quality = manifest.get("quality", {}).get("copy", {})
+    if not isinstance(copy_quality, dict):
+        copy_quality = {}
+    required_quality = {
+        "studio": COPY_STUDIO_VERSION,
+        "framework": COPY_FRAMEWORK,
+        "standaloneCopyRequired": True,
+        "vslDependency": "optional-supporting-asset",
+        "hasNewInsight": True,
+        "hasUniqueMechanism": True,
+        "hasFailedAlternatives": True,
+        "hasProofBeforeOffer": True,
+        "hasFeatureBenefitBreakdown": True,
+        "hasObjectionMatrix": True,
+        "renderedFromCopyPlan": True,
+    }
+    for field, expected in required_quality.items():
+        if copy_quality.get(field) != expected:
+            issues.append(f"Copy quality metadata must record {field}: {expected}.")
+
     copy_artifact = by_id.get("sales-copy")
-    copy_path = artifact_path(root, copy_artifact)
+    copy_path = artifact_path(root, copy_artifact) or (root / "copy.md")
     if not copy_path or not copy_path.exists():
         issues.append("Sales copy missing; copy.md with # Section Blueprint is required before visual planning or page build.")
         return
+    if copy_artifact and copy_artifact.get("provenance") != COPY_STUDIO_VERSION:
+        issues.append("copy.md exists but sales-copy artifact provenance is not copy-studio-v1; render it from Copy Studio.")
+    if copy_quality.get("copyPath") and not (root / str(copy_quality.get("copyPath"))).exists():
+        issues.append("Copy quality metadata copyPath does not exist.")
 
     text = text_for(copy_path)
     lower = text.lower()
@@ -1197,13 +1250,38 @@ def validate_sales_copy(root: Path, by_id: dict[str, dict], issues: list[str], w
     if missing_sections:
         issues.append("Sales copy Section Blueprint missing required section rows: " + ", ".join(missing_sections))
 
+    if COPY_FRAMEWORK not in lower:
+        issues.append(f"Sales copy must record copyFramework: {COPY_FRAMEWORK}.")
     if "direct-response-long-form-v1" not in lower:
-        issues.append("Sales copy must record framework: direct-response-long-form-v1.")
+        issues.append("Sales copy must record pageFramework: direct-response-long-form-v1.")
     if "proof" in blueprint_lower and "offer-stack" in blueprint_lower:
         proof_pos = blueprint_lower.find("proof")
         stack_pos = blueprint_lower.find("offer-stack")
         if stack_pos >= 0 and proof_pos >= 0 and proof_pos > stack_pos:
             issues.append("Sales copy Section Blueprint must place proof/demo before offer-stack.")
+    if copy_plan:
+        row_ids = [copy_as_text(row.get("sectionId")) for row in copy_plan_section_rows(copy_plan)]
+        for required in ["new-insight", "mechanism", "proof", "product", "feature-benefit", "how-it-works", "offer-stack"]:
+            if required not in row_ids:
+                issues.append(f"copy-plan.sectionPlan missing required sales argument section: {required}.")
+        if "proof" in row_ids and "offer-stack" in row_ids and row_ids.index("proof") > row_ids.index("offer-stack"):
+            issues.append("copy-plan.sectionPlan must place proof/demo before offer-stack.")
+        if "new-insight" in row_ids and "mechanism" in row_ids and row_ids.index("new-insight") > row_ids.index("mechanism"):
+            issues.append("copy-plan.sectionPlan must place epiphany/new insight before unique mechanism.")
+        product = copy_plan.get("productReveal", {}) if isinstance(copy_plan.get("productReveal"), dict) else {}
+        components = copy_list_of_dicts(product.get("coreComponents"))
+        if len(components) < 3:
+            issues.append("Product reveal is too thin; productReveal.coreComponents must include feature-benefit-reason bullets.")
+        for index, component in enumerate(components, start=1):
+            if not copy_as_text(component.get("benefit")) or not copy_as_text(component.get("reasonItMatters")):
+                issues.append(f"Product reveal component {index} lacks benefit or reasonItMatters.")
+        offer_items = copy_list_of_dicts(copy_plan.get("offerStack", {}).get("items") if isinstance(copy_plan.get("offerStack"), dict) else [])
+        for index, item in enumerate(offer_items, start=1):
+            if len(copy_as_text(item.get("copy"))) < 8:
+                issues.append(f"Offer stack item {index} lacks buyer-facing value logic.")
+        urgency = copy_plan.get("urgencyBasis", {}) if isinstance(copy_plan.get("urgencyBasis"), dict) else {}
+        if urgency.get("fakeUrgency") is not False:
+            issues.append("Urgency is fake or unsupported; urgencyBasis.fakeUrgency must be false.")
 
 
 def validate_page_kit_contract(
@@ -1318,8 +1396,16 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
     if sales_quality.get("studio") != "sales-page-studio-v1":
         issues.append("Sales page quality metadata must record studio: sales-page-studio-v1.")
     if page_type == "direct-response-long-form-vsl":
-        if sales_quality.get("framework") != "direct-response-long-form-v1":
-            issues.append("Direct-response sales page quality metadata must record framework: direct-response-long-form-v1.")
+        if sales_quality.get("framework") != COPY_FRAMEWORK:
+            issues.append(f"Direct-response sales page quality metadata must record framework: {COPY_FRAMEWORK}.")
+        if sales_quality.get("pageFramework") != "direct-response-long-form-v1":
+            issues.append("Direct-response sales page quality metadata must record pageFramework: direct-response-long-form-v1.")
+        if sales_quality.get("copyStudioUsed") is not True:
+            issues.append("Direct-response sales page quality metadata must confirm copyStudioUsed.")
+        if sales_quality.get("copyPlanPath") != "copy-plan.json":
+            issues.append("Direct-response sales page quality metadata must record copyPlanPath: copy-plan.json.")
+        if sales_quality.get("standaloneCopyRequired") is not True:
+            issues.append("Direct-response sales page quality metadata must confirm standaloneCopyRequired.")
         if sales_quality.get("copyBlueprintPresent") is not True:
             issues.append("Direct-response sales page quality metadata must confirm copyBlueprintPresent.")
         if sales_quality.get("compositionContract") != "direct-response-composition-v2":
@@ -1342,6 +1428,21 @@ def validate_sales_page(root: Path, manifest: dict, by_id: dict[str, dict], issu
     page_visual_count = len(re.findall(r"data-offeros-page-visual|data-offeros-video-thumbnail|data-offeros-product-bundle", html_text, flags=re.I))
     if page_type == "direct-response-long-form-vsl" and page_visual_count < 6:
         issues.append(f"Direct-response long-form VSL page must include 6+ meaningful page visuals: {page_visual_count} found.")
+    copy_plan_path = root / str(sales_quality.get("copyPlanPath") or "copy-plan.json")
+    if copy_plan_path.exists():
+        try:
+            copy_plan = json.loads(copy_plan_path.read_text(encoding="utf-8-sig"))
+        except json.JSONDecodeError:
+            copy_plan = {}
+        copy_sections = {copy_as_text(row.get("sectionId")) for row in copy_plan_section_rows(copy_plan)}
+        page_sections = set(re.findall(r'data-offeros-section=["\']([^"\']+)["\']', html_text, flags=re.I))
+        missing_copy_sections = sorted(
+            section
+            for section in page_sections
+            if section != "header" and section in REQUIRED_SALES_PAGE_SECTIONS and section not in copy_sections
+        )
+        if missing_copy_sections:
+            issues.append("Sales page sections do not map back to copy-plan.sectionPlan: " + ", ".join(missing_copy_sections))
     recorded_page_visual_count = quality_number(sales_quality.get("salesPageVisualCount"))
     if recorded_page_visual_count and recorded_page_visual_count < 6:
         issues.append("Sales page quality metadata salesPageVisualCount below target: 6+ expected.")
@@ -1995,6 +2096,8 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
     for token, label in {
         "visualplanstage:post-content-blueprint": "visualPlanStage: post-content-blueprint",
         "copyblueprintused:true": "copyBlueprintUsed: true",
+        "copystudioused:true": "copyStudioUsed: true",
+        "copyplanpath:copy-plan.json": "copyPlanPath: copy-plan.json",
         "salespageimagesystem:mixed-direct-response-v1": "salesPageImageSystem: mixed-direct-response-v1",
         "aspectratiopolicy:slot-aware-v1": "aspectRatioPolicy: slot-aware-v1",
     }.items():
@@ -2020,6 +2123,10 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         issues.append("Image quality metadata must record visualPlanStage: post-content-blueprint.")
     if image_quality.get("copyBlueprintUsed") is not True:
         issues.append("Image quality metadata must confirm copyBlueprintUsed.")
+    if image_quality.get("copyStudioUsed") is not True:
+        issues.append("Image quality metadata must confirm copyStudioUsed.")
+    if image_quality.get("copyPlanPath") != "copy-plan.json":
+        issues.append("Image quality metadata must record copyPlanPath: copy-plan.json.")
     if image_quality.get("salesPageImageSystem") != "mixed-direct-response-v1":
         issues.append("Image quality metadata must record salesPageImageSystem: mixed-direct-response-v1.")
     if image_quality.get("primaryConversionFinalPixelsPolicy") != "imagegen-final-v1":
@@ -2246,7 +2353,7 @@ def main() -> int:
 
     if deep_required:
         validate_studio_source_control(root, manifest, issues)
-        validate_sales_copy(root, by_id, issues, warnings)
+        validate_sales_copy(root, manifest, by_id, issues, warnings)
         validate_visual_asset_plan(root, manifest, by_id, issues, warnings)
         validate_images(manifest, artifacts, issues, warnings)
         validate_logo(root, manifest, by_id, issues, warnings)

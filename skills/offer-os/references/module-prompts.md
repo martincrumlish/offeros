@@ -41,11 +41,11 @@ Avoid mood-board words unless they become implementation rules.
 
 Purpose: define artifact-specific visuals before production so PDF, VSL, and ads are not built from leftover sales-page images.
 
-Production rule: follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md`. Create `visual-asset-plan.md` v2 after the logo/product outline and after `copy.md` contains the section-by-section sales-page blueprint. Do not create page/PDF/VSL/ad visuals from a pre-copy mood board.
+Production rule: follow the Visual Asset Plan Recipe in `references/exact-build-recipes.md`. Create `visual-asset-plan.md` v2 after the logo/product outline, `copy-plan.json`, rendered `copy.md`, and `sales-page-blueprint.json` exist. Do not create page/PDF/VSL/ad visuals from a pre-copy mood board.
 
 Output:
 
-1. Visual metadata: `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, `salesPageImageSystem: mixed-direct-response-v1`, `primaryConversionFinalPixelsPolicy: imagegen-final-v1`, and `mockupHeavyUserRequested`.
+1. Visual metadata: `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, `copyStudioUsed: true`, `copyPlanPath: copy-plan.json`, `salesPageImageSystem: mixed-direct-response-v1`, `primaryConversionFinalPixelsPolicy: imagegen-final-v1`, and `mockupHeavyUserRequested`.
 2. Global brand assets: logo lockup, brand mark, product bundle/mockup, reusable pattern/frame.
 3. Sales page visuals: 4+ visuals with `visualKind`, `copyAnchor`, conversion job, file path, aspect ratio, and text rule.
 4. PDF product visuals: 6+ visuals/treatments, including 4+ PDF-specific visuals that are not reused from the sales page.
@@ -84,21 +84,21 @@ Avoid abstract swooshes, generic marks, fragile details, page-curl/folded-paper 
 
 ## Sales Copy
 
-Purpose: produce full conversion copy based on the offer architecture.
+Purpose: produce full conversion copy based on the offer architecture through Copy Studio.
 
-Production rule: follow the Sales Page Recipe in `references/exact-build-recipes.md`. Use the exact required `copy.md` headings and default `quality.salesPage.pageType` to `direct-response-long-form-vsl` for complete front-end offers.
+Production rule: follow the Sales Page Recipe in `references/exact-build-recipes.md`. Write `copy-plan.json` first using `framework: "modern-brunson-long-form-v1"`, `standaloneCopyRequired: true`, and `vslDependency: "optional-supporting-asset"`, then run `scripts/build_copy.py` to render `copy.md` and `sales-page-blueprint.json`. Use the exact required `copy.md` headings and default `quality.salesPage.pageType` to `direct-response-long-form-vsl` for complete front-end offers.
 
 Output:
 
 1. Sales page type from `references/sales-page-types.md`, with reason.
-2. Message map: big idea, promise, mechanism, objection, proof, CTA logic.
-3. Headline set: 10 primary headlines, 10 subheads, 10 CTA labels, top 3 ranked.
-4. Long-form copy: hero, VSL setup, problem, agitation, failed alternatives, mechanism, product intro, value stack, proof/demo, who it is for/not for, bonuses, guarantee, pricing, FAQ, final CTA.
-5. Objection handling: price, time, trust, complexity, fit, prior failure, delay.
-6. Section visual blueprint: `copyAnchor`, conversion job, suggested `visualKind`, visual role, CTA role, proof/objection handled, and text/no-text rule for every sales-page section.
-7. Microcopy: form labels, checkout reassurance, helper text, confirmation copy.
+2. `copy-plan.json` with the Modern Brunson long-form spine: hook, story/insight, belief shift, unique mechanism, proof, product reveal, feature-benefit breakdown, how it works, offer stack, risk reversal, objections, and close.
+3. Message map: big idea, promise, new insight, mechanism, objection, proof, CTA logic.
+4. Product reveal: product type, plain-English description, who it is for, what it helps them do, why now, core components, how-it-works steps, look-inside proof, difference from alternatives, and bridge to offer stack.
+5. Feature-benefit-reason rows for every core component and value-explained deliverables for the offer stack.
+6. Objection matrix: 7+ real objections with answers and belief shifts; no generic FAQ labels.
+7. Rendered `copy.md` from `scripts/build_copy.py` and generated `sales-page-blueprint.json`.
 
-Composition rules: write the page as section-specific sales copy, not a single essay. Keep normal paragraphs under 55 words, keep the VSL setup under 220 words, and use comparison rows, checklists, callouts, proof/demo blocks, and CTA blocks to make the page scannable. Avoid vague hype, unsupported superlatives, fake urgency, wall-of-text sections, blank-looking cards, and copy that could sell any offer.
+Composition rules: write the page as section-specific sales copy, not a single essay. The written page must stand alone without a VSL. Keep normal paragraphs under 55 words, keep the VSL setup under 220 words, and use comparison rows, checklists, callouts, proof/demo blocks, and CTA blocks to make the page scannable. Avoid vague hype, unsupported superlatives, fake urgency, wall-of-text sections, blank-looking cards, and copy that could sell any offer.
 
 ## Sales Page Build
 
@@ -117,7 +117,7 @@ Output:
 
 The coded page must use real copy and assets. Do not leave placeholders unless the user explicitly requests them. Do not create a giant VSL text block or a polished feature page; the section blueprint must drive the HTML structure.
 
-Use the direct-response section contract from `assets/templates/sales-page/section-map.md`. Keep `data-offeros-section` markers for required sections. For `direct-response-long-form-vsl`, write `sales-page-blueprint.json` and `theme.json`, then run `scripts/build_sales_page.py`. Preserve the locked `offeros-stacked-vsl-v2` hero: centered copy stack, large 16:9 `.oo-vsl-frame` hero video below the headline, thumbnail, play button, caption, price strip below the video, CTA to `#checkout`, trust row, proof/demo before the buy box, bundle image, deliverable checklist, normally/today value row, large stack CTA, and guarantee/access reassurance. Use a no-section-nav header, quiet eyebrow/prehead labels, sparse section eyebrows (`eyebrowPolicy: "sparse-key-signposts-v1"`) rather than a pill on every section, centered eyebrow alignment with the H2 (`eyebrowAlignment: "centered-with-section-heading"`), Lucide icon markers with CSS fallback for card grids and checklist items, and content-hugging constrained visual frames marked `data-offeros-image-display="constrained"`. If the hero already contains the main VSL frame, the later VSL section explains the video argument; it must not say "Watch this first". Do not ship a short branded product page, polished feature page, two-column SaaS hero, dashboard/product mockup hero, tiny right-side VSL card, proof-after-price-only page, embedded checkout, order form, payment fields, unconstrained full-size images, mismatched colored image mattes, an eyebrow/pill on every section, floating left-offset pills above centered H2s, or generic card stack in place of the long-form sales page.
+Use the direct-response section contract from `assets/templates/sales-page/section-map.md`. Keep `data-offeros-section` markers for required sections. For `direct-response-long-form-vsl`, use the `sales-page-blueprint.json` generated from `copy-plan.json`, write `theme.json`, then run `scripts/build_sales_page.py`. Preserve the locked `offeros-stacked-vsl-v2` hero: centered copy stack, large 16:9 `.oo-vsl-frame` hero video below the headline, thumbnail, play button, caption, price strip below the video, CTA to `#checkout`, trust row, proof/demo before the buy box, bundle image, deliverable checklist, normally/today value row, large stack CTA, and guarantee/access reassurance. Use a no-section-nav header, quiet eyebrow/prehead labels, sparse section eyebrows (`eyebrowPolicy: "sparse-key-signposts-v1"`) rather than a pill on every section, centered eyebrow alignment with the H2 (`eyebrowAlignment: "centered-with-section-heading"`), Lucide icon markers with CSS fallback for card grids and checklist items, and content-hugging constrained visual frames marked `data-offeros-image-display="constrained"`. If the hero already contains the main VSL frame, the later VSL section explains the video argument; it must not say "Watch this first". Do not ship a short branded product page, polished feature page, two-column SaaS hero, dashboard/product mockup hero, tiny right-side VSL card, proof-after-price-only page, embedded checkout, order form, payment fields, unconstrained full-size images, mismatched colored image mattes, an eyebrow/pill on every section, floating left-offset pills above centered H2s, or generic card stack in place of the long-form sales page.
 
 If the page uses HTML/CSS diagrams as temporary visuals, mark them as fallbacks and do not describe them as generated images. Do not create SVG diagram files.
 

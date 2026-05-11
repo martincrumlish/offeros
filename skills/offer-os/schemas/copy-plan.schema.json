@@ -1,0 +1,283 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://offeros.local/schemas/copy-plan.schema.json",
+  "title": "OfferOS Copy Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "framework",
+    "standaloneCopyRequired",
+    "vslDependency",
+    "offerName",
+    "price",
+    "audience",
+    "awarenessLevel",
+    "marketSophistication",
+    "corePromise",
+    "primaryPain",
+    "failedAlternatives",
+    "newInsight",
+    "uniqueMechanism",
+    "proofPlan",
+    "productReveal",
+    "offerStack",
+    "bonuses",
+    "valueLogic",
+    "guarantee",
+    "objectionMatrix",
+    "urgencyBasis",
+    "sectionPlan"
+  ],
+  "properties": {
+    "schema": { "const": "offeros/copy-plan/v1" },
+    "framework": { "const": "modern-brunson-long-form-v1" },
+    "standaloneCopyRequired": { "const": true },
+    "vslDependency": { "const": "optional-supporting-asset" },
+    "offerName": { "type": "string", "minLength": 1 },
+    "price": { "type": "string", "minLength": 1 },
+    "audience": { "type": "string", "minLength": 8 },
+    "awarenessLevel": { "type": "string", "minLength": 3 },
+    "marketSophistication": { "type": "string", "minLength": 3 },
+    "corePromise": { "type": "string", "minLength": 12 },
+    "primaryPain": { "type": "string", "minLength": 12 },
+    "failedAlternatives": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "$ref": "#/$defs/failedAlternative" }
+    },
+    "newInsight": { "type": "string", "minLength": 20 },
+    "uniqueMechanism": { "$ref": "#/$defs/mechanism" },
+    "proofPlan": { "$ref": "#/$defs/proofPlan" },
+    "productReveal": { "$ref": "#/$defs/productReveal" },
+    "offerStack": { "$ref": "#/$defs/offerStack" },
+    "bonuses": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/valueItem" }
+    },
+    "valueLogic": { "$ref": "#/$defs/valueLogic" },
+    "guarantee": { "$ref": "#/$defs/guarantee" },
+    "objectionMatrix": {
+      "type": "array",
+      "minItems": 7,
+      "items": { "$ref": "#/$defs/objection" }
+    },
+    "urgencyBasis": { "$ref": "#/$defs/urgencyBasis" },
+    "sectionPlan": {
+      "type": "array",
+      "minItems": 16,
+      "items": { "$ref": "#/$defs/sectionPlanRow" }
+    },
+    "pageKitArchetype": {
+      "enum": ["classic-vsl-longform", "modern-vsl-software", "one-page-tripwire", "challenge-workshop", "toolkit-workbook"],
+      "default": "classic-vsl-longform"
+    },
+    "themePreset": {
+      "enum": ["light-saas-direct-response", "classic-direct-response", "bold-webinar", "premium-editorial", "fitness-performance", "creator-workshop"],
+      "default": "classic-direct-response"
+    },
+    "checkoutTarget": { "type": "string", "default": "#checkout" }
+  },
+  "$defs": {
+    "failedAlternative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "whyItFails", "whatIsNeededInstead"],
+      "properties": {
+        "name": { "type": "string", "minLength": 3 },
+        "whyItFails": { "type": "string", "minLength": 8 },
+        "whatIsNeededInstead": { "type": "string", "minLength": 8 }
+      }
+    },
+    "mechanism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "explanation", "whyItWorks", "steps"],
+      "properties": {
+        "name": { "type": "string", "minLength": 3 },
+        "explanation": { "type": "string", "minLength": 20 },
+        "whyItWorks": { "type": "string", "minLength": 20 },
+        "steps": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/valueItem" }
+        }
+      }
+    },
+    "proofPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proofType", "proofItems", "proofBeforeOffer"],
+      "properties": {
+        "proofType": { "type": "string", "minLength": 3 },
+        "proofBeforeOffer": { "const": true },
+        "proofItems": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/valueItem" }
+        }
+      }
+    },
+    "productReveal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "productType",
+        "plainEnglishDescription",
+        "whoItIsFor",
+        "whatItHelpsThemDo",
+        "whyNow",
+        "coreComponents",
+        "howItWorksSteps",
+        "lookInsideProof",
+        "differenceFromAlternatives",
+        "bridgeToOfferStack"
+      ],
+      "properties": {
+        "productType": { "type": "string", "minLength": 3 },
+        "plainEnglishDescription": { "type": "string", "minLength": 20 },
+        "whoItIsFor": { "type": "string", "minLength": 8 },
+        "whatItHelpsThemDo": { "type": "string", "minLength": 12 },
+        "whyNow": { "type": "string", "minLength": 12 },
+        "coreComponents": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/coreComponent" }
+        },
+        "howItWorksSteps": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/valueItem" }
+        },
+        "lookInsideProof": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/valueItem" }
+        },
+        "differenceFromAlternatives": { "type": "string", "minLength": 12 },
+        "bridgeToOfferStack": { "type": "string", "minLength": 12 }
+      }
+    },
+    "coreComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature", "benefit", "reasonItMatters", "buyerProblemSolved", "proofOrPreview", "plainBullet"],
+      "properties": {
+        "feature": { "type": "string", "minLength": 3 },
+        "benefit": { "type": "string", "minLength": 8 },
+        "reasonItMatters": { "type": "string", "minLength": 8 },
+        "buyerProblemSolved": { "type": "string", "minLength": 8 },
+        "proofOrPreview": { "type": "string", "minLength": 3 },
+        "plainBullet": { "type": "string", "minLength": 12 }
+      }
+    },
+    "offerStack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items", "cta", "accessCopy"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 8,
+          "items": { "$ref": "#/$defs/valueItem" }
+        },
+        "cta": { "type": "string", "minLength": 3 },
+        "accessCopy": { "type": "string", "minLength": 8 }
+      }
+    },
+    "valueItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "copy"],
+      "properties": {
+        "title": { "type": "string", "minLength": 2 },
+        "copy": { "type": "string", "minLength": 8 },
+        "value": { "type": "string" }
+      }
+    },
+    "valueLogic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["comparison", "priceJustification", "todayPrice"],
+      "properties": {
+        "comparison": { "type": "string", "minLength": 8 },
+        "priceJustification": { "type": "string", "minLength": 8 },
+        "todayPrice": { "type": "string", "minLength": 1 },
+        "totalValue": { "type": "string" }
+      }
+    },
+    "guarantee": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "terms", "reassurance"],
+      "properties": {
+        "name": { "type": "string", "minLength": 3 },
+        "terms": { "type": "string", "minLength": 8 },
+        "reassurance": { "type": "string", "minLength": 8 }
+      }
+    },
+    "objection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objection", "answer", "beliefShift"],
+      "properties": {
+        "objection": { "type": "string", "minLength": 6 },
+        "answer": { "type": "string", "minLength": 12 },
+        "beliefShift": { "type": "string", "minLength": 8 }
+      }
+    },
+    "urgencyBasis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "description", "fakeUrgency"],
+      "properties": {
+        "type": { "enum": ["none", "launch-window", "cohort-start", "expiring-bonus", "price-change", "user-provided"] },
+        "description": { "type": "string" },
+        "fakeUrgency": { "const": false }
+      }
+    },
+    "sectionPlanRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sectionId",
+        "frameworkRole",
+        "conversionJob",
+        "buyerBeliefBefore",
+        "buyerBeliefAfter",
+        "primaryClaim",
+        "proofOrSupport",
+        "copyBlocks",
+        "visualNeed",
+        "ctaRole",
+        "maxWords"
+      ],
+      "properties": {
+        "sectionId": { "type": "string", "minLength": 2 },
+        "frameworkRole": { "type": "string", "minLength": 3 },
+        "conversionJob": { "type": "string", "minLength": 8 },
+        "buyerBeliefBefore": { "type": "string", "minLength": 8 },
+        "buyerBeliefAfter": { "type": "string", "minLength": 8 },
+        "primaryClaim": { "type": "string", "minLength": 8 },
+        "proofOrSupport": { "type": "string", "minLength": 3 },
+        "copyBlocks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/copyBlock" }
+        },
+        "visualNeed": { "type": "string" },
+        "ctaRole": { "type": "string" },
+        "maxWords": { "type": "integer", "minimum": 25, "maximum": 600 }
+      }
+    },
+    "copyBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "text"],
+      "properties": {
+        "type": { "enum": ["headline", "prehead", "lead", "paragraph", "bullet", "cta", "caption", "question", "answer"] },
+        "text": { "type": "string", "minLength": 2 }
+      }
+    }
+  }
+}

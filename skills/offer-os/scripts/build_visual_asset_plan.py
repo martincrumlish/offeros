@@ -7,11 +7,15 @@ import re
 
 SALES_VISUALS = [
     ("hero-vsl-frame", "hero", "Make the opening video feel worth watching", "assets/page/hero-vsl-thumbnail.png", "16:9", "no tiny UI text"),
+    ("buyer-situation-photo", "problem", "Make the buyer's current situation concrete", "assets/page/problem-scene.png", "4:3", "no tiny UI text"),
+    ("structured-panel", "agitation", "Show the cost of delay without melodrama", "assets/page/cost-of-delay.png", "3:2", "short captions only"),
     ("comparison-visual", "failed-alternatives", "Show why the old options fail", "assets/page/failed-alternatives.png", "16:9", "labels only"),
     ("mechanism-diagram", "mechanism", "Make the unique mechanism easy to understand", "assets/page/mechanism-diagram.png", "3:2", "short labels only"),
     ("proof-demo-visual", "proof", "Show proof or a transparent proof substitute", "assets/page/proof-demo.png", "16:10", "no fake testimonials"),
     ("structured-panel", "before-after", "Make the before/after contrast concrete", "assets/page/before-after.png", "2:1", "short captions only"),
+    ("product-mockup", "product", "Reveal the product and feature-benefit breakdown", "assets/page/product-reveal.png", "4:3", "use supplied logo exactly"),
     ("offer-stack-bundle", "offer-stack", "Make the stack feel tangible at the buy box", "assets/page/product-bundle.png", "16:9", "use supplied logo exactly"),
+    ("structured-panel", "guarantee", "Make the risk reversal easy to trust", "assets/page/guarantee.png", "3:2", "short captions only"),
 ]
 
 PDF_VISUALS = [
@@ -49,7 +53,7 @@ PRIMARY_CONVERSION_VISUAL_KINDS = {
 
 def read_json(path: Path, default: dict | None = None) -> dict:
     if path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8-sig"))
     if default is not None:
         return default
     raise SystemExit(f"Required JSON file not found: {path}")
@@ -136,8 +140,42 @@ def copy_blueprint_exists(root: Path) -> bool:
     return "# section blueprint" in text and bool(re.search(r"\bsectionid\b", text))
 
 
+def read_copy_plan(root: Path) -> dict:
+    path = root / "copy-plan.json"
+    if path.exists():
+        try:
+            return json.loads(path.read_text(encoding="utf-8-sig"))
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
+def sales_visuals_from_copy_plan(root: Path) -> list[dict]:
+    copy_plan = read_copy_plan(root)
+    rows = copy_plan.get("sectionPlan") if isinstance(copy_plan.get("sectionPlan"), list) else []
+    by_section = {item.get("sectionId"): item for item in rows if isinstance(item, dict)}
+    section_specs = [
+        ("hero-vsl-frame", "hero", "assets/page/hero-vsl-thumbnail.png", "16:9", "no tiny UI text"),
+        ("buyer-situation-photo", "problem", "assets/page/problem-scene.png", "4:3", "no tiny UI text"),
+        ("structured-panel", "agitation", "assets/page/cost-of-delay.png", "3:2", "short captions only"),
+        ("comparison-visual", "failed-alternatives", "assets/page/failed-alternatives.png", "16:9", "labels only"),
+        ("mechanism-diagram", "mechanism", "assets/page/mechanism-diagram.png", "3:2", "short labels only"),
+        ("proof-demo-visual", "proof", "assets/page/proof-demo.png", "16:10", "no fake testimonials"),
+        ("product-mockup", "product", "assets/page/product-reveal.png", "4:3", "use supplied logo exactly"),
+        ("offer-stack-bundle", "offer-stack", "assets/page/product-bundle.png", "16:9", "use supplied logo exactly"),
+        ("structured-panel", "guarantee", "assets/page/guarantee.png", "3:2", "short captions only"),
+    ]
+    visuals = []
+    for kind, section_id, path, ratio, text_rule in section_specs:
+        row = by_section.get(section_id, {})
+        job = row.get("conversionJob") or row.get("visualNeed") or f"Support the {section_id} section from Copy Studio."
+        visuals.append(visual_row(kind, section_id, job, path, ratio, text_rule))
+    return visuals
+
+
 def build_plan(root: Path, manifest: dict) -> dict:
-    sales = [visual_row(*item) for item in SALES_VISUALS]
+    sales = sales_visuals_from_copy_plan(root) if read_copy_plan(root) else [visual_row(*item) for item in SALES_VISUALS]
+    copy_plan_used = bool(read_copy_plan(root))
     pdf = [visual_row(item[0], item[1], item[2], item[3], item[4], provenance="imagegen-composite" if item[0] in {"matrix-visual", "worksheet-preview", "checklist-visual"} else "imagegen") for item in PDF_VISUALS]
     vsl = [visual_row(item[0], item[1], item[2], item[3], item[4], provenance="imagegen-composite" if item[0] in {"mechanism-diagram", "comparison-visual", "structured-panel"} else "imagegen") for item in VSL_VISUALS]
     ads = [
@@ -149,6 +187,8 @@ def build_plan(root: Path, manifest: dict) -> dict:
         "schema": "offeros/visual-asset-plan/v2",
         "visualPlanStage": "post-content-blueprint",
         "copyBlueprintUsed": copy_blueprint_exists(root),
+        "copyStudioUsed": copy_plan_used,
+        "copyPlanPath": "copy-plan.json" if copy_plan_used else "",
         "salesPageImageSystem": "mixed-direct-response-v1",
         "primaryConversionFinalPixelsPolicy": "imagegen-final-v1",
         "aspectRatioPolicy": "slot-aware-v1",
@@ -156,15 +196,17 @@ def build_plan(root: Path, manifest: dict) -> dict:
         "logoUsagePolicy": "use-locked-logo-reference",
         "alternateLogosCreated": False,
         "mockupHeavyUserRequested": False,
-        "sourceBlueprints": ["copy.md", "workbook/workbook-blueprint.json", "presentation/vsl-deck-plan.json", "facebook-ads.md"],
+        "sourceBlueprints": ["copy-plan.json", "copy.md", "workbook/workbook-blueprint.json", "presentation/vsl-deck-plan.json", "facebook-ads.md"],
         "globalBrandAssets": [
-            {
-                "artifactTarget": "assets/logo.png",
-                "visualKind": "brand-frame",
-                "copyAnchor": "global",
-                "conversionJob": "Keep every artifact tied to the same brand identity",
-                "source/provenance": "imagegen",
-            }
+            visual_row(
+                "brand-frame",
+                "global",
+                "Keep every artifact tied to the same brand identity with one final logo lockup",
+                "assets/logo.png",
+                "3:1",
+                "readable full wordmark lockup only",
+                provenance="imagegen-final",
+            )
         ],
         "salesPageVisuals": sales,
         "pdfProductVisuals": pdf,
@@ -184,6 +226,8 @@ def write_markdown(path: Path, plan: dict) -> None:
         "",
         f"- visualPlanStage: {plan['visualPlanStage']}",
         f"- copyBlueprintUsed: {str(plan['copyBlueprintUsed']).lower()}",
+        f"- copyStudioUsed: {str(plan['copyStudioUsed']).lower()}",
+        f"- copyPlanPath: {plan['copyPlanPath']}",
         f"- salesPageImageSystem: {plan['salesPageImageSystem']}",
         f"- primaryConversionFinalPixelsPolicy: {plan['primaryConversionFinalPixelsPolicy']}",
         f"- aspectRatioPolicy: {plan['aspectRatioPolicy']}",
@@ -248,6 +292,8 @@ def update_manifest(root: Path, manifest: dict, plan: dict) -> None:
             "visualPlanJsonPath": "visual-asset-plan.json",
             "visualPlanStage": "post-content-blueprint",
             "copyBlueprintUsed": plan["copyBlueprintUsed"],
+            "copyStudioUsed": plan["copyStudioUsed"],
+            "copyPlanPath": plan["copyPlanPath"],
             "visualReusePolicy": "artifact-specific-v1",
             "salesPageImageSystem": "mixed-direct-response-v1",
             "primaryConversionFinalPixelsPolicy": "imagegen-final-v1",

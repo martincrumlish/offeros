@@ -1,6 +1,6 @@
 # Direct Response Long-Form Framework
 
-Use this as the default persuasion spine for complete paid front-end OfferOS pages. Do not copy a single reference page. Build the argument.
+Use this as the page-section contract for complete paid front-end OfferOS pages. Copy Studio owns the sales argument in `copy-plan.json` using `modern-brunson-long-form-v1`; this file explains how that argument is rendered into the long-form page.
 
 ## Core Spine
 
@@ -21,6 +21,14 @@ Every `direct-response-long-form-vsl` page must move the buyer through this sequ
 13. Final close
 
 This blends AIDA, PAS, PASTOR, 4P, and problem-mechanism-proof-offer. Those frameworks can shape sections, but they cannot remove the spine.
+
+Copy Studio adds the Modern Brunson layer before page rendering:
+
+- Hook, Story/Insight, Offer is the macro flow.
+- The written page must stand alone without the VSL.
+- The page needs a specific epiphany/new insight before the named unique mechanism.
+- Product reveal includes feature-benefit-reason bullets and how-it-works steps.
+- Offer stack items explain why each deliverable matters.
 
 ## Mandatory Conversion Jobs
 

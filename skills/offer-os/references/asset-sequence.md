@@ -8,16 +8,17 @@ Generate assets in dependency order. Earlier assets define constraints for later
 2. Design guide
 3. Single final logo lockup
 4. Product outline and offer stack
-5. Sales copy and section-by-section copy blueprint
-6. `visual-asset-plan.md` v2 anchored to the copy blueprint
-7. Sales page graphics
-8. Sales page structure/build
-9. Product bundle
-10. PDF product visuals
-11. VSL frames
-12. Ads and social creative
-13. Delivery dashboard
-14. Secondary exports and variants
+5. `copy-plan.json` from Copy Studio
+6. Rendered sales copy and section-by-section copy blueprint
+7. `visual-asset-plan.md` v2 anchored to Copy Studio
+8. Sales page graphics
+9. Sales page structure/build
+10. Product bundle
+11. PDF product visuals
+12. VSL frames
+13. Ads and social creative
+14. Delivery dashboard
+15. Secondary exports and variants
 
 ## Provenance Requirements
 
@@ -43,7 +44,7 @@ Deep mode should include at least:
 
 ## Visual Asset Plan
 
-Create `visual-asset-plan.md` v2 after `copy.md` includes the sales-page section blueprint and before building sales-page graphics, the PDF product, ad images, the VSL deck, or the delivery dashboard.
+Create `visual-asset-plan.md` v2 after `copy-plan.json`, rendered `copy.md`, and the sales-page section blueprint exist and before building sales-page graphics, the PDF product, ad images, the VSL deck, or the delivery dashboard.
 
 The plan must split visuals into:
 
@@ -56,7 +57,7 @@ The plan must split visuals into:
 - dashboard visuals
 - reuse rules
 
-Record `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, `salesPageImageSystem: mixed-direct-response-v1`, `logoReference: assets/logo.png`, `logoUsagePolicy: use-locked-logo-reference`, and `alternateLogosCreated: false`.
+Record `visualPlanStage: post-content-blueprint`, `copyBlueprintUsed: true`, `copyStudioUsed: true`, `copyPlanPath: copy-plan.json`, `salesPageImageSystem: mixed-direct-response-v1`, `logoReference: assets/logo.png`, `logoUsagePolicy: use-locked-logo-reference`, and `alternateLogosCreated: false`.
 
 Do not treat sales-page graphics as the default image library for every artifact. Each artifact has its own job:
 
@@ -89,7 +90,7 @@ When agents are authorized, dispatch imagegen visual workers immediately after t
 - VSL visuals: `output/presentation/assets/`
 - ad visuals: `assets/ads/`
 
-Use the same `design.md`, `copy.md`, frozen final `assets/logo.png`, and visual plan as references for every worker. Do not give workers any other logo image, old logo attempt, rejected logo attempt, or `logo-mark` alternative as a style reference.
+Use the same `design.md`, `copy-plan.json`, `copy.md`, frozen final `assets/logo.png`, and visual plan as references for every worker. Do not give workers any other logo image, old logo attempt, rejected logo attempt, or `logo-mark` alternative as a style reference.
 
 ## Dependencies
 
@@ -136,9 +137,9 @@ After the final logo is accepted, freeze the brand lockup:
 - Do not ask imagegen to invent, redesign, recolor, redraw, reinterpret, replace, or substitute the logo in product mockups, ads, VSL visuals, PDF visuals, or page graphics.
 - If a visual needs the logo, pass `assets/logo.png` to imagegen as the only logo reference and instruct imagegen to use the supplied logo exactly.
 
-### Sales Copy Blueprint
+### Copy Studio Blueprint
 
-Required before page-specific graphics, VSL visuals, ad angles, and checkout graphics. The copy blueprint defines the sales-page sections, objections, proof jobs, CTAs, visual blocks, `copyAnchor` values, and suggested `visualKind` values.
+Required before page-specific graphics, VSL visuals, ad angles, and checkout graphics. `copy-plan.json` and rendered `copy.md` define the sales-page sections, objections, proof jobs, CTAs, visual blocks, `copyAnchor` values, and suggested `visualKind` values.
 
 ### Product Bundle
 

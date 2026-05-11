@@ -62,6 +62,36 @@ Structure:
 
 This is the required deep-mode page spine unless the user explicitly requested a different page type. Load `references/direct-response-framework.md` for the exact conversion jobs and copy blueprint schema.
 
+## Modern-Brunson-Long-Form-V1
+
+Use this as the required Copy Studio framework for complete paid front-end OfferOS pages.
+
+Structure:
+
+- buyer filter / prehead
+- big promise headline
+- lead / core hook
+- optional VSL or hero visual
+- early CTA / price hint
+- problem diagnosis
+- cost of staying stuck
+- failed alternatives
+- epiphany / new insight
+- unique mechanism
+- proof or demonstration
+- product reveal
+- feature-benefit breakdown
+- how it works
+- offer stack
+- bonuses / accelerators
+- price/value contrast
+- guarantee
+- fit / who it is for
+- FAQ / objections
+- final close
+
+This framework produces `copy-plan.json` first, then `scripts/build_copy.py` renders `copy.md` and `sales-page-blueprint.json`. The written page must stand alone without the VSL.
+
 ## Problem-Mechanism-Proof-Offer
 
 Use for sophisticated or skeptical markets where buyers have tried alternatives.

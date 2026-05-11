@@ -86,12 +86,14 @@ Fails if:
 
 ## Visual Asset Plan Gate
 
-Deep generated-design runs must create `visual-asset-plan.md` v2 after `copy.md` contains the sales-page section blueprint and before artifact production. The plan must split visuals by artifact instead of treating sales-page imagery as the default pool.
+Deep generated-design runs must create `visual-asset-plan.md` v2 after `copy-plan.json`, rendered `copy.md`, and the sales-page section blueprint exist and before artifact production. The plan must split visuals by artifact instead of treating sales-page imagery as the default pool.
 
 Must include:
 
 - `visualPlanStage: post-content-blueprint`
 - `copyBlueprintUsed: true`
+- `copyStudioUsed: true`
+- `copyPlanPath: copy-plan.json`
 - `salesPageImageSystem: mixed-direct-response-v1`
 - global brand assets
 - 4+ sales-page visuals tied to real copy/page section anchors
@@ -105,12 +107,14 @@ Must include:
 - `quality.images.hasArtifactSpecificPlan = true`
 - `quality.images.visualPlanStage = "post-content-blueprint"`
 - `quality.images.copyBlueprintUsed = true`
+- `quality.images.copyStudioUsed = true`
+- `quality.images.copyPlanPath = "copy-plan.json"`
 - `quality.images.visualReusePolicy = "artifact-specific-v1"`
 - `quality.images.salesPageImageSystem = "mixed-direct-response-v1"`
 
-Fails if the plan was created before the copy blueprint, if sales-page visuals are not anchored to real page sections, if visual taxonomy fields are missing, if the PDF or VSL visuals are only sales-page images, if ads are just crops/text-card variants of page art, or if the plan does not specify artifact-specific visual jobs and file paths. Also fails if every sales-page visual is mockup/UI/product-bundle style unless the user explicitly requested a mockup-heavy aesthetic.
+Fails if the plan was created before Copy Studio output, if sales-page visuals are not anchored to real page sections, if visual taxonomy fields are missing, if the PDF or VSL visuals are only sales-page images, if ads are just crops/text-card variants of page art, or if the plan does not specify artifact-specific visual jobs and file paths. Also fails if every sales-page visual is mockup/UI/product-bundle style unless the user explicitly requested a mockup-heavy aesthetic.
 
-When the user explicitly allowed agents, the build should dispatch imagegen visual workers after logo/style references, `copy.md`, and post-content-blueprint `visual-asset-plan.md` exist. If it does not, record `quality.images.agentDispatchUsed = false` and a concrete `agentDispatchNotUsedReason`.
+When the user explicitly allowed agents, the build should dispatch imagegen visual workers after logo/style references, `copy-plan.json`, `copy.md`, and post-content-blueprint `visual-asset-plan.md` exist. If it does not, record `quality.images.agentDispatchUsed = false` and a concrete `agentDispatchNotUsedReason`.
 
 ## Logo Gate
 
@@ -137,23 +141,28 @@ Fails if downstream product, ad, page, PDF, VSL, or dashboard image prompts ask 
 
 ## Copy Gate
 
-Long-form sales copy must include:
+Long-form sales copy must be rendered from `copy-plan.json` by Copy Studio. It must include:
 
 - headline and lead
 - problem agitation
 - market diagnosis
 - failed alternatives
+- epiphany / new insight
 - unique mechanism
-- offer reveal
+- proof or demonstration before price and offer stack
+- product reveal
+- feature-benefit-reason product breakdown
+- how it works
 - stack and value build
-- proof or proof substitute
 - objection handling
 - guarantee
-- urgency/scarcity logic
+- real urgency/scarcity logic or explicitly no urgency
 - FAQ
 - repeated CTA sections
 
-Fails if it is short-form copy disguised as a sales page, uses generic claims, lacks objections, or cannot plausibly sell the offer.
+Must record `quality.copy.studio = "copy-studio-v1"`, `quality.copy.framework = "modern-brunson-long-form-v1"`, `quality.copy.standaloneCopyRequired = true`, and `quality.copy.vslDependency = "optional-supporting-asset"`.
+
+Fails if `copy-plan.json` is missing, invalid, not rendered into `copy.md`, VSL-dependent, short-form copy disguised as a sales page, generic, lacking new insight/mechanism/failed alternatives/proof/product reveal/feature-benefit rows/objections, or cannot plausibly sell the offer.
 
 ## Page Gate
 
@@ -165,12 +174,12 @@ The coded sales page must:
 - use the resolved design system
 - include the required direct-response section contract from `assets/templates/sales-page/section-map.md`
 - mark each core section with `data-offeros-section`
-- include VSL, problem, agitation, failed alternatives, mechanism, proof/demo before the buy box, before/after, product, offer stack, pricing, guarantee, FAQ, and final CTA areas
+- include VSL, problem, agitation, failed alternatives, new insight/mechanism, proof/demo before the buy box, before/after, product reveal, feature-benefit content, how-it-works content, offer stack, pricing, guarantee, FAQ, and final CTA areas
 - work on mobile and desktop
 - have no broken links, missing assets, overflow, unreadable text, or placeholder content
 - use maintainable HTML/CSS/JS
 
-For `direct-response-long-form-vsl`, the page must include full problem diagnosis, agitation, failed alternatives, unique mechanism, proof/demo before the buy box, before/after, product reveal, offer stack, pricing/value logic, guarantee, objections, and repeated CTAs. Offer-stack cards must have unique benefit copy.
+For `direct-response-long-form-vsl`, the page must include full problem diagnosis, agitation, failed alternatives, epiphany/new insight, unique mechanism, proof/demo before the buy box, before/after, structured product reveal, feature-benefit-reason copy, how-it-works steps, offer stack, pricing/value logic, guarantee, objections, and repeated CTAs. Offer-stack cards must have unique benefit copy.
 
 For `direct-response-long-form-vsl`, the hero must follow the stacked VSL-first direct-response hero contract: centered buyer filter, prehead, H1, benefit lead, large centered video/VSL frame below the headline, price strip below the video, CTA to `#checkout`, and trust row. The offer stack must follow the buy-box contract: `id="checkout"` or `data-offeros-buy-section`, bundle image, 8+ item deliverable checklist, normally/today value row, large CTA, and guarantee/instant-access reassurance. The sales page must be generated by `scripts/build_sales_page.py` and must not include an embedded checkout, order form, payment fields, or credit-card form.
 

@@ -26,6 +26,11 @@
       "enum": ["light-saas-direct-response", "classic-direct-response", "bold-webinar", "premium-editorial", "fitness-performance", "creator-workshop"]
     },
     "framework": { "const": "direct-response-long-form-v1" },
+    "copyFramework": { "const": "modern-brunson-long-form-v1" },
+    "copyPlanPath": { "type": "string", "default": "copy-plan.json" },
+    "copyStudioUsed": { "const": true },
+    "standaloneCopyRequired": { "const": true },
+    "vslDependency": { "const": "optional-supporting-asset" },
     "compositionContract": { "const": "direct-response-composition-v2" },
     "checkout": {
       "type": "object",
@@ -153,6 +158,14 @@
         ]
       },
       "uniqueItems": true
+    },
+    "sections": {
+      "type": ["object", "array"],
+      "description": "Builder-ready section copy rendered from Copy Studio."
+    },
+    "blocks": {
+      "type": "array",
+      "description": "Optional Page Kit block order. Builder appends missing required sections."
     },
     "qualityTargets": {
       "type": "object",

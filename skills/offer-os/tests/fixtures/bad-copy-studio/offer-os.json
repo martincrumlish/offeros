@@ -1,0 +1,42 @@
+{
+  "schema": "offer-os/v1",
+  "mode": "deep",
+  "offerName": "Bad Copy Studio Fixture",
+  "audience": "test buyers",
+  "modules": [],
+  "artifacts": [
+    {
+      "id": "copy-plan",
+      "title": "Copy Plan",
+      "type": "source",
+      "category": "Sales",
+      "path": "copy-plan.json",
+      "status": "complete",
+      "provenance": "manual"
+    },
+    {
+      "id": "sales-copy",
+      "title": "Sales Copy",
+      "type": "copy",
+      "category": "Sales",
+      "path": "copy.md",
+      "status": "complete",
+      "provenance": "manual"
+    }
+  ],
+  "quality": {
+    "copy": {
+      "studio": "manual",
+      "framework": "direct-response-long-form-v1",
+      "standaloneCopyRequired": false,
+      "vslDependency": "required-main-pitch",
+      "hasNewInsight": false,
+      "hasUniqueMechanism": false,
+      "hasFailedAlternatives": false,
+      "hasProofBeforeOffer": false,
+      "hasFeatureBenefitBreakdown": false,
+      "hasObjectionMatrix": false,
+      "renderedFromCopyPlan": false
+    }
+  }
+}

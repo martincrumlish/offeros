@@ -6,7 +6,7 @@ Use these recipes in `deep` mode. Do not replace them with a similar-looking wor
 
 Use this controller for every deep run. This is the highest-level recipe and it overrides softer wording in other files.
 
-1. Use the plugin-owned OfferOS Studio dispatcher and builders as the production source of truth. Start with `scripts/offeros.py`, then call the relevant studio builder: `build_visual_asset_plan.py`, `build_sales_page.py`, `build_email_sequence.py`, `build_workbook.py`, `build_vsl_deck.js`, `generate_delivery_dashboard.py`, and `validate_offer_outputs.py`.
+1. Use the plugin-owned OfferOS Studio dispatcher and builders as the production source of truth. Start with `scripts/offeros.py`, then call the relevant studio builder: `build_copy.py`, `build_visual_asset_plan.py`, `build_sales_page.py`, `build_email_sequence.py`, `build_workbook.py`, `build_vsl_deck.js`, `generate_delivery_dashboard.py`, and `validate_offer_outputs.py`.
 2. Do not create `scripts/build_offer_system.*` in the generated project as the production controller. Generated projects may contain source JSON, static artifacts, previews, and tiny helper scripts, but the real builders live in the plugin.
 3. Generate buyer-facing artifacts from canonical source files: `offer-intake.json`, `offer-architecture.json`, `design.md`, `theme.json`, `copy.md`, `copy-plan.json`, `visual-asset-plan.json`, `sales-page/sales-page-blueprint.json` or `sales-page-blueprint.json`, `workbook/workbook-blueprint.json`, `workbook/workbook-content.json`, `email-sequence.json`, and `presentation/vsl-deck-plan.json`.
 4. Write quality metadata from measured builder output and validator checks. Do not backfill optimistic quality scores at the end.
@@ -20,7 +20,7 @@ Use this controller for every deep run. This is the highest-level recipe and it 
    - VSL preview mobile at about 390px wide
 7. Browser QA must fail the build if any captured page has horizontal overflow or broken images.
 8. Write `qa-notes.md` from live build variables and validation results. Do not hard-code page counts, CTA counts, warnings, or pass/fail claims.
-9. Create `visual-asset-plan.json` and `visual-asset-plan.md` v2 only after `copy.md` contains the sales-page section blueprint. Reusing sales-page images as the default visual pool fails deep mode.
+9. Create `copy-plan.json` before `copy.md`, then run `scripts/build_copy.py`. Create `visual-asset-plan.json` and `visual-asset-plan.md` v2 only after `copy-plan.json`, rendered `copy.md`, and the sales-page section blueprint exist. Reusing sales-page images as the default visual pool fails deep mode.
 
 Stop conditions:
 
@@ -35,7 +35,7 @@ Use this recipe for complete OfferOS builds.
 
 1. Run or follow `scripts/offeros.py` as the command dispatcher. Valid public commands are `intake`, `plan`, `build-assets`, `build-sales-page`, `build-emails`, `build-workbook`, `build-vsl`, `build-dashboard`, `validate`, and `build-all`.
 2. Intake Studio creates or updates `offer-intake.json`. Ask blocking questions if buyer, promise, mechanism, proof level, price, guarantee, checkout target, design/image constraints, or urgency basis are missing.
-3. Strategy + Copy Studio creates `offer-architecture.json`, `offer-architecture.md`, `copy.md`, and `copy-plan.json`. The sales copy and section blueprint must exist before sales-page visual planning.
+3. Strategy + Copy Studio creates `offer-architecture.json`, `offer-architecture.md`, `copy-plan.json`, rendered `copy.md`, and `sales-page-blueprint.json`. `copy-plan.json` must use `framework: "modern-brunson-long-form-v1"`, `standaloneCopyRequired: true`, and `vslDependency: "optional-supporting-asset"`. The Copy Studio source and rendered section blueprint must exist before sales-page visual planning.
 4. Visual Asset Studio creates canonical `visual-asset-plan.json` and human-readable `visual-asset-plan.md`. Every visual row must carry `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, `textRule`, and `source/provenance`.
 5. Sales Page Studio builds `index.html` from the Page Kit builder and records `quality.salesPage.studio: "sales-page-studio-v1"`.
 6. Email Launch Studio builds from `email-sequence.json`, renders Markdown/HTML, and records `quality.emails.studio: "email-launch-studio-v1"`.
@@ -166,7 +166,7 @@ Stop conditions:
 
 ## Visual Asset Plan Recipe
 
-Use this recipe for every deep generated-design run after the logo, product outline, and `copy.md` sales-page blueprint exist and before creating sales-page graphics, PDF pages, ad images, VSL slides, or the dashboard. This is a post-content-blueprint plan, not a loose pre-copy mood board.
+Use this recipe for every deep generated-design run after the logo, product outline, `copy-plan.json`, rendered `copy.md` sales-page blueprint, and `sales-page-blueprint.json` exist and before creating sales-page graphics, PDF pages, ad images, VSL slides, or the dashboard. This is a post-content-blueprint plan, not a loose pre-copy mood board.
 
 1. Create `visual-asset-plan.md`.
 2. Divide the plan into these exact headings:
@@ -189,10 +189,12 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - `logoUsagePolicy: use-locked-logo-reference`
    - `alternateLogosCreated: false`
    - `mockupHeavyUserRequested: false` unless the user explicitly requested mockup-heavy art direction
-   - `sourceBlueprints: copy.md, product blueprint/page archetypes, VSL slide plan, ad angle map`
+   - `copyStudioUsed: true`
+   - `copyPlanPath: copy-plan.json`
+   - `sourceBlueprints: copy-plan.json, copy.md, product blueprint/page archetypes, VSL slide plan, ad angle map`
 4. For every planned visual, list these exact fields: `artifactTarget`, `filePath`, `visualKind`, `copyAnchor`, `conversionJob`, `aspectRatio`, `aspectRatioReason`, `displayIntent`, `maxDisplayHeight`, `textRule`, `source/provenance`, `finalPixelsGeneratedBy`, `localPostprocess`, `localCreativeOverlay`, `reusePermission`, `artifactSpecific`, and `generationPrompt` or `productionMethod`.
 5. Use only these `visualKind` values unless the user supplied a specific visual system that requires an extra kind: `hero-vsl-frame`, `product-mockup`, `dashboard-mockup`, `offer-stack-bundle`, `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `buyer-situation-photo`, `structured-panel`, `worksheet-preview`, `matrix-visual`, `checklist-visual`, `slide-pattern-interrupt`, `ad-creative`, `brand-frame`.
-6. For `## Sales Page Visuals`, every row must include a `copyAnchor` matching a real sales-page section from `copy.md` and the page skeleton, such as `hero`, `vsl`, `failed-alternatives`, `mechanism`, `proof`, `product`, `offer-stack`, `pricing`, `guarantee`, or `faq`.
+6. For `## Sales Page Visuals`, every row must include a `copyAnchor` matching a real Copy Studio section/page section from `copy-plan.json`, `copy.md`, and the page skeleton, such as `hero`, `problem`, `agitation`, `failed-alternatives`, `mechanism`, `proof`, `product`, `offer-stack`, `pricing`, `guarantee`, or `faq`.
 7. Use `mixed-direct-response-v1` by default:
    - use `product-mockup`, `dashboard-mockup`, or `offer-stack-bundle` mainly for product reveal, offer stack, dashboard preview, and CTA/product bundle sections
    - use `mechanism-diagram`, `comparison-visual`, `proof-demo-visual`, `structured-panel`, or restrained `buyer-situation-photo` for mechanism, failed alternatives, proof/demo, objections, feature specifics, and problem/agitation sections
@@ -212,7 +214,7 @@ Use this recipe for every deep generated-design run after the logo, product outl
    - VSL deck: 12+ unique visual assets or distinct diagram treatments, with 8+ not reused from the sales page. Include pattern interrupt, problem map, failed-alternatives comparison, mechanism diagram, product reveal, offer stack, price/value contrast, guarantee, objection, and final CTA visuals.
    - Ads: 3+ ad-specific imagegen creatives. Do not crop sales-page art and call it ad creative.
    - Dashboard: logo, product bundle/preview, and thumbnail/preview choices for the main assets.
-9. If agents are authorized, load `references/agent-dispatch.md` and dispatch imagegen visual workers after this plan exists. Use separate workers for page visuals, PDF visuals, VSL visuals, and ad visuals. Each worker gets `offer-architecture.md`, `design.md`, `copy.md`, `visual-asset-plan.md`, the frozen final `assets/logo.png`, the product blueprint/page archetypes, VSL slide plan, ad angle map, and its assigned output folder. Do not give workers any other logo image. The main agent keeps ownership of integration, manifest registration, and QA.
+9. If agents are authorized, load `references/agent-dispatch.md` and dispatch imagegen visual workers after this plan exists. Use separate workers for page visuals, PDF visuals, VSL visuals, and ad visuals. Each worker gets `offer-architecture.md`, `design.md`, `copy-plan.json`, `copy.md`, `visual-asset-plan.md`, the frozen final `assets/logo.png`, the product blueprint/page archetypes, VSL slide plan, ad angle map, and its assigned output folder. Do not give workers any other logo image. The main agent keeps ownership of integration, manifest registration, and QA.
 10. If agents are not authorized or not available, create the visuals locally and set `quality.images.agentDispatchUsed` to `false` with a short `agentDispatchNotUsedReason`.
 11. Register `visual-asset-plan` in `offer-os.json`:
 
@@ -251,8 +253,8 @@ Use this recipe for every deep generated-design run after the logo, product outl
 Stop conditions:
 
 - If `visual-asset-plan.md` does not exist, stop before creating PDF, ads, or VSL.
-- If `copy.md` with the sales-page section blueprint does not exist, stop before creating `visual-asset-plan.md`.
-- If `quality.images.visualPlanStage` is not `post-content-blueprint` or `quality.images.copyBlueprintUsed` is not `true`, rebuild the plan after copy.
+- If `copy-plan.json` or rendered `copy.md` with the sales-page section blueprint does not exist, stop before creating `visual-asset-plan.md`.
+- If `quality.images.visualPlanStage` is not `post-content-blueprint`, `quality.images.copyBlueprintUsed` is not `true`, or `quality.images.copyStudioUsed` is not `true`, rebuild the plan after Copy Studio.
 - If `quality.images.salesPageImageSystem` is not `mixed-direct-response-v1` and the user did not explicitly request another image system, rebuild the plan.
 - If any sales-page visual lacks `visualKind`, `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, or `textRule`, rebuild the plan.
 - If every sales-page visual is a mockup-style visual and `mockupHeavyUserRequested` is not `true`, revise to a mixed direct-response visual system.
@@ -272,10 +274,12 @@ Stop conditions:
 Use this recipe for every complete paid front-end offer unless the user explicitly asks for a different page type.
 
 1. Set `quality.salesPage.pageType` to `direct-response-long-form-vsl`.
-2. Load `references/direct-response-framework.md` before writing `copy.md`.
-3. Write `copy.md` before `index.html`.
-4. Before writing the copy body, write `# Section Blueprint` as a Markdown table with one row for every required page section. Each row must include `sectionId`, `conversionJob`, `targetWords`, `beliefShift`, `proofOrObjection`, `visualKind`, `copyAnchor`, and `ctaRole`. This blueprint is not optional; it prevents a generic wall of text and becomes the source for `visual-asset-plan.md` v2.
-5. `copy.md` must include these exact headings:
+2. Load `references/copy-studio-framework.md`, `references/copy-plan-contract.md`, `references/product-reveal-framework.md`, `references/feature-benefit-rules.md`, `references/objection-matrix.md`, and `references/direct-response-framework.md` before writing copy.
+3. Write `copy-plan.json` first with `schema: "offeros/copy-plan/v1"`, `framework: "modern-brunson-long-form-v1"`, `standaloneCopyRequired: true`, and `vslDependency: "optional-supporting-asset"`.
+4. Run `scripts/build_copy.py` to render `copy.md` and `sales-page-blueprint.json`. Do not hand-author `copy.md` as the source of truth in deep mode.
+5. `copy-plan.json` must include a specific epiphany/new insight before the named unique mechanism, proof/demo before price and offer stack, structured product reveal, feature-benefit-reason rows, how-it-works steps, value-explained offer-stack items, 7+ real objections, and a non-fake urgency basis.
+6. Before the copy body, `copy.md` must include `# Section Blueprint` as a Markdown table with one row for every required page section. Each row must include `sectionId`, `conversionJob`, `targetWords`, `beliefShift`, `proofOrObjection`, `visualKind`, `copyAnchor`, and `ctaRole`. This blueprint is rendered from `copy-plan.json`; it prevents a generic wall of text and becomes the source for `visual-asset-plan.md` v2.
+7. `copy.md` must include these exact headings:
    - `# Sales Page Type`
    - `# Section Blueprint`
    - `# Hero`
@@ -283,20 +287,24 @@ Use this recipe for every complete paid front-end offer unless the user explicit
    - `# Problem Diagnosis`
    - `# Agitation`
    - `# Failed Alternatives`
+   - `# Epiphany / New Insight`
    - `# Unique Mechanism`
    - `# Proof Or Demonstration`
    - `# Before And After`
    - `# Product Reveal`
+   - `## Feature-Benefit Breakdown`
+   - `## How It Works`
    - `# Offer Stack`
    - `# Who It Is For`
    - `# Who It Is Not For`
    - `# Pricing And Value`
    - `# Guarantee`
    - `# FAQ`
+   - `# Urgency / Scarcity Logic`
    - `# Final CTA`
-6. Write `sales-page-blueprint.json` from `schemas/sales-page-blueprint.schema.json`. It must select exactly one Page Kit archetype from `classic-vsl-longform`, `modern-vsl-software`, `one-page-tripwire`, `challenge-workshop`, or `toolkit-workbook`; set the same value in `pageKitArchetype`; set `checkout.target` or `checkoutTarget` to `#checkout`; set `orderForm` to false; and map required plus optional sections to approved Page Kit blocks.
-7. Write `theme.json` from `schemas/theme.schema.json` or a compatible Page Kit theme preset in `assets/page-kit/themes/`. It must select exactly one theme preset from `light-saas-direct-response`, `classic-direct-response`, `bold-webinar`, `premium-editorial`, `fitness-performance`, or `creator-workshop`. It controls style, typography, spacing, card treatment, and motion; it must not alter the conversion structure.
-8. Build `index.html` only by running `scripts/build_sales_page.py`. Do not hand-write `index.html`, do not start from a blank page, and do not replace the locked hero or offer-stack shell with a custom layout.
+8. `sales-page-blueprint.json` must be generated from Copy Studio source and compatible with `schemas/sales-page-blueprint.schema.json`. It must select exactly one Page Kit archetype from `classic-vsl-longform`, `modern-vsl-software`, `one-page-tripwire`, `challenge-workshop`, or `toolkit-workbook`; set the same value in `pageKitArchetype`; set `checkout.target` or `checkoutTarget` to `#checkout`; set `orderForm` to false; and map required plus optional sections to approved Page Kit blocks.
+9. Write `theme.json` from `schemas/theme.schema.json` or a compatible Page Kit theme preset in `assets/page-kit/themes/`. It must select exactly one theme preset from `light-saas-direct-response`, `classic-direct-response`, `bold-webinar`, `premium-editorial`, `fitness-performance`, or `creator-workshop`. It controls style, typography, spacing, card treatment, and motion; it must not alter the conversion structure.
+10. Build `index.html` only by running `scripts/build_sales_page.py`. Do not hand-write `index.html`, do not start from a blank page, and do not replace the locked hero or offer-stack shell with a custom layout.
 9. Use the exact stacked VSL-first hero v2 contract from `assets/templates/sales-page/section-map.md`: `data-offeros-hero-layout="stacked-vsl"`, `data-offeros-hero-contract="stacked-vsl-hero-v2"`, `data-offeros-template="offeros-stacked-vsl-v2"`, `oo-hero oo-hero-stacked-vsl`, centered buyer filter, prehead, H1, benefit lead, `data-offeros-hero-copy-stack`, large centered `.oo-vsl-frame` with `data-offeros-hero-video`, `data-offeros-hero-video-prominence="primary"`, `data-offeros-hero-video-size="large"`, thumbnail marked `data-offeros-video-thumbnail`, play button marked `data-offeros-video-play`, caption marked `data-offeros-video-caption`, `data-offeros-price-strip` below the video, CTA to `#checkout`, and `data-offeros-trust-row`.
 10. Use the exact offer-stack buy-box contract from `assets/templates/sales-page/section-map.md`: `id="checkout"` or `data-offeros-buy-section`, product bundle visual, `data-offeros-offer-checklist` with 8+ deliverables, `data-offeros-value-row`, large `data-offeros-stack-cta`, and `data-offeros-access-copy`. Do not include an embedded checkout, order form, payment fields, or credit-card form.
 11. Keep every required `data-offeros-section` marker from `assets/templates/sales-page/section-map.md`, including the separate `agitation`, `failed-alternatives`, `mechanism`, and pre-offer `proof` sections.
@@ -324,11 +332,14 @@ Use this recipe for every complete paid front-end offer unless the user explicit
 15. Include at least 7 FAQ objections, at least 4 CTA placements, at least 3 post-hero CTA placements, and at least 2,500 visible words for `direct-response-long-form-vsl`.
 16. Mark every FAQ item with `data-offeros-faq-item`.
 17. Mark every CTA link or button with `data-offeros-cta`; mark post-hero CTA placements with `data-offeros-post-hero-cta`; purchase CTAs must link to `#checkout` by default.
-18. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `framework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, `offerStackContract: "direct-response-buy-box-v1"`, `pageKit: "offeros-page-kit-v1"`, `pageKitBuilder: "offeros-page-kit-builder-v1"`, `pageKitArchetype`, `themePreset`, `pageKitBlueprintUsed: true`, `themeTokensUsed: true`, `navigationPolicy: "no-section-nav"`, `iconSystem: "lucide-icons-v1"`, `iconLibrary: "lucide"`, `imageDisplay: "viewport-constrained-v1"`, `eyebrowPolicy: "sparse-key-signposts-v1"`, `eyebrowAlignment: "centered-with-section-heading"`, `vslSectionCommand: "overview-not-watch-first"`, `checkoutTarget: "#checkout"`, `vslPlacement: "main-column-stacked"`, and `orderFormIncluded: false`.
+18. Set `quality.copy.studio: "copy-studio-v1"`, `quality.copy.framework: "modern-brunson-long-form-v1"`, `quality.copy.standaloneCopyRequired: true`, `quality.copy.vslDependency: "optional-supporting-asset"`, `quality.copy.hasNewInsight: true`, `quality.copy.hasUniqueMechanism: true`, `quality.copy.hasFailedAlternatives: true`, `quality.copy.hasProofBeforeOffer: true`, `quality.copy.hasFeatureBenefitBreakdown: true`, and `quality.copy.hasObjectionMatrix: true`.
+19. Set `quality.salesPage.visibleWordCount`, `objectionCount`, `ctaCount`, `postHeroCtaCount`, `offerStackItemsUnique`, `sectionDepthChecked`, `repeatedTextChecked`, `copyBlueprintPresent: true`, `copyStudioUsed: true`, `copyPlanPath: "copy-plan.json"`, `standaloneCopyRequired: true`, `framework: "modern-brunson-long-form-v1"`, `pageFramework: "direct-response-long-form-v1"`, `compositionContract: "direct-response-composition-v2"`, `heroContract: "stacked-vsl-hero-v2"`, `heroLayout: "stacked-vsl"`, `heroTemplate: "offeros-stacked-vsl-v2"`, `heroVideoFrame: "large-16x9"`, `heroVideoProminenceChecked: true`, `offerStackContract: "direct-response-buy-box-v1"`, `pageKit: "offeros-page-kit-v1"`, `pageKitBuilder: "offeros-page-kit-builder-v1"`, `pageKitArchetype`, `themePreset`, `pageKitBlueprintUsed: true`, `themeTokensUsed: true`, `navigationPolicy: "no-section-nav"`, `iconSystem: "lucide-icons-v1"`, `iconLibrary: "lucide"`, `imageDisplay: "viewport-constrained-v1"`, `eyebrowPolicy: "sparse-key-signposts-v1"`, `eyebrowAlignment: "centered-with-section-heading"`, `vslSectionCommand: "overview-not-watch-first"`, `checkoutTarget: "#checkout"`, `vslPlacement: "main-column-stacked"`, and `orderFormIncluded: false`.
 
 Stop conditions:
 
 - If `copy.md` does not contain `# Section Blueprint` with rows for every required section, revise before page or visual planning.
+- If `copy-plan.json` is missing, invalid, not rendered through `scripts/build_copy.py`, lacks `modern-brunson-long-form-v1`, or sets `vslDependency` to anything other than `optional-supporting-asset`, revise before page or visual planning.
+- If `copy-plan.json` lacks a new insight, named unique mechanism, failed alternatives, proof before offer, feature-benefit-reason product reveal, offer-stack value logic, 7+ objections, or a non-fake urgency basis, revise before page or visual planning.
 - If `sales-page-blueprint.json`, `theme.json`, or `quality.salesPage` uses an unapproved Page Kit archetype or theme preset, revise before building.
 - If the page reads as `hero/features/price/FAQ`, revise before QA.
 - If `index.html` has fewer than 2,500 visible words for `direct-response-long-form-vsl`, revise before QA.

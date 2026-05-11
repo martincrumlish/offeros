@@ -32,7 +32,7 @@ SOURCE_CHECKS = [
             "Treat validator warnings as build failures in deep mode.",
             "VSL preview mobile",
             "qa-notes.md",
-            "Create `visual-asset-plan.json` and `visual-asset-plan.md` v2 only after `copy.md` contains the sales-page section blueprint.",
+            "Create `copy-plan.json` before `copy.md`, then run `scripts/build_copy.py`.",
         ],
     },
     {
@@ -41,13 +41,38 @@ SOURCE_CHECKS = [
         "needles": [
             "## OfferOS Production Studio Recipe",
             "`scripts/offeros.py`",
+            "`build_copy.py`",
             "`build_visual_asset_plan.py`",
             "`build_email_sequence.py`",
             "`build_workbook.py`",
             "`build_vsl_deck.js`",
+            "quality.copy.studio: \"copy-studio-v1\"",
+            "quality.copy.framework: \"modern-brunson-long-form-v1\"",
             "quality.pdf.renderBackend: \"gotenberg-chromium\"",
             "quality.vsl.studio: \"vsl-deck-studio-v1\"",
             "quality.emails.studio: \"email-launch-studio-v1\"",
+        ],
+    },
+    {
+        "id": "copy_studio_recipe_is_explicit",
+        "path": "references/exact-build-recipes.md",
+        "needles": [
+            "references/copy-studio-framework.md",
+            "references/copy-plan-contract.md",
+            "references/product-reveal-framework.md",
+            "references/feature-benefit-rules.md",
+            "references/objection-matrix.md",
+            "schema: \"offeros/copy-plan/v1\"",
+            "framework: \"modern-brunson-long-form-v1\"",
+            "standaloneCopyRequired: true",
+            "vslDependency: \"optional-supporting-asset\"",
+            "scripts/build_copy.py",
+            "specific epiphany/new insight",
+            "feature-benefit-reason rows",
+            "value-explained offer-stack items",
+            "non-fake urgency basis",
+            "quality.copy.studio: \"copy-studio-v1\"",
+            "quality.copy.hasFeatureBenefitBreakdown: true",
         ],
     },
     {
@@ -59,6 +84,8 @@ SOURCE_CHECKS = [
             "`## Visual Plan Metadata`",
             "visualPlanStage: post-content-blueprint",
             "copyBlueprintUsed: true",
+            "copyStudioUsed: true",
+            "copyPlanPath: copy-plan.json",
             "salesPageImageSystem: mixed-direct-response-v1",
             "visualKind",
             "copyAnchor",
@@ -138,10 +165,18 @@ SOURCE_CHECKS = [
         "needles": [
             "## Sales Page Recipe",
             "`quality.salesPage.pageType` to `direct-response-long-form-vsl`",
+            "copy-plan.json",
+            "modern-brunson-long-form-v1",
+            "optional-supporting-asset",
+            "scripts/build_copy.py",
             "references/direct-response-framework.md",
             "`copy.md` must include these exact headings",
             "# Section Blueprint",
             "direct-response-long-form-v1",
+            "framework: \"modern-brunson-long-form-v1\"",
+            "pageFramework: \"direct-response-long-form-v1\"",
+            "copyStudioUsed: true",
+            "copyPlanPath: \"copy-plan.json\"",
             "sales-page-blueprint.json",
             "theme.json",
             "scripts/build_sales_page.py",
@@ -184,6 +219,7 @@ SOURCE_CHECKS = [
         "path": "references/direct-response-framework.md",
         "needles": [
             "## Core Spine",
+            "Copy Studio adds the Modern Brunson layer",
             "Message match",
             "Failed alternatives",
             "Unique mechanism",
@@ -199,6 +235,7 @@ SOURCE_CHECKS = [
         "needles": [
             "PAGE_KIT_ID = \"offeros-page-kit-v1\"",
             "BUILDER_VERSION = \"offeros-page-kit-builder-v1\"",
+            "COPY_FRAMEWORK = \"modern-brunson-long-form-v1\"",
             "DEFAULT_CHECKOUT_TARGET = \"#checkout\"",
             "VSL_PLACEMENT = \"main-column-stacked\"",
             "ALLOWED_PAGE_KIT_ARCHETYPES",
@@ -217,6 +254,7 @@ SOURCE_CHECKS = [
             "EYEBROW_POLICY = \"sparse-key-signposts-v1\"",
             "EYEBROW_SECTIONS",
             "section_eyebrow",
+            "copyStudioUsed",
             "orderFormIncluded",
         ],
     },
@@ -273,6 +311,12 @@ SOURCE_CHECKS = [
         "path": "scripts/validate_offer_outputs.py",
         "needles": [
             "Deep OfferOS runs must not use generated scripts/build_offer_system.* as the production source of truth.",
+            "Copy Studio source missing",
+            "Copy quality metadata must record {field}: {expected}.",
+            "copy.md exists but sales-copy artifact provenance is not copy-studio-v1",
+            "copy-plan.sectionPlan must place proof/demo before offer-stack",
+            "Product reveal component",
+            "Offer stack item",
             "sales-page-studio-v1",
             "email-launch-studio-v1",
             "pdf-workbook-studio-v1",
@@ -373,7 +417,7 @@ SOURCE_CHECKS = [
         "path": "references/agent-dispatch.md",
         "needles": [
             "### Imagegen Visual Workers",
-            "after the initial offer architecture, `design.md`, final logo lockup, `assets/logo.png`, `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist",
+            "after the initial offer architecture, `design.md`, final logo lockup, `assets/logo.png`, `copy-plan.json`, rendered `copy.md` with the sales-page section blueprint, and `visual-asset-plan.md` v2 exist",
             "copyAnchor",
             "visualKind",
             "mixed-direct-response-v1",
@@ -454,8 +498,12 @@ def synthetic_visual_plan_regression() -> dict:
     expected = [
         "Visual asset plan v2 requires copy.md/sales-copy",
         "Visual asset plan metadata must include visualPlanStage: post-content-blueprint.",
+        "Visual asset plan metadata must include copyStudioUsed: true.",
+        "Visual asset plan metadata must include copyPlanPath: copy-plan.json.",
         "Image quality metadata must record visualPlanStage: post-content-blueprint.",
         "Image quality metadata must confirm copyBlueprintUsed.",
+        "Image quality metadata must confirm copyStudioUsed.",
+        "Image quality metadata must record copyPlanPath: copy-plan.json.",
         "Image quality metadata must record salesPageImageSystem: mixed-direct-response-v1.",
         "Image quality metadata must record aspectRatioPolicy: slot-aware-v1.",
         "Sales-page visual plan must include 4+ copyAnchor fields",
@@ -474,6 +522,34 @@ def synthetic_visual_plan_regression() -> dict:
     }
 
 
+def synthetic_copy_studio_regression() -> dict:
+    expected = [
+        'copy-plan.json must record framework: "modern-brunson-long-form-v1"',
+        "copy-plan.json must set standaloneCopyRequired: true.",
+        'copy-plan.json must set vslDependency: "optional-supporting-asset".',
+        "uniqueMechanism must include a named mechanism.",
+        "proofPlan.proofBeforeOffer must be true.",
+        "productReveal.coreComponents must include 3+ feature-benefit-reason rows.",
+        "objectionMatrix must include 7+ objections.",
+        "urgencyBasis.fakeUrgency must be false.",
+        "sectionPlan must place proof before offer-stack.",
+        "copy.md exists but sales-copy artifact provenance is not copy-studio-v1",
+        "Copy quality metadata must record studio: copy-studio-v1.",
+        "Product reveal component 1 lacks benefit or reasonItMatters.",
+        "Offer stack item 1 lacks buyer-facing value logic.",
+    ]
+    workspace = SKILL_ROOT / "tests" / "fixtures" / "bad-copy-studio"
+    payload = run_validator(workspace)
+    issue_text = "\n".join(payload.get("issues", []))
+    missing = [item for item in expected if item not in issue_text]
+    return {
+        "id": "synthetic_copy_studio_regression",
+        "ok": payload.get("returncode") != 0 and not missing,
+        "missingExpectedIssues": missing,
+        "issueCount": payload.get("issueCount"),
+    }
+
+
 def synthetic_two_column_hero_regression() -> dict:
     expected = [
         "Direct-response sales page quality metadata must record heroContract: stacked-vsl-hero-v2.",
@@ -481,7 +557,9 @@ def synthetic_two_column_hero_regression() -> dict:
         "Direct-response sales page quality metadata must record heroVideoFrame: large-16x9.",
         "Direct-response sales page quality metadata must record heroLayout: stacked-vsl.",
         "Direct-response sales page quality metadata must confirm heroVideoProminenceChecked.",
-        "Direct-response sales page quality metadata must record framework: direct-response-long-form-v1.",
+            "Direct-response sales page quality metadata must record framework: modern-brunson-long-form-v1.",
+            "Direct-response sales page quality metadata must record pageFramework: direct-response-long-form-v1.",
+            "Direct-response sales page quality metadata must confirm copyStudioUsed.",
         "Direct-response sales page quality metadata must record compositionContract: direct-response-composition-v2.",
         "Direct-response hero must use data-offeros-hero-layout=\"stacked-vsl\".",
         "Direct-response hero must use data-offeros-hero-contract=\"stacked-vsl-hero-v2\".",
@@ -669,6 +747,7 @@ def main() -> int:
     bad_results = [bad_workspace_check(Path(item).resolve()) for item in args.bad_workspace]
     synthetic_results = [
         synthetic_visual_plan_regression(),
+        synthetic_copy_studio_regression(),
         synthetic_two_column_hero_regression(),
         synthetic_product_page_regression(),
         synthetic_page_kit_regression(),

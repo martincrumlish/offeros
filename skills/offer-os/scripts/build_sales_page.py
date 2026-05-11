@@ -10,6 +10,8 @@ PAGE_KIT_VERSION = "v1"
 PAGE_KIT_ID = "offeros-page-kit-v1"
 BUILDER_VERSION = "offeros-page-kit-builder-v1"
 STUDIO_VERSION = "sales-page-studio-v1"
+COPY_STUDIO_VERSION = "copy-studio-v1"
+COPY_FRAMEWORK = "modern-brunson-long-form-v1"
 DEFAULT_PAGE_KIT_ARCHETYPE = "classic-vsl-longform"
 DEFAULT_THEME_PRESET = "classic-direct-response"
 VSL_PLACEMENT = "main-column-stacked"
@@ -61,7 +63,7 @@ EYEBROW_MAX_COUNT = len(EYEBROW_SECTIONS)
 
 def read_json(path: Path, default=None):
     if path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8-sig"))
     if default is not None:
         return default
     raise SystemExit(f"Required JSON file not found: {path}")
@@ -69,6 +71,13 @@ def read_json(path: Path, default=None):
 
 def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
+def copy_studio_used(root: Path, blueprint: dict, copy_plan_arg: str = "copy-plan.json") -> tuple[bool, str]:
+    copy_plan_path = as_text(blueprint.get("copyPlanPath"), copy_plan_arg)
+    if not copy_plan_path:
+        copy_plan_path = copy_plan_arg
+    return (root / copy_plan_path).exists(), copy_plan_path.replace("\\", "/")
 
 
 def slugify(value: str) -> str:
@@ -748,6 +757,8 @@ def update_manifest(
     blueprint: dict,
     theme: dict,
     used_partials: list[str],
+    copy_plan_used: bool,
+    copy_plan_path: str,
 ) -> dict:
     now = datetime.now(timezone.utc).isoformat()
     upsert_artifact(
@@ -811,7 +822,12 @@ def update_manifest(
             "heroVideoFrame": "large-16x9",
             "heroVideoProminenceChecked": True,
             "offerStackContract": "direct-response-buy-box-v1",
-            "framework": "direct-response-long-form-v1",
+            "framework": COPY_FRAMEWORK if copy_plan_used else "direct-response-long-form-v1",
+            "pageFramework": "direct-response-long-form-v1",
+            "copyFramework": COPY_FRAMEWORK if copy_plan_used else as_text(blueprint.get("copyFramework"), "legacy-copy-markdown"),
+            "copyStudioUsed": copy_plan_used,
+            "copyPlanPath": copy_plan_path if copy_plan_used else "",
+            "standaloneCopyRequired": True if copy_plan_used else bool(blueprint.get("standaloneCopyRequired")),
             "compositionContract": "direct-response-composition-v2",
             "copyBlueprintPresent": True,
             "sectionMarkersPresent": True,
@@ -858,6 +874,7 @@ def main() -> int:
     parser.add_argument("--blueprint", default="sales-page-blueprint.json", help="Sales-page blueprint JSON path relative to workspace.")
     parser.add_argument("--theme", default="theme.json", help="Theme JSON path relative to workspace.")
     parser.add_argument("--manifest", default="offer-os.json", help="OfferOS manifest path relative to workspace.")
+    parser.add_argument("--copy-plan", default="copy-plan.json", help="Copy Studio source path relative to workspace.")
     parser.add_argument("--partials-dir", default="", help="Optional approved page-kit block partial directory relative to workspace.")
     parser.add_argument("--output", default="index.html", help="Output HTML path relative to workspace.")
     args = parser.parse_args()
@@ -872,6 +889,7 @@ def main() -> int:
     blueprint = read_json(blueprint_path)
     theme = {**default_theme(manifest), **read_json(theme_path, default={})}
     partials = approved_partials(root, args.partials_dir)
+    copy_plan_used, copy_plan_path = copy_studio_used(root, blueprint, args.copy_plan)
 
     html_page, used_partials = render_page(root, manifest, blueprint, theme, partials)
     html_page = "\n".join(line.rstrip() for line in html_page.splitlines()) + "\n"
@@ -887,6 +905,8 @@ def main() -> int:
         blueprint,
         theme,
         used_partials,
+        copy_plan_used,
+        copy_plan_path,
     )
     write_json(manifest_path, manifest)
     print(f"Built {output_path}")

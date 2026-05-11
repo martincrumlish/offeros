@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.0
+
+- Adds Copy Studio as the mandatory deep-mode source of truth: `copy-plan.json` uses the `modern-brunson-long-form-v1` framework and renders `copy.md` plus `sales-page-blueprint.json`.
+- Makes the written page argument standalone: VSL is optional support, while the copy plan must include hook, story/insight, new insight, unique mechanism, proof/demo, product reveal, feature-benefit breakdown, offer stack, guarantee, objections, and close.
+- Requires structured product reveal fields with feature, benefit, reason-it-matters, buyer problem solved, proof/preview, and plain-bullet copy for every core component.
+- Updates visual planning and sales-page generation to read Copy Studio output first, record Copy Studio metadata, and keep visual planning after the copy/content blueprint.
+- Extends validation and self-tests for missing copy plans, no new insight, no unique mechanism, weak product reveal, proof after offer, generic objections, fake urgency, unmapped sales-page sections, and visual plans created without Copy Studio.
+
 ## 0.13.4
 
 - Adds the Page Kit sparse eyebrow/pill policy: key signposts only, not one badge on every section.

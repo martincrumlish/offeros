@@ -11,6 +11,7 @@ NODE_SCRIPT_COMMANDS = {"build-vsl"}
 COMMANDS = {
     "init": ["init_offer_project.py"],
     "intake": ["init_offer_project.py"],
+    "build-copy": ["build_copy.py"],
     "plan": ["build_visual_asset_plan.py", "--plan-only"],
     "build-assets": ["build_visual_asset_plan.py"],
     "build-sales-page": ["build_sales_page.py"],
@@ -23,6 +24,7 @@ COMMANDS = {
 
 
 BUILD_ALL = [
+    "build-copy",
     "build-assets",
     "build-sales-page",
     "build-emails",
