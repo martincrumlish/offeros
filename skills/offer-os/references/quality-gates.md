@@ -103,6 +103,7 @@ Must include:
 - 3+ ad-specific imagegen creatives
 - dashboard preview/thumbnail choices
 - allowed `visualKind` values and required `copyAnchor`, `conversionJob`, `artifactTarget`, `aspectRatio`, and `textRule` fields for sales-page visuals
+- explicit imagegen command fields for every buyer-facing sales-page visual: `requiredTool: imagegen`, `requiredAction: call-imagegen-skill-tool`, `imagegenRequired: true`, and `fallbackAllowed: false`
 - explicit reuse rules
 - visual worker dispatch plan when agents are authorized
 - `quality.images.hasArtifactSpecificPlan = true`
@@ -113,7 +114,7 @@ Must include:
 - `quality.images.visualReusePolicy = "artifact-specific-v1"`
 - `quality.images.salesPageImageSystem = "mixed-direct-response-v1"`
 
-Fails if the plan was created before Copy Studio output, if sales-page visuals are not anchored to real page sections, if visual taxonomy fields are missing, if the PDF or VSL visuals are only sales-page images, if ads are just crops/text-card variants of page art, or if the plan does not specify artifact-specific visual jobs and file paths. Also fails if every sales-page visual is mockup/UI/product-bundle style unless the user explicitly requested a mockup-heavy aesthetic.
+Fails if the plan was created before Copy Studio output, if sales-page visuals are not anchored to real page sections, if visual taxonomy fields are missing, if buyer-facing sales-page visuals do not explicitly require `imagegen`, if the PDF or VSL visuals are only sales-page images, if ads are just crops/text-card variants of page art, or if the plan does not specify artifact-specific visual jobs and file paths. Also fails if every sales-page visual is mockup/UI/product-bundle style unless the user explicitly requested a mockup-heavy aesthetic.
 
 When the user explicitly allowed agents, the build should dispatch imagegen visual workers after logo/style references, `copy-plan.json`, `copy.md`, and post-content-blueprint `visual-asset-plan.md` exist. If it does not, record `quality.images.agentDispatchUsed = false` and a concrete `agentDispatchNotUsedReason`.
 

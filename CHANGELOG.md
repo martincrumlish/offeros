@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.15.2
+
+- Removes ambiguous sales-page visual planning language: generated-design buyer-facing page images are explicit `imagegen` tasks.
+- Adds `requiredTool: imagegen`, `requiredAction: call-imagegen-skill-tool`, `imagegenRequired: true`, and `fallbackAllowed: false` to generated visual plan rows.
+- Makes each generated visual prompt start with `CALL THE imagegen SKILL/TOOL FOR THIS EXACT ROW` and the required save path.
+- Extends validation and self-tests so visual plans fail when buyer-facing sales-page rows do not directly require imagegen.
+
 ## 0.15.1
 
 - Closes the sales-page support-image loophole: every buyer-facing image rendered into `data-offeros-page-visual`, `data-offeros-video-thumbnail`, or `data-offeros-product-bundle` must be imagegen-final/provided/licensed.

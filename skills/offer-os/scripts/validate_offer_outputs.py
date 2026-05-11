@@ -2320,6 +2320,17 @@ def validate_visual_asset_plan(root: Path, manifest: dict, by_id: dict[str, dict
         normalized = {key: value for key, value in row.items()}
         normalized["id"] = normalized.get("artifactTarget") or normalized.get("filePath") or normalized.get("visualKind")
         normalized["provenance"] = normalized.get("source/provenance", "")
+        row_id = normalized["id"]
+        if str(row.get("requiredTool", "")).strip().lower() != "imagegen":
+            issues.append(f"Sales-page visual plan row must explicitly set requiredTool: imagegen: {row_id}.")
+        if str(row.get("requiredAction", "")).strip().lower() != "call-imagegen-skill-tool":
+            issues.append(f"Sales-page visual plan row must explicitly set requiredAction: call-imagegen-skill-tool: {row_id}.")
+        if bool_field(row.get("imagegenRequired")) is not True:
+            issues.append(f"Sales-page visual plan row must explicitly set imagegenRequired: true: {row_id}.")
+        if bool_field(row.get("fallbackAllowed")) is not False:
+            issues.append(f"Sales-page visual plan row must explicitly set fallbackAllowed: false: {row_id}.")
+        if "call the imagegen skill/tool for this exact row" not in str(row.get("generationPrompt", "")).strip().lower():
+            issues.append(f"Sales-page visual generationPrompt must directly instruct CALL THE imagegen SKILL/TOOL FOR THIS EXACT ROW: {row_id}.")
         for issue in primary_conversion_metadata_issues(normalized, "Sales-page primary conversion visual plan row"):
             issues.append(issue)
 
