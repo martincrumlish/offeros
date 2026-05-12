@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.17.0
+
+- Reworks Sales Page Studio so typed `copy-plan.json.sectionPlan[].copyBlocks` drive page layout; `copy.md` remains the readable delivery artifact, not the layout parser.
+- Fixes the VSL hero source pattern: buyer filter, prehead, headline, subheadline, large VSL frame, then price/CTA/trust below the video.
+- Adds section-specific rendering patterns for symptoms, agitation, alternatives, mechanism steps, proof cards, feature-benefit grids, timelines, offer-stack checklist, guarantee pills, and FAQ accordions.
+- Forbids buyer-facing VSL copy that calls the video a "pitch"; uses walkthrough/breakdown/overview/demo language instead.
+- Updates validation and self-tests for bracketed copy sections, typed page rendering, and the new no-pitch VSL rule.
+
 ## 0.16.1
 
 - Makes exact-copy sales pages skip support images unless the asset is registered with compliant buyer-facing image provenance.

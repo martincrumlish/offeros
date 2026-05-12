@@ -240,21 +240,24 @@ IMAGEGEN_REQUIRED_VISUAL_KINDS = {
     "ad-creative",
 }
 
-REQUIRED_COPY_HEADINGS = [
-    "## Big Promise",
-    "## Problem Diagnosis",
-    "## Failed Alternatives",
-    "## Epiphany / New Insight",
-    "## Unique Mechanism",
-    "## Proof Or Demonstration",
-    "## Product Reveal",
-    "## Feature-Benefit Breakdown",
-    "## How It Works",
-    "## Offer Stack",
-    "## Pricing And Value",
-    "## Guarantee",
-    "## FAQ",
-    "## Final Close",
+REQUIRED_COPY_SECTIONS = [
+    "hero",
+    "vsl",
+    "problem",
+    "agitation",
+    "failed-alternatives",
+    "new-insight",
+    "mechanism",
+    "proof",
+    "before-after",
+    "product",
+    "feature-benefit",
+    "how-it-works",
+    "offer-stack",
+    "pricing",
+    "guarantee",
+    "faq",
+    "final-cta",
 ]
 
 REQUIRED_COPY_BLUEPRINT_HEADINGS = [
@@ -1321,9 +1324,11 @@ def validate_sales_copy(root: Path, manifest: dict, by_id: dict[str, dict], issu
     expected_target = f"{SALES_COPY_TARGET_MINIMUM}-{SALES_COPY_TARGET_MAXIMUM}"
     if copy_quality.get("targetCopyWords") != expected_target:
         issues.append(f"Copy quality metadata must record targetCopyWords: {expected_target}.")
-    missing_headings = [heading for heading in REQUIRED_COPY_HEADINGS if heading.lower() not in lower]
-    if missing_headings:
-        issues.append("Sales copy missing required direct-response headings: " + ", ".join(missing_headings))
+    missing_sections = [section for section in REQUIRED_COPY_SECTIONS if f"[{section}]" not in lower or f"[/{section}]" not in lower]
+    if missing_sections:
+        issues.append("Sales copy missing required bracketed page-copy sections: " + ", ".join(missing_sections))
+    if re.search(r"\bwatch the short pitch\b|\bshort pitch\b", text, flags=re.I):
+        issues.append("Sales copy must not label the VSL as a pitch; use walkthrough, breakdown, overview, demo, or presentation.")
     if "# section blueprint" in lower or "| sectionid |" in lower:
         issues.append("copy.md must be clean written sales copy only; put Copy Studio section tables in copy-blueprint.md.")
     if copy_plan:
@@ -1705,8 +1710,8 @@ def validate_direct_response_page_contract(html_text: str, manifest: dict, sales
                 issues.append("Direct-response hero video frame must include a caption marked data-offeros-video-caption.")
             if "<img" not in hero_video.lower():
                 issues.append("Direct-response hero video frame must include a thumbnail/image.")
-            if not re.search(r"\b(play|watch|video|vsl|pitch)\b", visible_text_from_html(hero_video), flags=re.I):
-                issues.append("Direct-response hero video frame must include a play/watch/pitch cue.")
+            if not re.search(r"\b(play|watch|video|vsl|walkthrough|breakdown|overview|demo|presentation)\b", visible_text_from_html(hero_video), flags=re.I):
+                issues.append("Direct-response hero video frame must include a play/watch/walkthrough cue.")
         if not has_marker(hero, "data-offeros-price-strip"):
             issues.append("Direct-response hero must include an in-hero price strip marked data-offeros-price-strip.")
         else:

@@ -40,6 +40,7 @@ Do not put any of this in buyer-facing copy:
 - "include a paragraph"
 - repeated template sentences mapped over cards
 - internal labels such as Problem, Agitate, Mechanism, Proof used as visible slide/page titles unless they are natural customer-facing headings
+- VSL labels such as "pitch", "short pitch", or "watch the pitch"; use "walkthrough", "breakdown", "overview", "demo", or "presentation" instead
 
 ## Section Writing Jobs
 
@@ -52,6 +53,7 @@ Hero:
 VSL setup:
 - short supporting setup only
 - do not imply the reader must watch the video to understand the offer
+- do not call the video a pitch; frame it as a walkthrough, breakdown, overview, demonstration, or presentation
 
 Problem diagnosis:
 - diagnose the real problem behind the surface problem

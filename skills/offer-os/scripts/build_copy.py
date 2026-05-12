@@ -175,6 +175,8 @@ FORBIDDEN_META_COPY_PHRASES = [
     "write a headline",
     "include a paragraph",
     "use this section",
+    "watch the short pitch",
+    "short pitch",
 ]
 VSL_DEPENDENCY_PHRASES = [
     "watch the video to understand",

@@ -58,7 +58,7 @@ EYEBROW_ALIGNMENT = "centered-with-section-heading"
 EYEBROW_SECTIONS = {
     "problem": "The real problem",
     "mechanism": "The mechanism",
-    "proof": "Proof before the pitch",
+    "proof": "Proof before the offer",
     "offer-stack": "Get the complete stack",
     "guarantee": "Risk reversal",
 }
@@ -533,6 +533,51 @@ def parse_copy_markdown_sections(root: Path, blueprint: dict) -> dict[str, str]:
     return {section_id: "\n".join(lines).strip() for section_id, lines in sections.items() if "\n".join(lines).strip()}
 
 
+def copy_plan_source(root: Path, blueprint: dict) -> dict:
+    copy_plan_path = as_text(blueprint.get("copyPlanPath"), "copy-plan.json") or "copy-plan.json"
+    path = root / copy_plan_path
+    if not path.exists():
+        return {}
+    return read_json(path, default={})
+
+
+def copy_plan_section_rows(root: Path, blueprint: dict) -> dict[str, dict]:
+    plan = copy_plan_source(root, blueprint)
+    rows: dict[str, dict] = {}
+    for row in plan.get("sectionPlan", []):
+        if not isinstance(row, dict):
+            continue
+        section_id = as_text(row.get("sectionId"))
+        if section_id:
+            rows[section_id] = row
+    return rows
+
+
+def typed_copy_blocks(row: dict) -> list[dict]:
+    blocks: list[dict] = []
+    for block in row.get("copyBlocks", []):
+        if not isinstance(block, dict):
+            continue
+        block_type = as_text(block.get("type"))
+        text = as_text(block.get("text"))
+        if block_type and text:
+            blocks.append({"type": block_type, "text": text})
+    return blocks
+
+
+def block_text(blocks: list[dict], *types: str, fallback: str = "") -> str:
+    wanted = set(types)
+    for block in blocks:
+        if block.get("type") in wanted and as_text(block.get("text")):
+            return as_text(block.get("text"))
+    return fallback
+
+
+def block_texts(blocks: list[dict], *types: str) -> list[str]:
+    wanted = set(types)
+    return [as_text(block.get("text")) for block in blocks if block.get("type") in wanted and as_text(block.get("text"))]
+
+
 def inline_markdown(text: str) -> str:
     escaped = html_text(text)
     escaped = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", escaped)
@@ -540,14 +585,116 @@ def inline_markdown(text: str) -> str:
     return escaped
 
 
-def render_exact_markdown(markdown: str, checkout: str) -> str:
-    html: list[str] = []
+def split_paragraph_text(text: str, max_words: int = 55) -> list[str]:
+    words = re.findall(r"\S+", text or "")
+    if len(words) <= max_words:
+        return [text]
+    sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
+    chunks: list[str] = []
+    current: list[str] = []
+    current_count = 0
+    for sentence in sentences or [text]:
+        count = len(re.findall(r"\S+", sentence))
+        if current and current_count + count > max_words:
+            chunks.append(" ".join(current))
+            current = [sentence]
+            current_count = count
+        else:
+            current.append(sentence)
+            current_count += count
+    if current:
+        chunks.append(" ".join(current))
+    return chunks
+
+
+def paragraph_markup(text: str, class_name: str = "") -> str:
+    class_attr = f' class="{class_name}"' if class_name else ""
+    return "".join(f"<p{class_attr}>{inline_markdown(chunk)}</p>" for chunk in split_paragraph_text(text))
+
+
+def copy_plan_offer_stack_items(copy_plan: dict) -> list[str]:
+    stack = copy_plan.get("offerStack", {}) if isinstance(copy_plan, dict) else {}
+    items = stack.get("items", []) if isinstance(stack, dict) else []
+    result: list[str] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        title = as_text(item.get("title"))
+        copy = as_text(item.get("copy"))
+        value = as_text(item.get("value"))
+        if not title and not copy:
+            continue
+        value_part = f" ({value} value)" if value else ""
+        if title and copy:
+            result.append(f"{title}: {copy}{value_part}")
+        else:
+            result.append(f"{title or copy}{value_part}")
+    return result
+
+
+def copy_plan_value_row(copy_plan: dict, manifest: dict) -> tuple[str, str]:
+    stack = copy_plan.get("offerStack", {}) if isinstance(copy_plan, dict) else {}
+    value_logic = copy_plan.get("valueLogic", {}) if isinstance(copy_plan, dict) else {}
+    item_values = []
+    if isinstance(stack, dict):
+        for item in stack.get("items", []):
+            if not isinstance(item, dict):
+                continue
+            match = re.search(r"(\d+(?:\.\d+)?)", as_text(item.get("value")))
+            if match:
+                item_values.append(float(match.group(1)))
+    calculated_total = f"Total value normally ${int(sum(item_values))}+" if item_values else ""
+    total_value = first_value(
+        stack.get("totalValue") if isinstance(stack, dict) else "",
+        value_logic.get("totalValue") if isinstance(value_logic, dict) else "",
+        calculated_total,
+        fallback="Total value normally higher than today's price",
+    )
+    today = first_value(
+        value_logic.get("todayPrice") if isinstance(value_logic, dict) else "",
+        fallback=price_text(manifest),
+    )
+    return total_value, today if today.lower().startswith("today") else f"Today: {today}"
+
+
+def exact_list_items(items: list[str], icon: str = "check", li_attr: str = "") -> str:
+    attr = f" {li_attr}" if li_attr else ""
+    return "".join(
+        f'<li{attr}><span class="oo-check-icon" aria-hidden="true"><i data-lucide="{html_text(icon)}"></i></span>{inline_markdown(item)}</li>'
+        for item in items
+    )
+
+
+def stack_list_items(items: list[str]) -> str:
+    rendered: list[str] = []
+    for index, item in enumerate(items):
+        title = item
+        copy = ""
+        value = ""
+        value_match = re.search(r"\s*\(([^)]*value)\)\s*$", title, flags=re.I)
+        if value_match:
+            value = value_match.group(1)
+            title = title[: value_match.start()].strip()
+        if ":" in title:
+            title, copy = [part.strip() for part in title.split(":", 1)]
+        featured = " oo-stack-featured" if index < 3 else ""
+        copy_html = f'<span class="oo-stack-copy">{inline_markdown(copy)}</span>' if copy else ""
+        value_html = f'<span class="oo-stack-value">{html_text(value)}</span>' if value else ""
+        rendered.append(
+            f'<li class="oo-stack-item{featured}"><span class="oo-check-icon" aria-hidden="true"><i data-lucide="check"></i></span>'
+            f'<span class="oo-stack-text"><strong>{inline_markdown(title)}</strong>{copy_html}</span>{value_html}</li>'
+        )
+    return "".join(rendered)
+
+
+def parse_exact_blocks(markdown: str) -> list[dict]:
+    blocks: list[dict] = []
     bullets: list[str] = []
 
     def flush_bullets() -> None:
         nonlocal bullets
         if bullets:
-            html.append(f'<ul class="oo-copy-list">{icon_list_items(bullets)}</ul>')
+            blocks.append({"type": "bullets", "items": bullets})
             bullets = []
 
     for raw_line in markdown.splitlines():
@@ -558,27 +705,284 @@ def render_exact_markdown(markdown: str, checkout: str) -> str:
         cta = re.fullmatch(r"\[cta\](.+?)\[/cta\]", line, re.I)
         if cta:
             flush_bullets()
-            html.append(f'<a class="oo-cta" data-offeros-cta href="{checkout}">{html_text(cta.group(1))}</a>')
+            blocks.append({"type": "cta", "text": cta.group(1).strip()})
             continue
         legacy_cta = re.fullmatch(r"CTA:\s*(.+)", line, re.I)
         if legacy_cta:
             flush_bullets()
-            html.append(f'<a class="oo-cta" data-offeros-cta href="{checkout}">{html_text(legacy_cta.group(1))}</a>')
+            blocks.append({"type": "cta", "text": legacy_cta.group(1).strip()})
             continue
         if line.startswith("- "):
             bullets.append(line[2:].strip())
             continue
         flush_bullets()
         if line.startswith("# "):
-            html.append(f"<h1>{inline_markdown(line[2:].strip())}</h1>")
+            blocks.append({"type": "h1", "text": line[2:].strip()})
         elif line.startswith("## "):
-            html.append(f"<h2>{inline_markdown(line[3:].strip())}</h2>")
+            blocks.append({"type": "h2", "text": line[3:].strip()})
         elif line.startswith("### "):
-            html.append(f"<h3>{inline_markdown(line[4:].strip())}</h3>")
+            blocks.append({"type": "h3", "text": line[4:].strip()})
         else:
-            html.append(f"<p>{inline_markdown(line)}</p>")
+            blocks.append({"type": "p", "text": line})
     flush_bullets()
-    return "\n".join(html)
+    return blocks
+
+
+def cta_button(text: str, checkout: str, extra_attrs: str = "") -> str:
+    attrs = f" {extra_attrs}" if extra_attrs else ""
+    return f'<a class="oo-cta" data-offeros-cta{attrs} href="{checkout}">{html_text(text)}</a>'
+
+
+def section_list_markup(section_id: str, items: list[str]) -> str:
+    if not items:
+        return ""
+    config = {
+        "problem": ("oo-symptom-list", "circle-alert", ""),
+        "agitation": ("oo-impact-list", "timer-reset", ""),
+        "failed-alternatives": ("oo-alternative-list", "x", 'data-offeros-failed-alternatives-table'),
+        "mechanism": ("oo-step-list", "route", 'data-offeros-mechanism-steps'),
+        "proof": ("oo-proof-list", "badge-check", "data-offeros-proof-card"),
+        "product": ("oo-feature-grid-list", "package-check", ""),
+        "feature-benefit": ("oo-feature-grid-list", "sparkles", ""),
+        "how-it-works": ("oo-timeline-list", "arrow-right", ""),
+        "offer-stack": ("oo-stack-list", "check", 'data-offeros-offer-checklist'),
+        "bonuses": ("oo-bonus-list", "plus", ""),
+        "pricing": ("oo-proof-list", "badge-dollar-sign", ""),
+        "guarantee": ("oo-guarantee-list", "shield-check", ""),
+        "fit": ("oo-fit-list", "user-check", ""),
+    }.get(section_id, ("oo-copy-list", "check", ""))
+    class_name, icon, attr = config
+    if section_id == "offer-stack":
+        return f'<ul class="{class_name}" data-offeros-offer-checklist>{stack_list_items(items)}</ul>'
+    if section_id == "proof":
+        return f'<ul class="{class_name}">{exact_list_items(items, icon, attr)}</ul>'
+    list_attr = f" {attr}" if attr and not attr.startswith("data-offeros-proof-card") else ""
+    return f'<ul class="{class_name}"{list_attr}>{exact_list_items(items, icon)}</ul>'
+
+
+def render_faq_blocks(blocks: list[dict]) -> str:
+    intro: list[str] = []
+    faqs: list[tuple[str, list[str]]] = []
+    active_question = ""
+    active_answer: list[str] = []
+    for block in blocks:
+        if block["type"] == "h2":
+            intro.append(f"<h2>{inline_markdown(block['text'])}</h2>")
+            continue
+        if block["type"] == "h3":
+            if active_question:
+                faqs.append((active_question, active_answer))
+            active_question = re.sub(r"^Q:\s*", "", block["text"], flags=re.I).strip()
+            active_answer = []
+            continue
+        if block["type"] == "p":
+            if active_question:
+                active_answer.append(block["text"])
+            else:
+                intro.append(paragraph_markup(block["text"]))
+        elif block["type"] == "bullets":
+            if active_question:
+                active_answer.extend(block["items"])
+            else:
+                intro.append(section_list_markup("faq", block["items"]))
+    if active_question:
+        faqs.append((active_question, active_answer))
+    details = []
+    for question, answer in faqs[:10]:
+        body = "".join(paragraph_markup(line) for line in answer) or "<p>Answered in the offer details above.</p>"
+        details.append(f'<details class="oo-faq-item" data-offeros-faq-item><summary>{inline_markdown(question)}</summary>{body}</details>')
+    return "\n".join(intro + details)
+
+
+def render_exact_blocks(markdown: str, checkout: str, section_id: str) -> str:
+    blocks = parse_exact_blocks(markdown)
+    if section_id == "faq":
+        return render_faq_blocks(blocks)
+
+    html: list[str] = []
+    for block in blocks:
+        block_type = block["type"]
+        if block_type == "h1":
+            html.append(f"<h1>{inline_markdown(block['text'])}</h1>")
+        elif block_type == "h2":
+            html.append(f"<h2>{inline_markdown(block['text'])}</h2>")
+        elif block_type == "h3":
+            html.append(f"<h3>{inline_markdown(block['text'])}</h3>")
+        elif block_type == "p":
+            html.append(paragraph_markup(block["text"]))
+        elif block_type == "bullets":
+            html.append(section_list_markup(section_id, block["items"]))
+        elif block_type == "cta":
+            html.append(cta_button(block["text"], checkout, "data-offeros-post-hero-cta"))
+    return "\n".join(item for item in html if item)
+
+
+def render_exact_hero(markdown: str, manifest: dict, blueprint: dict, context: dict) -> str:
+    blocks = parse_exact_blocks(markdown)
+    offer = manifest_offer(manifest, blueprint)
+    checkout = context["checkoutTarget"]
+    audience = first_value(blueprint.get("audience"), manifest.get("audience"), fallback="people building a front-end offer")
+    price = price_text(manifest)
+
+    headline = next((block["text"] for block in blocks if block["type"] in {"h1", "h2"}), f"Get {offer}")
+    paragraphs = [block["text"] for block in blocks if block["type"] == "p"]
+    bullets = []
+    for block in blocks:
+        if block["type"] == "bullets":
+            bullets.extend(block["items"])
+    cta_text = next((block["text"] for block in blocks if block["type"] == "cta"), f"Get {offer} for {price}")
+    subhead = paragraphs[0] if paragraphs else f"Watch the short breakdown, then decide whether {offer} is right for you."
+    bridge = paragraphs[1:] if len(paragraphs) > 1 else []
+
+    trust = f'<ul class="oo-hero-trust" data-offeros-trust-row>{exact_list_items(bullets[:3], "check")}</ul>' if bullets else ""
+    bridge_html = "".join(paragraph_markup(line) for line in bridge)
+    return f"""
+      <div class="oo-hero-copy-stack" data-offeros-hero-copy-stack>
+        <p class="oo-buyer-pill" data-offeros-buyer-filter>For {html_text(audience)}</p>
+        <p class="oo-prehead">{html_text(offer)}: {html_text(price)} front-end offer system</p>
+        <h1>{inline_markdown(headline)}</h1>
+        {paragraph_markup(subhead, "oo-hero-copy")}
+      </div>
+      <figure class="oo-vsl-frame oo-hero-video-primary" data-offeros-hero-video data-offeros-hero-video-prominence="primary" data-offeros-hero-video-size="large">
+        <img src="{context["heroVslThumbnail"]}" alt="{html_text(offer)} VSL preview" data-offeros-video-thumbnail>
+        <button class="oo-play-button" type="button" data-offeros-video-play aria-label="Play VSL">Play</button>
+        <figcaption class="oo-video-caption" data-offeros-video-caption><strong>Watch the short breakdown first.</strong><span>See the problem, mechanism, proof, and stack before the offer is made.</span></figcaption>
+      </figure>
+      <div class="oo-hero-after-video">
+        {bridge_html}
+        <div class="oo-price-strip" data-offeros-price-strip>
+          <div><span class="oo-price">{html_text(price)}</span><small>Total value included</small></div>
+          <p>Get the complete {html_text(offer)} stack after the video has made the case and shown what is included.</p>
+          {cta_button(cta_text, checkout)}
+        </div>
+        {trust}
+      </div>"""
+
+
+def render_typed_hero(row: dict, manifest: dict, blueprint: dict, context: dict) -> str:
+    blocks = typed_copy_blocks(row)
+    offer = manifest_offer(manifest, blueprint)
+    checkout = context["checkoutTarget"]
+    audience = first_value(blueprint.get("audience"), manifest.get("audience"), fallback="people building a front-end offer")
+    audience_base = re.split(r"\bwho\b", audience, maxsplit=1, flags=re.I)[0].strip(" ,.")
+    if len(audience_base) > 96:
+        parts = [part.strip() for part in audience_base.split(",") if part.strip()]
+        audience_base = ", ".join(parts[:4]).strip(" ,.") if parts else audience_base[:96].rstrip() + "..."
+    price = price_text(manifest)
+    headline = block_text(blocks, "headline", fallback=f"Get {offer}")
+    prehead = block_text(blocks, "prehead", fallback=f"A {price} Codex plugin + implementation kit for complete front-end offer builds.")
+    lead = block_text(blocks, "lead", fallback=block_text(blocks, "paragraph", fallback=f"See how {offer} works before you decide."))
+    support_paragraphs = block_texts(blocks, "paragraph")
+    bullets = block_texts(blocks, "bullet")
+    cta = block_text(blocks, "cta", fallback=f"Get {offer} for {price}")
+    support_html = "".join(paragraph_markup(text) for text in support_paragraphs)
+    trust_html = f'<ul class="oo-hero-trust" data-offeros-trust-row>{exact_list_items(bullets[:3], "check")}</ul>' if bullets else ""
+    return f"""
+      <div class="oo-hero-copy-stack" data-offeros-hero-copy-stack>
+        <p class="oo-buyer-pill" data-offeros-buyer-filter>For {html_text(audience_base)}</p>
+        <p class="oo-prehead">{inline_markdown(prehead)}</p>
+        <h1>{inline_markdown(headline)}</h1>
+        {paragraph_markup(lead, "oo-hero-copy")}
+      </div>
+      <figure class="oo-vsl-frame oo-hero-video-primary" data-offeros-hero-video data-offeros-hero-video-prominence="primary" data-offeros-hero-video-size="large">
+        <img src="{context["heroVslThumbnail"]}" alt="{html_text(offer)} walkthrough preview" data-offeros-video-thumbnail>
+        <button class="oo-play-button" type="button" data-offeros-video-play aria-label="Play overview">Play</button>
+        <figcaption class="oo-video-caption" data-offeros-video-caption><strong>Watch the short walkthrough.</strong><span>See the problem, mechanism, proof, and stack before the offer is made.</span></figcaption>
+      </figure>
+      <div class="oo-hero-after-video">
+        {support_html}
+        <div class="oo-price-strip" data-offeros-price-strip>
+          <div><span class="oo-price">{html_text(price)}</span><small>Total value included</small></div>
+          <p>Get the complete {html_text(offer)} stack after the walkthrough has shown what the system does and why it is worth buying now.</p>
+          {cta_button(cta, checkout)}
+        </div>
+        {trust_html}
+      </div>"""
+
+
+def render_typed_faq(row: dict) -> str:
+    blocks = typed_copy_blocks(row)
+    intro: list[str] = []
+    faqs: list[tuple[str, list[str]]] = []
+    active_question = ""
+    active_answer: list[str] = []
+    for block in blocks:
+        block_type = block["type"]
+        text = block["text"]
+        if block_type == "headline":
+            intro.append(f"<h2>{inline_markdown(text)}</h2>")
+        elif block_type in {"lead", "paragraph"} and not active_question:
+            intro.append(paragraph_markup(text))
+        elif block_type == "bullet" and not active_question:
+            intro.append(section_list_markup("faq", [text]))
+        elif block_type == "question":
+            if active_question:
+                faqs.append((active_question, active_answer))
+            active_question = text
+            active_answer = []
+        elif block_type == "answer" and active_question:
+            active_answer.append(text)
+        elif active_question and block_type in {"paragraph", "lead", "bullet"}:
+            active_answer.append(text)
+    if active_question:
+        faqs.append((active_question, active_answer))
+    details = []
+    for question, answer in faqs[:10]:
+        body = "".join(paragraph_markup(line) for line in answer) or "<p>Answered in the offer details above.</p>"
+        details.append(f'<details class="oo-faq-item" data-offeros-faq-item><summary>{inline_markdown(question)}</summary>{body}</details>')
+    return "\n".join(intro + details)
+
+
+def render_typed_section_body(section_id: str, row: dict, checkout: str, copy_plan: dict | None = None) -> str:
+    if section_id == "faq":
+        return render_typed_faq(row)
+    copy_plan = copy_plan or {}
+    blocks = typed_copy_blocks(row)
+    headline = block_text(blocks, "headline")
+    lead = block_text(blocks, "lead")
+    paragraphs = block_texts(blocks, "paragraph")
+    bullets = block_texts(blocks, "bullet")
+    cta = block_text(blocks, "cta")
+    html: list[str] = []
+    if headline:
+        html.append(f"<h2>{inline_markdown(headline)}</h2>")
+    if lead:
+        html.append(paragraph_markup(lead, "oo-section-lead"))
+    if section_id == "offer-stack":
+        stack_items = copy_plan_offer_stack_items(copy_plan)
+        if stack_items:
+            seen = {item.lower() for item in stack_items}
+            stack_items.extend(item for item in bullets if item.lower() not in seen)
+            html.append(section_list_markup(section_id, stack_items))
+        elif bullets:
+            html.append(section_list_markup(section_id, bullets))
+        bullets = []
+    if section_id == "fit" and bullets:
+        good = [item for item in bullets if item.lower().startswith("good fit")]
+        bad = [item for item in bullets if item.lower().startswith("not a fit")]
+        other = [item for item in bullets if item not in good and item not in bad]
+        if good or bad:
+            html.append(
+                '<div class="oo-fit-columns">'
+                f'<div><h3>Good fit</h3>{section_list_markup("fit", [re.sub(r"^good fit:\\s*", "", item, flags=re.I) for item in good] or other)}</div>'
+                f'<div><h3>Not a fit</h3>{section_list_markup("fit", [re.sub(r"^not a fit:\\s*", "", item, flags=re.I) for item in bad])}</div>'
+                "</div>"
+            )
+            bullets = []
+    midpoint = max(1, len(paragraphs) // 2) if paragraphs else 0
+    for index, text in enumerate(paragraphs):
+        if index == midpoint and bullets:
+            html.append(section_list_markup(section_id, bullets))
+            bullets = []
+        html.append(paragraph_markup(text))
+    if bullets:
+        html.append(section_list_markup(section_id, bullets))
+    if cta:
+        extra = "data-offeros-post-hero-cta"
+        if section_id == "offer-stack":
+            extra += " data-offeros-stack-cta"
+        html.append(cta_button(cta, checkout, extra))
+    return "\n".join(item for item in html if item)
 
 
 def exact_section_visual(root: Path, manifest: dict, section_id: str, offer: str, context: dict) -> str:
@@ -611,24 +1015,23 @@ def exact_section_visual(root: Path, manifest: dict, section_id: str, offer: str
 def render_exact_copy_section(root: Path, section_id: str, markdown: str, manifest: dict, blueprint: dict, context: dict) -> str:
     offer = manifest_offer(manifest, blueprint)
     checkout = context["checkoutTarget"]
-    copy_html = render_exact_markdown(markdown, checkout)
+    typed_row = context.get("_copyRows", {}).get(section_id) if isinstance(context.get("_copyRows"), dict) else None
+    copy_plan = context.get("_copyPlan", {}) if isinstance(context.get("_copyPlan"), dict) else {}
+    copy_html = render_typed_section_body(section_id, typed_row, checkout, copy_plan) if isinstance(typed_row, dict) else render_exact_blocks(markdown, checkout, section_id)
     comment_open = f"<!-- [{section_id}] -->"
     comment_close = f"<!-- [/{section_id}] -->"
     if section_id == "hero":
+        hero_html = render_typed_hero(typed_row, manifest, blueprint, context) if isinstance(typed_row, dict) else render_exact_hero(markdown, manifest, blueprint, context)
         return f"""
     {comment_open}
     <section class="oo-hero oo-hero-stacked-vsl" data-offeros-section="hero" data-offeros-hero-layout="stacked-vsl" data-offeros-hero-contract="stacked-vsl-hero-v2" data-offeros-template="offeros-stacked-vsl-v2" data-offeros-copy-contract="exact-copy-sections-v1">
       <div class="oo-hero-inner" data-offeros-hero-inner>
-        <div class="oo-hero-copy-stack oo-copy-flow" data-offeros-hero-copy-stack>{copy_html}</div>
-        <figure class="oo-vsl-frame oo-hero-video-primary" data-offeros-hero-video data-offeros-hero-video-prominence="primary" data-offeros-hero-video-size="large">
-          <img src="{context["heroVslThumbnail"]}" alt="{html_text(offer)} VSL preview" data-offeros-video-thumbnail>
-          <button class="oo-play-button" type="button" data-offeros-video-play aria-label="Play VSL">Play</button>
-        </figure>
+        {hero_html}
       </div>
     </section>
     {comment_close}"""
-    section_class = "oo-stack" if section_id == "offer-stack" else "oo-section"
-    dark = section_id in {"vsl", "agitation", "mechanism", "before-after", "pricing", "final-cta"}
+    section_class = "oo-stack" if section_id == "offer-stack" else f"oo-section oo-section-{section_id}"
+    dark = section_id in {"agitation", "mechanism", "before-after", "pricing", "final-cta"}
     if dark and section_class != "oo-stack":
         section_class += " oo-section-dark"
     anchor = ' id="checkout" data-offeros-buy-section data-offeros-checkout-anchor' if section_id == "offer-stack" else ""
@@ -636,13 +1039,31 @@ def render_exact_copy_section(root: Path, section_id: str, markdown: str, manife
     if section_id == "offer-stack":
         bundle = f'<img class="oo-bundle" src="{context["productBundleImage"]}" alt="{html_text(offer)} product bundle" data-offeros-product-bundle data-offeros-image-display="constrained">'
     visual = exact_section_visual(root, manifest, section_id, offer, context)
+    structural_marker = {
+        "failed-alternatives": '<div class="oo-structure-marker" data-offeros-failed-alternatives-table></div>',
+        "before-after": '<div class="oo-structure-marker" data-offeros-before-after></div>',
+    }.get(section_id, "")
+    offer_stack_meta = ""
+    if section_id == "offer-stack":
+        total_value, today_value = copy_plan_value_row(copy_plan, manifest)
+        stack = copy_plan.get("offerStack", {}) if isinstance(copy_plan, dict) else {}
+        access_copy = first_value(
+            stack.get("accessCopy") if isinstance(stack, dict) else "",
+            fallback="Instant access after checkout. Review the guarantee before purchase.",
+        )
+        offer_stack_meta = f"""
+        <div class="oo-value-row" data-offeros-value-row><span>{html_text(total_value)}</span><strong>{html_text(today_value)}</strong></div>
+        <div class="oo-access-copy" data-offeros-access-copy>{paragraph_markup(access_copy)}</div>
+        """
     return f"""
     {comment_open}
     <section class="{section_class}" data-offeros-section="{html_text(section_id)}" data-offeros-copy-contract="exact-copy-sections-v1"{anchor}>
       <div class="oo-container oo-copy-flow">
+        {structural_marker}
         {visual}
         {bundle}
         {copy_html}
+        {offer_stack_meta}
       </div>
     </section>
     {comment_close}"""
@@ -672,7 +1093,7 @@ def render_builtin(root: Path, section_id: str, data: dict, manifest: dict, blue
         <figure class="oo-vsl-frame oo-hero-video-primary" data-offeros-hero-video data-offeros-hero-video-prominence="primary" data-offeros-hero-video-size="large">
           <img src="{context["heroVslThumbnail"]}" alt="{html_text(offer)} VSL preview" data-offeros-video-thumbnail>
           <button class="oo-play-button" type="button" data-offeros-video-play aria-label="Play VSL">Play</button>
-          <figcaption class="oo-video-caption" data-offeros-video-caption><strong>{html_text(first_value(data.get("videoLabel"), fallback="Watch the short pitch"))}</strong><span>{html_text(first_value(data.get("videoPromise"), fallback="See the problem, mechanism, proof, and stack before you decide."))}</span></figcaption>
+          <figcaption class="oo-video-caption" data-offeros-video-caption><strong>{html_text(first_value(data.get("videoLabel"), fallback="Watch the short walkthrough"))}</strong><span>{html_text(first_value(data.get("videoPromise"), fallback="See the problem, mechanism, proof, and stack before you decide."))}</span></figcaption>
         </figure>
         <div class="oo-price-strip" data-offeros-price-strip>
           <div><span class="oo-price">{html_text(price)}</span><small>{html_text(first_value(data.get("valueContext"), fallback="Complete offer stack access"))}</small></div>
@@ -687,7 +1108,7 @@ def render_builtin(root: Path, section_id: str, data: dict, manifest: dict, blue
         return f"""
     <section class="oo-section oo-section-dark" data-offeros-section="vsl">
       <div class="oo-container oo-narrow">
-        <h2>{html_text(first_value(data.get("headline"), fallback="The short pitch shows the whole path before the buy box."))}</h2>
+        <h2>{html_text(first_value(data.get("headline"), fallback="The short walkthrough shows the whole path before the buy box."))}</h2>
         <p>{html_text(first_value(data.get("copy"), fallback=f"In a few minutes, the {offer} VSL explains the gap, the mechanism, and the finished outcome so you can make a grounded buying decision."))}</p>
         <ul>{list_items(bullets)}</ul>
         <a class="oo-cta" data-offeros-cta data-offeros-post-hero-cta href="{checkout}">{html_text(first_value(data.get("cta"), fallback="Skip to checkout"))}</a>
@@ -842,6 +1263,8 @@ def render_builtin(root: Path, section_id: str, data: dict, manifest: dict, blue
 def render_sections(root: Path, manifest: dict, blueprint: dict, theme: dict, partials: dict[str, str]) -> tuple[str, list[str]]:
     context = block_context(root, manifest, blueprint, theme)
     copy_sections = parse_copy_markdown_sections(root, blueprint)
+    copy_plan = copy_plan_source(root, blueprint)
+    copy_rows = copy_plan_section_rows(root, blueprint)
     if blueprint.get("pageRendersExactCopy") is True or blueprint.get("copySectionContract") == "exact-copy-sections-v1":
         missing_copy_sections = [section_id for section_id in REQUIRED_ORDER if section_id not in copy_sections]
         if missing_copy_sections:
@@ -849,7 +1272,15 @@ def render_sections(root: Path, manifest: dict, blueprint: dict, theme: dict, pa
                 "Sales page builder refused to invent or summarize missing copy sections. "
                 "Add bracketed sections to copy.md: " + ", ".join(missing_copy_sections)
             )
+        missing_copy_rows = [section_id for section_id in REQUIRED_ORDER if section_id not in copy_rows]
+        if missing_copy_rows:
+            raise ValueError(
+                "Sales page builder refused to infer section layout from Markdown. "
+                "Add typed copy-plan.json sectionPlan rows for: " + ", ".join(missing_copy_rows)
+            )
     context["_copySections"] = copy_sections
+    context["_copyPlan"] = copy_plan
+    context["_copyRows"] = copy_rows
     blocks = blueprint.get("blocks")
     if not isinstance(blocks, list):
         blocks = [{"id": section_id, "partial": section_id} for section_id in REQUIRED_ORDER]
@@ -932,7 +1363,8 @@ def css(theme: dict) -> str:
     h3 {{ font-size: 22px; }}
     p {{ margin: 0 0 18px; color: inherit; }}
     .oo-section > .oo-container > .oo-eyebrow, .oo-section > .oo-narrow > .oo-eyebrow, .oo-stack > .oo-container > .oo-eyebrow {{ display: flex; justify-content: center; width: max-content; max-width: 100%; margin-left: auto; margin-right: auto; text-align: center; }}
-    .oo-section > .oo-container > p, .oo-section > .oo-narrow > p {{ max-width: 900px; margin-left: auto; margin-right: auto; text-align: center; }}
+    .oo-section-lead {{ max-width: 900px; margin-left: auto; margin-right: auto; text-align: center; font-size: clamp(18px, 2vw, 22px); color: var(--oo-muted); }}
+    .oo-section-dark .oo-section-lead, .oo-stack .oo-section-lead {{ color: rgba(255,255,255,.82); }}
     .oo-hero-copy {{ max-width: 780px; font-size: clamp(18px, 2.5vw, 23px); color: rgba(255,255,255,.86); }}
     .oo-vsl-frame {{ position: relative; width: min(980px, 100%); aspect-ratio: 16 / 9; margin: 34px auto 0; border: 8px solid rgba(255,255,255,.12); border-radius: 8px; overflow: hidden; background: #24312d; box-shadow: 0 28px 80px rgba(0,0,0,.36); }}
     .oo-vsl-frame img {{ width: 100%; height: 100%; object-fit: cover; }}
@@ -944,6 +1376,10 @@ def css(theme: dict) -> str:
     .oo-cta {{ display: inline-flex; justify-content: center; align-items: center; min-height: 52px; padding: 14px 22px; border-radius: 8px; background: var(--oo-accent); color: #111; text-decoration: none; font-weight: 900; border: 0; }}
     .oo-trust-row {{ list-style: none; padding: 0; margin: 22px auto 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 980px; }}
     .oo-trust-row li {{ padding: 12px; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; color: rgba(255,255,255,.86); }}
+    .oo-hero-after-video {{ max-width: 980px; margin: 26px auto 0; display: grid; gap: 16px; }}
+    .oo-hero-after-video > p {{ max-width: 860px; margin-left: auto; margin-right: auto; color: rgba(255,255,255,.84); }}
+    .oo-hero-trust {{ display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; list-style: none; padding: 0; margin: 4px auto 0; }}
+    .oo-hero-trust li {{ display: inline-flex; align-items: center; gap: 9px; padding: 10px 13px; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(255,255,255,.06); color: rgba(255,255,255,.82); }}
     .oo-grid-3, .oo-grid-2, .oo-checklist {{ display: grid; gap: 16px; margin-top: 24px; }}
     .oo-grid-3 {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
     .oo-grid-2 {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
@@ -961,7 +1397,7 @@ def css(theme: dict) -> str:
     .oo-table {{ width: 100%; border-collapse: collapse; margin-top: 24px; background: var(--oo-surface); border-radius: 8px; overflow: hidden; }}
     .oo-table th, .oo-table td {{ padding: 16px; border: 1px solid rgba(0,0,0,.1); text-align: left; vertical-align: top; }}
     .oo-table th {{ background: var(--oo-primary); color: #fff; }}
-    .oo-stack {{ background: var(--oo-primary); color: #fff; text-align: center; }}
+    .oo-stack {{ background: linear-gradient(180deg, var(--oo-dark) 0%, var(--oo-primary) 100%); color: #fff; text-align: center; }}
     .oo-bundle {{ width: auto; max-width: min(860px, 100%); max-height: 560px; object-fit: contain; margin: 30px auto; border-radius: 8px; border: 1px solid rgba(255,255,255,.16); box-shadow: 0 24px 70px rgba(0,0,0,.28); }}
     .oo-checklist {{ grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; list-style: none; text-align: left; }}
     .oo-checklist li {{ display: flex; align-items: flex-start; gap: 11px; background: rgba(255,255,255,.12); border-radius: 8px; padding: 14px; }}
@@ -971,13 +1407,41 @@ def css(theme: dict) -> str:
     .oo-copy-flow {{ display: grid; gap: 16px; }}
     .oo-copy-flow h1, .oo-copy-flow h2 {{ margin-bottom: 4px; }}
     .oo-copy-flow h3 {{ max-width: 840px; margin: 18px auto 2px; }}
-    .oo-copy-flow p {{ max-width: 860px; margin-left: auto; margin-right: auto; }}
-    .oo-copy-flow .oo-copy-list {{ display: grid; gap: 12px; width: min(900px, 100%); margin: 8px auto 0; padding: 0; list-style: none; text-align: left; }}
-    .oo-copy-flow .oo-copy-list li {{ display: flex; align-items: flex-start; gap: 11px; padding: 14px 16px; border-radius: 8px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); }}
-    .oo-section:not(.oo-section-dark) .oo-copy-flow .oo-copy-list li {{ background: var(--oo-surface); border-color: rgba(0,0,0,.08); box-shadow: 0 14px 36px rgba(17,24,39,.05); }}
+    .oo-copy-flow p {{ max-width: 860px; margin-left: auto; margin-right: auto; text-align: left; }}
+    .oo-copy-list, .oo-symptom-list, .oo-impact-list, .oo-alternative-list, .oo-step-list, .oo-proof-list, .oo-feature-grid-list, .oo-timeline-list, .oo-stack-list, .oo-bonus-list, .oo-guarantee-list, .oo-fit-list {{ list-style: none; padding: 0; margin: 16px auto 0; width: min(960px, 100%); text-align: left; }}
+    .oo-symptom-list {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }}
+    .oo-symptom-list li, .oo-bonus-list li {{ display: flex; align-items: flex-start; gap: 11px; padding: 18px; border-radius: 8px; background: var(--oo-surface); border: 1px solid rgba(0,0,0,.08); box-shadow: 0 14px 34px rgba(17,24,39,.05); }}
+    .oo-impact-list {{ display: grid; gap: 10px; max-width: 820px; counter-reset: impact; }}
+    .oo-impact-list li {{ display: flex; gap: 12px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.14); }}
+    .oo-alternative-list {{ display: grid; gap: 0; border: 1px solid rgba(0,0,0,.1); border-radius: 8px; overflow: hidden; background: var(--oo-surface); }}
+    .oo-alternative-list li {{ display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 18px 20px; border-bottom: 1px solid rgba(0,0,0,.08); }}
+    .oo-alternative-list li:last-child {{ border-bottom: 0; }}
+    .oo-step-list, .oo-timeline-list {{ display: grid; gap: 18px; max-width: 860px; counter-reset: step; }}
+    .oo-step-list li, .oo-timeline-list li {{ position: relative; display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 0 0 18px; border-bottom: 1px solid rgba(255,255,255,.16); }}
+    .oo-section:not(.oo-section-dark) .oo-step-list li, .oo-section:not(.oo-section-dark) .oo-timeline-list li {{ border-color: rgba(0,0,0,.1); }}
+    .oo-proof-list {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }}
+    .oo-proof-list li {{ display: flex; align-items: flex-start; gap: 11px; padding: 18px; border-radius: 8px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); }}
+    .oo-feature-grid-list {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }}
+    .oo-feature-grid-list li {{ display: flex; gap: 11px; padding: 16px; border-radius: 8px; background: var(--oo-surface); border: 1px solid rgba(0,0,0,.08); }}
+    .oo-stack-list {{ display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; align-items: stretch; }}
+    .oo-stack-list li {{ display: flex; gap: 11px; align-items: flex-start; padding: 14px 16px; border-radius: 8px; background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.14); }}
+    .oo-stack-list .oo-stack-featured {{ grid-column: span 2; display: grid; gap: 14px; align-content: start; min-height: 180px; padding: 22px; background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.26); box-shadow: 0 24px 54px rgba(0,0,0,.14); }}
+    .oo-stack-list li:not(.oo-stack-featured) {{ grid-column: span 3; }}
+    .oo-stack-text {{ display: grid; gap: 6px; }}
+    .oo-stack-copy {{ color: rgba(255,255,255,.82); }}
+    .oo-stack-value {{ margin-left: auto; white-space: nowrap; font-weight: 800; color: var(--oo-accent); }}
+    .oo-guarantee-list, .oo-fit-list {{ display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }}
+    .oo-guarantee-list li, .oo-fit-list li {{ display: inline-flex; align-items: center; gap: 9px; padding: 11px 13px; border-radius: 999px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); }}
+    .oo-section-dark .oo-guarantee-list li, .oo-section-dark .oo-fit-list li {{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); }}
+    .oo-fit-columns {{ width: min(980px, 100%); margin: 20px auto 0; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }}
+    .oo-fit-columns > div {{ padding: 24px; border-radius: 8px; border: 1px solid rgba(0,0,0,.08); background: var(--oo-surface); }}
+    .oo-faq-item {{ max-width: 900px; margin: 12px auto; padding: 0; border: 1px solid rgba(0,0,0,.1); border-radius: 8px; background: var(--oo-surface); overflow: hidden; }}
+    .oo-faq-item summary {{ cursor: pointer; padding: 18px 20px; font-weight: 900; }}
+    .oo-faq-item p {{ padding: 0 20px 20px; margin: 0; }}
     .oo-copy-flow .oo-cta {{ justify-self: center; margin-top: 8px; }}
     @media (max-width: 760px) {{
-      .oo-price-strip, .oo-trust-row, .oo-grid-3, .oo-grid-2, .oo-checklist {{ grid-template-columns: 1fr; }}
+      .oo-price-strip, .oo-trust-row, .oo-grid-3, .oo-grid-2, .oo-checklist, .oo-symptom-list, .oo-proof-list, .oo-feature-grid-list, .oo-stack-list, .oo-fit-columns {{ grid-template-columns: 1fr; }}
+      .oo-stack-list .oo-stack-featured, .oo-stack-list li:not(.oo-stack-featured) {{ grid-column: 1 / -1; }}
       .oo-price-strip, .oo-value-row {{ text-align: center; display: grid; }}
       .oo-cta {{ width: 100%; white-space: normal; }}
       .oo-video-caption {{ position: static; border-radius: 0; }}
@@ -1029,7 +1493,6 @@ def render_page(root: Path, manifest: dict, blueprint: dict, theme: dict, partia
   <header data-offeros-section="header">
     <div class="oo-container" style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
       {logo_html}
-      <a class="oo-cta" data-offeros-cta href="#checkout">Get access</a>
     </div>
   </header>
   <main>
